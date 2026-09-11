@@ -15,6 +15,35 @@ const backButton = document.getElementById("backButton");
 let loadingTimer = null;
 
 /* ---------------------------
+   BACKGROUND NOISE
+   --------------------------- */
+
+const backgroundNoise = document.getElementById("backgroundNoise");
+let backgroundNoiseStarted = false;
+
+function startBackgroundNoise() {
+    if (!backgroundNoise || backgroundNoiseStarted) return;
+
+    backgroundNoise.volume = 0.05;
+    backgroundNoise.loop = true;
+
+    const playPromise = backgroundNoise.play();
+
+    if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.then(() => {
+            backgroundNoiseStarted = true;
+        }).catch(error => {
+            console.warn("Background noise could not play:", error);
+        });
+    } else {
+        backgroundNoiseStarted = true;
+    }
+}
+
+document.addEventListener("pointerdown", startBackgroundNoise, { once: true });
+document.addEventListener("keydown", startBackgroundNoise, { once: true });
+
+/* ---------------------------
    ONE-TIME LOADING SOUND
    --------------------------- */
 
@@ -167,7 +196,7 @@ if (profile.theme === "purple") {
 
     document.getElementById("articleTitle").textContent = profile.articleTitle;
 
-    renderTags(profile.tags);
+    renderTags(profile.tags || profile.Authors || []);
     renderArticle(profile.article);
 
     loadingScreen.classList.remove("active");

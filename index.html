@@ -179,21 +179,9 @@
     <script src="profiles.js"></script>
     <script src="script.js"></script>
 
-    <audio id="backgroundNoise" loop>
-    <source src="audio/background-noise.mp3" type="audio/mpeg">
-</audio>
-
-<script>
-const backgroundNoise = document.getElementById("backgroundNoise");
-
-backgroundNoise.volume = 0.05;
-
-document.addEventListener("click", function startNoise() {
-    backgroundNoise.play().catch(error => {
-        console.log("Audio could not play:", error);
-    });
-}, { once: true });
-</script>
+    <audio id="backgroundNoise" loop preload="auto">
+        <source src="audio/background-noise.mp3" type="audio/mpeg">
+    </audio>
 
 </body>
 </html>
