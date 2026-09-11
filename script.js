@@ -134,6 +134,18 @@ function showLoading(profile) {
 
 function openProfile(profile) {
     clearInterval(loadingTimer);
+    
+        /* PROFILE THEME */
+    profilePage.classList.remove(
+        "red-profile",
+        "blue-profile",
+        "purple-profile",
+        "green-profile"
+    );
+
+    if (profile.theme === "red") {
+        profilePage.classList.add("red-profile");
+    }
 
     document.getElementById("profileImage").src = profile.image;
     document.getElementById("profileImage").alt = profile.name;
