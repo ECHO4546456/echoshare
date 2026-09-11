@@ -7,7 +7,7 @@
     Replace image URLs with your own direct image addresses.
 */
 
-const ECHO_PROFILES = {
+const ECHO_PROFILES
 
     ArchTarken: {
         name: "ArchTarken",
