@@ -1,32 +1,38 @@
 const ECHO_PROFILES = {
 
-    ArchTarken: {
-        name: "ArchTarken",
-        id: "ES-ARCH-001",
+        Content_W09: {
+        name: "Content_W09",
+        id: "ES-Content-001",
         image: "ARCHTARKEN-IMAGE-URL",
         tagline: "An archived subject preserved inside the ECHO//SHARE network.",
-        birthDate: "April 18, 2004",
+        DocDate: "April 18, 2019",
         joined: "September 10, 2026",
         readers: "2M",
         support: "6B",
-        status: "ACTIVE",
 
-        tags: [
-            "ARCHIVE",
-            "PROFILE",
-            "DOCUMENTED"
-        ],
+         theme: "purple",
 
-        articleTitle: "About ArchTarken",
 
         article: [
             {
                 heading: "Overview",
                 paragraphs: [
-                    "Your ArchTarken article goes here."
+                    "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
+                    
+                ]
+            },
+
+            {
+                heading: "History",
+                paragraphs: [
+                    "This is another long paragraph.",
+                    "Another paragraph goes here.",
+                    "Another paragraph goes here."
                 ]
             }
         ]
+    }
+
     },
 
     AnotherCharacter: {
@@ -38,7 +44,6 @@ const ECHO_PROFILES = {
         joined: "September 11, 2026",
         readers: "850K",
         support: "3B",
-        status: "ACTIVE",
 
         theme: "red",
 
@@ -56,59 +61,6 @@ const ECHO_PROFILES = {
                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
                     "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
                     "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
-                     "The Lost Hour. In the old town of Oakhaven, Silas worked in a tiny shop filled with ticking clocks. He spent his days fixing gears and cleaning springs.",
-                    "He liked things that made sense. Every gear had a place. Every tick had a purpose.",
-                    "One rainy Tuesday, a stranger left an odd box on the counter. The box had no lid, no hinges, and no seams.",
-                    "It was made of dark wood that looked like polished night. Inside sat a single brass key shaped like a sleeping cat.",
                 ]
             },
 
