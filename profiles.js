@@ -11,7 +11,7 @@ const ECHO_PROFILES = {
     UPDATE: {
         name: "UPDATE",
         id: "ES-UPDATE-001",
-        image: "YOUR-ARCHTARKEN-IMAGE-URI-HERE",
+        image: "https://media.discordapp.net/attachments/1535460677525700659/1547992978239389816/8d60023cfb1439ae0c17e6f85620a2c3.png?ex=6aa5704e&is=6aa41ece&hm=4d5c7987fb5c64f3acb6861504499f3782ef4eea3947a8b6ae1b2f02e03083e6&=&format=webp&quality=lossless",
         tagline: "An archived subject preserved inside the ECHO//SHARE network.",
         birthDate: "Not here.",
         joined: "September 10, 2026",
