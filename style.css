@@ -863,6 +863,48 @@ button {
 
 
 /* =========================================
+   ECHO//SHARE UI BACKGROUND IMAGE
+   ========================================= */
+
+body {
+    background-image:
+        linear-gradient(
+            rgba(0, 0, 0, 0.65),
+            rgba(0, 0, 0, 0.65)
+        ),
+        url("https://64.media.tumblr.com/d2e03b7fadc982e132a2054d7ebd0f00/c98fca04521d6d60-00/s400x600/92ea9fbd6e2158790c18f59c1130491cfb5535df.gif");
+
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================
    UPDATE CARD — RED + WHITE
    ========================================= */
 
@@ -1086,19 +1128,123 @@ button {
 
 
 /* =========================================
-   ECHO//SHARE UI BACKGROUND IMAGE
+   RED PROFILE THEME
    ========================================= */
 
-body {
-    background-image:
-        linear-gradient(
-            rgba(0, 0, 0, 0.65),
-            rgba(0, 0, 0, 0.65)
+.red-profile {
+    background:
+        radial-gradient(
+            circle at 50% 15%,
+            rgba(255, 0, 0, 0.22),
+            transparent 45%
         ),
-        url("https://64.media.tumblr.com/d2e03b7fadc982e132a2054d7ebd0f00/c98fca04521d6d60-00/s400x600/92ea9fbd6e2158790c18f59c1130491cfb5535df.gif");
+        linear-gradient(
+            135deg,
+            #090000,
+            #180000,
+            #050505
+        );
+}
 
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+/* Profile hero */
+.red-profile .profile-hero {
+    border-color: rgba(255, 0, 0, 0.5);
+
+    box-shadow:
+        0 0 20px rgba(255, 0, 0, 0.2),
+        0 0 60px rgba(255, 0, 0, 0.1);
+}
+
+/* Background behind the profile UI */
+.red-profile .profile-hero-bg {
+    background:
+        radial-gradient(
+            circle,
+            rgba(255, 0, 0, 0.28),
+            transparent 65%
+        );
+}
+
+/* Profile name */
+.red-profile #profileName {
+    color: #ffffff;
+
+    text-shadow:
+        0 0 5px #ffffff,
+        0 0 15px #ff0000,
+        0 0 35px #ff0000,
+        0 0 65px rgba(255, 0, 0, 0.7);
+}
+
+/* Avatar */
+.red-profile .profile-avatar-frame {
+    border-color: #ffffff;
+
+    box-shadow:
+        0 0 8px #ffffff,
+        0 0 20px #ff0000,
+        0 0 45px #ff0000,
+        0 0 75px rgba(255, 0, 0, 0.5);
+}
+
+/* Sidebar cards + article */
+.red-profile .side-card,
+.red-profile .wiki-article {
+    border-color: rgba(255, 0, 0, 0.45);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 0, 0, 0.10),
+            rgba(255, 255, 255, 0.035),
+            rgba(5, 0, 0, 0.9)
+        );
+
+    box-shadow:
+        0 0 15px rgba(255, 0, 0, 0.18),
+        0 0 40px rgba(255, 0, 0, 0.08);
+}
+
+/* Red headings */
+.red-profile .record-tag,
+.red-profile .side-title {
+    color: #ff7777;
+
+    text-shadow:
+        0 0 5px #ffffff,
+        0 0 12px #ff0000,
+        0 0 25px rgba(255, 0, 0, 0.7);
+}
+
+/* Stats */
+.red-profile .stat {
+    border-color: rgba(255, 0, 0, 0.4);
+}
+
+.red-profile .stat-number {
+    color: #ffffff;
+
+    text-shadow:
+        0 0 5px #ffffff,
+        0 0 15px #ff0000,
+        0 0 30px rgba(255, 0, 0, 0.7);
+}
+
+/* Tags */
+.red-profile .tag {
+    border-color: rgba(255, 0, 0, 0.55);
+
+    box-shadow:
+        0 0 8px rgba(255, 0, 0, 0.25),
+        inset 0 0 10px rgba(255, 0, 0, 0.08);
+}
+
+/* Article headings */
+.red-profile .wiki-article h3 {
+    color: #ffffff;
+
+    text-shadow:
+        0 0 5px #ffffff,
+        0 0 15px #ff0000,
+        0 0 30px rgba(255, 0, 0, 0.7);
 }
