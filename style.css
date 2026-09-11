@@ -962,10 +962,10 @@ button {
 
 
 /* =========================================
-   RED PROFILE THEME
+   PURPLE PROFILE THEME
    ========================================= */
 
-.red-profile {
+.purple-profile {
     background:
         radial-gradient(
             circle at 50% 15%,
@@ -974,14 +974,14 @@ button {
         ),
         linear-gradient(
             135deg,
-            #090000,
-            #180000,
+            #09000f,
+            #180021,
             #050505
         );
 }
 
 /* Profile hero */
-.red-profile .profile-hero {
+.purple-profile .profile-hero {
     border-color: rgba(183, 0, 255, 0.5);
 
     box-shadow:
@@ -989,8 +989,8 @@ button {
         0 0 60px rgba(183, 0, 255, 0.1);
 }
 
-/* Background behind the profile UI */
-.red-profile .profile-hero-bg {
+/* Background glow */
+.purple-profile .profile-hero-bg {
     background:
         radial-gradient(
             circle,
@@ -1000,7 +1000,7 @@ button {
 }
 
 /* Profile name */
-.red-profile #profileName {
+.purple-profile #profileName {
     color: #ffffff;
 
     text-shadow:
@@ -1011,7 +1011,7 @@ button {
 }
 
 /* Avatar */
-.red-profile .profile-avatar-frame {
+.purple-profile .profile-avatar-frame {
     border-color: #ffffff;
 
     box-shadow:
@@ -1021,28 +1021,28 @@ button {
         0 0 75px rgba(204, 0, 255, 0.5);
 }
 
-/* Sidebar cards + article */
-.red-profile .side-card,
-.red-profile .wiki-article {
+/* Sidebar + article */
+.purple-profile .side-card,
+.purple-profile .wiki-article {
     border-color: rgba(174, 0, 255, 0.45);
 
     background:
         linear-gradient(
             135deg,
-            rgba(255, 0, 0, 0.10),
+            rgba(174, 0, 255, 0.10),
             rgba(255, 255, 255, 0.035),
-            rgba(5, 0, 0, 0.9)
+            rgba(5, 0, 15, 0.9)
         );
 
     box-shadow:
         0 0 15px rgba(174, 0, 255, 0.18),
-        0 0 40px rgba(255, 0, 0, 0.08);
+        0 0 40px rgba(174, 0, 255, 0.08);
 }
 
-/* Red headings */
-.red-profile .record-tag,
-.red-profile .side-title {
-    color: #cd77ff;
+/* Purple headings */
+.purple-profile .record-tag,
+.purple-profile .side-title {
+    color: #e1b3ff;
 
     text-shadow:
         0 0 5px #ffffff,
@@ -1051,11 +1051,11 @@ button {
 }
 
 /* Stats */
-.red-profile .stat {
+.purple-profile .stat {
     border-color: rgba(174, 0, 255, 0.4);
 }
 
-.red-profile .stat-number {
+.purple-profile .stat-number {
     color: #ffffff;
 
     text-shadow:
@@ -1065,7 +1065,7 @@ button {
 }
 
 /* Tags */
-.red-profile .tag {
+.purple-profile .tag {
     border-color: rgba(183, 0, 255, 0.55);
 
     box-shadow:
@@ -1074,7 +1074,7 @@ button {
 }
 
 /* Article headings */
-.red-profile .wiki-article h3 {
+.purple-profile .wiki-article h3 {
     color: #ffffff;
 
     text-shadow:

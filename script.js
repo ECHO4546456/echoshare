@@ -134,7 +134,7 @@ function showLoading(profile) {
 
 function openProfile(profile) {
     clearInterval(loadingTimer);
-    
+
         /* PROFILE THEME */
     profilePage.classList.remove(
         "red-profile",
@@ -142,10 +142,13 @@ function openProfile(profile) {
         "purple-profile",
         "green-profile"
     );
+if (profile.theme === "red") {
+    profilePage.classList.add("red-profile");
+}
 
-    if (profile.theme === "red") {
-        profilePage.classList.add("red-profile");
-    }
+if (profile.theme === "purple") {
+    profilePage.classList.add("purple-profile");
+}
 
     document.getElementById("profileImage").src = profile.image;
     document.getElementById("profileImage").alt = profile.name;
