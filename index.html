@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECHO//SHARE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Replace these two placeholder URLs in style.css / profiles.js with your own image addresses. -->
+
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="grid-overlay"></div>
+
+    <header class="topbar">
+        <a class="brand" href="#" aria-label="ECHO SHARE home">
+            <img
+                class="brand-image"
+                src="https://media.discordapp.net/attachments/1526775862136148099/1547803277989642281/b924a7e1-ab08-4011-b2ab-4fe8ed86a525.png?ex=6aa4bfa2&is=6aa36e22&hm=a0214f8eb4b820574786084a554965a0b1137eb4759a5665ba5910ba548116aa&=&format=webp&quality=lossless&width=768&height=768"
+                alt="ECHO"
+            >
+            <span>ECHO<span class="brand-slashes">//</span>SHARE</span>
+        </a>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            ARCHIVE ONLINE
+        </div>
+    </header>
+
+    <main class="home-page" id="homePage">
+        <section class="hero">
+            <div class="eyebrow">KNOWLEDGE ARCHIVE // 01</div>
+
+            <h1>
+                <span>ECHO</span><b>//</b><span>SHARE</span>
+            </h1>
+
+            <p class="hero-copy">
+                Search the archive. Discover profiles, records, stories,
+                and documents preserved inside the ECHO//SHARE network.
+            </p>
+
+            <div class="search-shell">
+                <div class="search-icon">⌕</div>
+                <input
+                    id="profileSearch"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Search a profile... e.g. ArchTarken"
+                    aria-label="Search profiles"
+                >
+                <button id="searchButton" type="button">SEARCH</button>
+            </div>
+
+            <div class="search-hint">
+                Try <button class="example-search" data-profile="ArchTarken">ArchTarken</button>
+            </div>
+
+            <div id="searchMessage" class="search-message" aria-live="polite"></div>
+        </section>
+
+        <section class="archive-preview">
+            <div class="section-label">
+                <span>FEATURED RECORD</span>
+                <span>01 / 01</span>
+            </div>
+
+            <button class="featured-card" data-profile="ArchTarken">
+                <div class="featured-glow"></div>
+                <div class="featured-image-wrap">
+                    <img src="YOUR-ARCHTARKEN-IMAGE-URI-HERE" alt="ArchTarken">
+                </div>
+                <div class="featured-info">
+                    <span class="record-tag">PROFILE RECORD</span>
+                    <h2>ArchTarken</h2>
+                    <p>Open the archived profile and read the full document.</p>
+                </div>
+                <span class="featured-arrow">↗</span>
+            </button>
+        </section>
+    </main>
+
+    <!-- Loading screen -->
+    <div id="loadingScreen" class="loading-screen" aria-hidden="true">
+        <div class="loader-card">
+            <div class="loader-ring"></div>
+            <div class="loader-kicker">ECHO//SHARE</div>
+            <h2 id="loadingTitle">ACCESSING RECORD</h2>
+            <div class="loader-line">
+                <span id="loadingBar"></span>
+            </div>
+            <div id="loadingText" class="loader-text">Searching archive...</div>
+        </div>
+    </div>
+
+    <!-- Profile/wiki page -->
+    <main id="profilePage" class="profile-page" hidden>
+        <div class="wiki-topbar">
+            <button id="backButton" class="back-button" type="button">← BACK TO ARCHIVE</button>
+            <span class="wiki-path">ECHO//SHARE / RECORD / <b id="profilePath">UNKNOWN</b></span>
+        </div>
+
+        <section class="profile-hero">
+            <div class="profile-hero-bg"></div>
+
+            <div class="profile-identity">
+                <div class="profile-avatar-frame">
+                    <img id="profileImage" src="" alt="">
+                </div>
+
+                <div class="profile-title-area">
+                    <span class="record-tag">VERIFIED ARCHIVE RECORD</span>
+                    <h1 id="profileName">ArchTarken</h1>
+                    <p id="profileTagline"></p>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat">
+                    <span class="stat-number" id="profileReaders">2M</span>
+                    <span class="stat-label">READERS</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="profileSupport">6B</span>
+                    <span class="stat-label">SUPPORT</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="profileStatus">ACTIVE</span>
+                    <span class="stat-label">STATUS</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="profile-layout">
+            <aside class="profile-sidebar">
+                <div class="side-card">
+                    <div class="side-title">RECORD DATA</div>
+
+                    <div class="data-row">
+                        <span>BIRTH DATE</span>
+                        <strong id="profileBirthDate"></strong>
+                    </div>
+
+                    <div class="data-row">
+                        <span>JOINED</span>
+                        <strong id="profileJoined"></strong>
+                    </div>
+
+                    <div class="data-row">
+                        <span>RECORD ID</span>
+                        <strong id="profileId"></strong>
+                    </div>
+                </div>
+
+                <div class="side-card">
+                    <div class="side-title">TAGS</div>
+                    <div id="profileTags" class="tags"></div>
+                </div>
+            </aside>
+
+            <article class="wiki-article">
+                <div class="article-heading">
+                    <span class="record-tag">DOCUMENTATION</span>
+                    <h2 id="articleTitle">About ArchTarken</h2>
+                </div>
+
+                <div id="articleContent" class="article-content"></div>
+            </article>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        Made By: Hero until dawn / Frogmen
+    </footer>
+
+    <script src="profiles.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
