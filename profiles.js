@@ -1,6 +1,6 @@
 const ECHO_PROFILES = {
 
-        Content_W09: {
+        ContentW09: {
         name: "Content_W09",
         id: "ES-Content-001",
         image: "ARCHTARKEN-IMAGE-URL",
