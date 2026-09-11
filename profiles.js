@@ -21,7 +21,6 @@ const ECHO_PROFILES = {
 
         theme: "purple",
 
-
         Authors: [
             "Frogmen",
             "Writer///Tea,",
@@ -56,12 +55,11 @@ const ECHO_PROFILES = {
             {
                 heading: "History",
                 paragraphs: [
-                    "TNo history behind UPDATE.",
-            
+                    "TNo history behind UPDATE."
                 ]
             }
         ]
-    }
+    },
 
     Update_Logs: {
         name: "Update_Logs",
@@ -76,7 +74,6 @@ const ECHO_PROFILES = {
 
         theme: "red",
 
-
         Authors: [
             "Frogmen",
             "Writer///Tea,",
@@ -111,8 +108,7 @@ const ECHO_PROFILES = {
             {
                 heading: "History",
                 paragraphs: [
-                    "TNo history behind UPDATE.",
-            
+                    "TNo history behind UPDATE."
                 ]
             }
         ]
