@@ -39,39 +39,40 @@ const ECHO_PROFILES = {
     },
 
 
-    AnotherCharacter: {
-        name: "AnotherCharacter",
-        id: "ES-CHAR-002",
-        image: "ANOTHER-CHARACTER-IMAGE-URL",
-        tagline: "Description of the new character.",
-        birthDate: "January 12, 2005",
-        joined: "September 11, 2026",
-        readers: "850K",
-        support: "3B",
-        status: "ACTIVE",
+  AnotherCharacter: {
+    name: "AnotherCharacter",
+    id: "ES-CHAR-002",
+    image: "https://media.discordapp.net/attachments/1535460677525700659/1547827601920499852/Z.png?ex=6aa4d649&is=6aa384c9&hm=193f3131ebd5c887dd176efd5420227802689ac9232e6238a53d5162be30489c&=&format=webp&quality=lossless",
+    tagline: "Description of the new character.",
+    birthDate: "January 12, 2005",
+    joined: "September 11, 2026",
+    readers: "850K",
+    support: "3B",
+    status: "ACTIVE",
 
-        tags: [
-            "CHARACTER",
-            "ARCHIVE",
-            "DOCUMENTED"
-        ],
+    theme: "red",
 
-        articleTitle: "About AnotherCharacter",
+    tags: [
+        "CHARACTER",
+        "ARCHIVE",
+        "DOCUMENTED"
+    ],
 
-        article: [
-            {
-                heading: "Overview",
-                paragraphs: [
-                    "Write the new character's article here."
-                ]
-            },
-            {
-                heading: "History",
-                paragraphs: [
-                    "Write their history here."
-                ]
-            }
-        ]
-    }
+    articleTitle: "About AnotherCharacter",
 
+    article: [
+        {
+            heading: "Overview",
+            paragraphs: [
+                "Write the new character's article here."
+            ]
+        },
+        {
+            heading: "History",
+            paragraphs: [
+                "Write their history here."
+            ]
+        }
+    ]
+}
 };
