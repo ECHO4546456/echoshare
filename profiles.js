@@ -9,7 +9,7 @@
 
 const ECHO_PROFILES = {
     UPDATE: {
-        name: "UPDATE MADE BY: FROGMEN",
+        name: "UPDATE",
         id: "ES-UPDATE-001",
         image: "https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png",
         tagline: "This is the very beginning of the Echo//Share network.",
