@@ -172,6 +172,77 @@
         </section>
     </main>
 
+    <!-- CHAT_90 AUTHENTICATION -->
+    <section id="chatAuthPage" class="chat-auth-page" hidden>
+        <div class="chat-auth-card">
+            <div class="chat-auth-kicker">ECHO//SHARE // RESTRICTED NETWORK</div>
+            <div class="chat-auth-icon">◈</div>
+            <h1>CHAT_90</h1>
+            <p>THIS AREA REQUIRES ACCESS.</p>
+            <div id="chatAuthMessage" class="chat-auth-message"></div>
+            <input id="chatPasswordInput" type="password" autocomplete="off" placeholder="ENTER ACCESS PASSWORD">
+            <button id="chatPasswordButton" type="button">AUTHENTICATE</button>
+            <button id="chatAuthBack" class="chat-small-button" type="button">← RETURN TO ARCHIVE</button>
+        </div>
+    </section>
+
+    <!-- CHAT_90 IDENTITY SETUP -->
+    <section id="chatSetupPage" class="chat-setup-page" hidden>
+        <div class="chat-setup-card">
+            <div class="chat-auth-kicker">CHAT_90 // IDENTITY</div>
+            <h1>CREATE YOUR CHAT IDENTITY</h1>
+            <p>Your identity is saved in this browser for this demo build.</p>
+            <label>USERNAME<input id="chatUsernameInput" maxlength="24" placeholder="Your username"></label>
+            <label>PROFILE IMAGE URL<input id="chatAvatarInput" placeholder="https://..."></label>
+            <label>BIO<input id="chatBioInput" maxlength="90" placeholder="A short bio"></label>
+            <div id="chatSpecialOptions" class="special-options" hidden>
+                <div class="special-title">SPECIAL ACCESS</div>
+                <label>GLOW COLOR<input id="chatGlowInput" type="text" value="#ff2d2d" placeholder="#ff2d2d"></label>
+                <label>BADGE IMAGE URL<input id="chatBadgeInput" placeholder="https://..."></label>
+                <label>MESSAGE EFFECT<select id="chatEffectInput"><option value="red-pulse">Red Pulse</option><option value="blood-glitch">Blood Glitch</option><option value="crimson-flare">Crimson Flare</option></select></label>
+            </div>
+            <button id="chatEnterButton" type="button">ENTER CHAT_90</button>
+            <button id="chatSetupBack" class="chat-small-button" type="button">← RETURN TO ARCHIVE</button>
+        </div>
+    </section>
+
+    <!-- CHAT_90 -->
+    <section id="chatPage" class="chat-page" hidden>
+        <div class="chat-topbar">
+            <button id="chatBackButton" type="button">← ECHO//SHARE</button>
+            <div class="chat-brand"><span>CHAT_90</span><small>LIVE ARCHIVE CHANNEL</small></div>
+            <div class="chat-online"><span></span><b id="chatOnlineCount">1</b> ONLINE</div>
+        </div>
+
+        <div class="chat-layout">
+            <aside class="chat-users-panel">
+                <div class="chat-panel-title">ONLINE USERS</div>
+                <div id="chatUsersList" class="chat-users-list"></div>
+                <div class="chat-user-count"><b id="chatOnlineCountSide">1</b> USERS CONNECTED</div>
+            </aside>
+
+            <main class="chat-main">
+                <div id="chatMessages" class="chat-messages"></div>
+                <div id="chatTyping" class="chat-typing"></div>
+                <div class="chat-composer">
+                    <button id="chatGifButton" type="button" title="Send GIF">GIF</button>
+                    <button id="chatImageButton" type="button" title="Send image URL">IMG</button>
+                    <input id="chatMessageInput" maxlength="500" autocomplete="off" placeholder="Type a message...">
+                    <button id="chatSendButton" class="chat-send" type="button">➤</button>
+                </div>
+                <div class="chat-composer-hint">GIF opens a GIF URL prompt. IMG opens an image URL prompt.</div>
+            </main>
+
+            <aside class="chat-profile-panel">
+                <div class="chat-panel-title">YOUR IDENTITY</div>
+                <div id="chatMeCard" class="chat-me-card"></div>
+                <button id="chatEditProfile" class="chat-profile-button" type="button">EDIT PROFILE</button>
+                <button id="chatLogout" class="chat-profile-button danger" type="button">LEAVE CHAT</button>
+            </aside>
+        </div>
+    </section>
+
+
     <footer class="site-footer">
         Made By: Hero until dawn / Frogmen
     </footer>

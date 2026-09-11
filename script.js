@@ -103,9 +103,15 @@ function findProfile(query) {
 }
 
 function startSearch(query) {
-    const profile = findProfile(query);
-
+    const normalized = query.trim().toLowerCase();
     searchMessage.textContent = "";
+
+    if (normalized === "chat_90") {
+        openChatAuth();
+        return;
+    }
+
+    const profile = findProfile(query);
 
     if (!profile) {
         searchMessage.textContent =
@@ -286,3 +292,418 @@ document.addEventListener("keydown", event => {
         backButton.click();
     }
 });
+
+
+/* =========================================
+   CHAT_90
+   ========================================= */
+
+const chatAuthPage = document.getElementById("chatAuthPage");
+const chatSetupPage = document.getElementById("chatSetupPage");
+const chatPage = document.getElementById("chatPage");
+const chatAuthMessage = document.getElementById("chatAuthMessage");
+const chatPasswordInput = document.getElementById("chatPasswordInput");
+const chatPasswordButton = document.getElementById("chatPasswordButton");
+const chatAuthBack = document.getElementById("chatAuthBack");
+const chatSetupBack = document.getElementById("chatSetupBack");
+const chatUsernameInput = document.getElementById("chatUsernameInput");
+const chatAvatarInput = document.getElementById("chatAvatarInput");
+const chatBioInput = document.getElementById("chatBioInput");
+const chatSpecialOptions = document.getElementById("chatSpecialOptions");
+const chatGlowInput = document.getElementById("chatGlowInput");
+const chatBadgeInput = document.getElementById("chatBadgeInput");
+const chatEffectInput = document.getElementById("chatEffectInput");
+const chatEnterButton = document.getElementById("chatEnterButton");
+const chatBackButton = document.getElementById("chatBackButton");
+const chatUsersList = document.getElementById("chatUsersList");
+const chatMessages = document.getElementById("chatMessages");
+const chatOnlineCount = document.getElementById("chatOnlineCount");
+const chatOnlineCountSide = document.getElementById("chatOnlineCountSide");
+const chatMeCard = document.getElementById("chatMeCard");
+const chatEditProfile = document.getElementById("chatEditProfile");
+const chatLogout = document.getElementById("chatLogout");
+const chatMessageInput = document.getElementById("chatMessageInput");
+const chatSendButton = document.getElementById("chatSendButton");
+const chatGifButton = document.getElementById("chatGifButton");
+const chatImageButton = document.getElementById("chatImageButton");
+
+const CHAT_NORMAL_PASSWORD = "56789";
+const CHAT_SPECIAL_PASSWORD = "9!GAG";
+const CHAT_DEFAULT_AVATAR = "https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png";
+
+let chatAccessLevel = "normal";
+let chatEditing = false;
+
+const CHAT_DEMO_USERS = [
+    { username: "ECHO BOT", avatar: CHAT_DEFAULT_AVATAR, role: "SYSTEM", glow: "#9b9b9b", badge: "", bio: "Archive system bot.", bot: true },
+    { username: "Shadow", avatar: CHAT_DEFAULT_AVATAR, role: "MEMBER", glow: "#8a63ff", badge: "", bio: "Watching the archive." },
+    { username: "Writer///Tea", avatar: CHAT_DEFAULT_AVATAR, role: "WRITER", glow: "#39ff88", badge: "", bio: "Writing the records." }
+];
+
+function getChatProfile() {
+    try {
+        return JSON.parse(localStorage.getItem("echoChatProfile") || "null");
+    } catch (_) {
+        return null;
+    }
+}
+
+function saveChatProfile(profile) {
+    localStorage.setItem("echoChatProfile", JSON.stringify(profile));
+}
+
+function getChatMessages() {
+    try {
+        return JSON.parse(localStorage.getItem("echoChatMessages") || "[]");
+    } catch (_) {
+        return [];
+    }
+}
+
+function saveChatMessages(messages) {
+    localStorage.setItem("echoChatMessages", JSON.stringify(messages.slice(-100)));
+}
+
+function showOnly(page) {
+    homePage.hidden = true;
+    profilePage.hidden = true;
+    chatAuthPage.hidden = true;
+    chatSetupPage.hidden = true;
+    chatPage.hidden = true;
+    page.hidden = false;
+}
+
+function openChatAuth() {
+    clearInterval(loadingTimer);
+    loadingScreen.classList.remove("active");
+    chatAuthMessage.textContent = "";
+    chatPasswordInput.value = "";
+    showOnly(chatAuthPage);
+    setTimeout(() => chatPasswordInput.focus(), 50);
+}
+
+function returnToArchive() {
+    chatAuthPage.hidden = true;
+    chatSetupPage.hidden = true;
+    chatPage.hidden = true;
+    profilePage.hidden = true;
+    homePage.hidden = false;
+    searchInput.focus();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function authenticateChat() {
+    const password = chatPasswordInput.value;
+
+    if (password !== CHAT_NORMAL_PASSWORD && password !== CHAT_SPECIAL_PASSWORD) {
+        chatAuthMessage.textContent = "ACCESS DENIED — INVALID PASSWORD.";
+        chatPasswordInput.value = "";
+        chatPasswordInput.focus();
+        return;
+    }
+
+    chatAccessLevel = password === CHAT_SPECIAL_PASSWORD ? "special" : "normal";
+    chatAuthMessage.textContent = "ACCESS GRANTED.";
+
+    const existing = getChatProfile();
+    if (existing) {
+        existing.access = chatAccessLevel;
+        saveChatProfile(existing);
+        openChat();
+        return;
+    }
+
+    chatEditing = false;
+    chatSpecialOptions.hidden = chatAccessLevel !== "special";
+    chatUsernameInput.value = "";
+    chatAvatarInput.value = "";
+    chatBioInput.value = "";
+    chatGlowInput.value = "#ff2d2d";
+    chatBadgeInput.value = "";
+    chatEffectInput.value = "red-pulse";
+    showOnly(chatSetupPage);
+    chatUsernameInput.focus();
+}
+
+function openChatSetupForEdit() {
+    const profile = getChatProfile();
+    if (!profile) return;
+
+    chatEditing = true;
+    chatUsernameInput.value = profile.username || "";
+    chatAvatarInput.value = profile.avatar || "";
+    chatBioInput.value = profile.bio || "";
+    chatGlowInput.value = profile.glow || "#ff2d2d";
+    chatBadgeInput.value = profile.badge || "";
+    chatEffectInput.value = profile.effect || "red-pulse";
+    chatSpecialOptions.hidden = profile.access !== "special";
+    showOnly(chatSetupPage);
+    chatUsernameInput.focus();
+}
+
+function enterChat() {
+    const username = chatUsernameInput.value.trim();
+    if (!username) {
+        chatUsernameInput.focus();
+        return;
+    }
+
+    const oldProfile = getChatProfile() || {};
+    const profile = {
+        username: username.slice(0, 24),
+        avatar: chatAvatarInput.value.trim() || CHAT_DEFAULT_AVATAR,
+        bio: chatBioInput.value.trim().slice(0, 90),
+        access: chatAccessLevel,
+        role: chatAccessLevel === "special" ? "SPECIAL / ADMIN" : "MEMBER",
+        glow: chatAccessLevel === "special" ? (chatGlowInput.value.trim() || "#ff2d2d") : "#39ff88",
+        badge: chatAccessLevel === "special" ? chatBadgeInput.value.trim() : "",
+        effect: chatAccessLevel === "special" ? chatEffectInput.value : "normal"
+    };
+
+    saveChatProfile(profile);
+    openChat();
+
+    if (!chatEditing || !oldProfile.username) {
+        addChatMessage({
+            bot: true,
+            username: "ECHO BOT",
+            avatar: CHAT_DEFAULT_AVATAR,
+            role: "SYSTEM",
+            glow: "#9b9b9b",
+            text: `New guy named ${profile.username} has joined Chat_90.`
+        });
+    }
+
+    chatEditing = false;
+}
+
+function openChat() {
+    const profile = getChatProfile();
+    if (!profile) {
+        openChatAuth();
+        return;
+    }
+
+    chatAccessLevel = profile.access === "special" ? "special" : "normal";
+    showOnly(chatPage);
+    renderChat();
+    chatMessageInput.focus();
+}
+
+function escapeText(text) {
+    return String(text).replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+    }[char]));
+}
+
+function renderUsers(profile) {
+    const users = [...CHAT_DEMO_USERS.filter(user => user.username !== profile.username), {
+        username: profile.username,
+        avatar: profile.avatar,
+        role: profile.role,
+        glow: profile.glow,
+        badge: profile.badge,
+        bio: profile.bio
+    }];
+
+    chatOnlineCount.textContent = users.length;
+    chatOnlineCountSide.textContent = users.length;
+    chatUsersList.innerHTML = "";
+
+    users.forEach(user => {
+        const row = document.createElement("div");
+        row.className = "chat-user-row";
+        row.style.setProperty("--chat-glow", user.glow || "#ff3030");
+        row.innerHTML = `
+            <span class="chat-user-dot"></span>
+            <img class="chat-user-avatar" src="${escapeText(user.avatar || CHAT_DEFAULT_AVATAR)}" alt="">
+            <div class="chat-user-name" style="text-shadow:0 0 8px ${escapeText(user.glow || "#ff3030")}">
+                ${escapeText(user.username)}
+                <span class="chat-user-role">${escapeText(user.role || "MEMBER")}</span>
+            </div>`;
+        chatUsersList.appendChild(row);
+    });
+}
+
+function renderMe(profile) {
+    chatMeCard.style.setProperty("--chat-glow", profile.glow || "#39ff88");
+    chatMeCard.innerHTML = `
+        <img class="chat-me-avatar" src="${escapeText(profile.avatar)}" alt="">
+        <div class="chat-me-name">${escapeText(profile.username)} ${profile.badge ? `<img class="chat-badge" src="${escapeText(profile.badge)}" alt="badge">` : ""}</div>
+        <div class="chat-me-role">${escapeText(profile.role)}</div>
+        <div class="chat-me-bio">${escapeText(profile.bio || "No bio added.")}</div>`;
+}
+
+function renderChat() {
+    const profile = getChatProfile();
+    if (!profile) return;
+
+    renderUsers(profile);
+    renderMe(profile);
+    chatMessages.innerHTML = "";
+
+    const messages = getChatMessages();
+    if (!messages.length) {
+        addChatMessage({
+            bot: true,
+            username: "ECHO BOT",
+            avatar: CHAT_DEFAULT_AVATAR,
+            role: "SYSTEM",
+            glow: "#9b9b9b",
+            text: "Welcome to CHAT_90. The archive channel is now online."
+        }, false);
+        addChatMessage({
+            bot: true,
+            username: "ECHO BOT",
+            avatar: CHAT_DEFAULT_AVATAR,
+            role: "SYSTEM",
+            glow: "#9b9b9b",
+            text: `${profile.username} has entered the channel.`
+        }, false);
+    } else {
+        messages.forEach(message => renderMessage(message));
+    }
+}
+
+function renderMessage(message) {
+    const article = document.createElement("article");
+    article.className = `chat-message ${message.bot ? "bot" : ""} ${message.effect || ""}`;
+    article.style.setProperty("--chat-glow", message.glow || "#ff3030");
+    article.dataset.messageId = message.id || "";
+
+    const canManage = !message.bot && chatAccessLevel === "special";
+    const imagePart = message.image ? `<img class="chat-message-image" src="${escapeText(message.image)}" alt="Chat image" loading="lazy">` : "";
+    const badgePart = message.badge ? `<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">` : "";
+    const actions = canManage ? `<div class="chat-message-actions"><button data-action="delete">DELETE</button><button data-action="kick">REMOVE USER</button></div>` : "";
+
+    article.innerHTML = `
+        <div class="chat-message-head">
+            <img class="chat-message-avatar" src="${escapeText(message.avatar || CHAT_DEFAULT_AVATAR)}" alt="">
+            <span class="chat-message-name">${escapeText(message.username)}</span>
+            ${badgePart}
+            <span class="chat-message-role">${escapeText(message.role || "MEMBER")}</span>
+            <span class="chat-message-time">${escapeText(message.time || "NOW")}</span>
+        </div>
+        <div class="chat-message-body">${escapeText(message.text || "")}</div>
+        ${imagePart}
+        ${actions}`;
+
+    if (message.gif) {
+        const gif = document.createElement("img");
+        gif.className = "chat-message-image";
+        gif.src = message.gif;
+        gif.alt = "GIF";
+        gif.loading = "lazy";
+        article.appendChild(gif);
+    }
+
+    const actionButtons = article.querySelectorAll("[data-action]");
+    actionButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            if (button.dataset.action === "delete") deleteChatMessage(message.id);
+            if (button.dataset.action === "kick") kickCurrentUser();
+        });
+    });
+
+    chatMessages.appendChild(article);
+}
+
+function addChatMessage(data, persist = true) {
+    const message = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        ...data
+    };
+
+    if (persist) {
+        const messages = getChatMessages();
+        messages.push(message);
+        saveChatMessages(messages);
+    }
+
+    renderMessage(message);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function sendChatMessage(text, extra = {}) {
+    const profile = getChatProfile();
+    if (!profile || !text.trim() && !extra.image && !extra.gif) return;
+
+    addChatMessage({
+        username: profile.username,
+        avatar: profile.avatar,
+        role: profile.role,
+        glow: profile.glow,
+        badge: profile.badge,
+        effect: profile.effect,
+        text: text.trim(),
+        ...extra
+    });
+}
+
+function deleteChatMessage(id) {
+    if (chatAccessLevel !== "special") return;
+    saveChatMessages(getChatMessages().filter(message => message.id !== id));
+    renderChat();
+}
+
+function kickCurrentUser() {
+    if (chatAccessLevel !== "special") return;
+    localStorage.removeItem("echoChatProfile");
+    localStorage.setItem("echoChatKicked", "1");
+    returnToArchive();
+    searchMessage.textContent = "CHAT_90: your session was removed by a special account.";
+}
+
+function sendImagePrompt() {
+    const url = window.prompt("Paste an image URL:");
+    if (!url) return;
+    sendChatMessage("", { image: url.trim() });
+}
+
+function sendGifPrompt() {
+    const url = window.prompt("Paste a GIF URL:");
+    if (!url) return;
+    sendChatMessage("", { gif: url.trim() });
+}
+
+chatPasswordButton.addEventListener("click", authenticateChat);
+chatPasswordInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") authenticateChat();
+});
+chatAuthBack.addEventListener("click", returnToArchive);
+chatSetupBack.addEventListener("click", returnToArchive);
+chatEnterButton.addEventListener("click", enterChat);
+chatUsernameInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") enterChat();
+});
+chatBackButton.addEventListener("click", returnToArchive);
+chatEditProfile.addEventListener("click", openChatSetupForEdit);
+chatLogout.addEventListener("click", () => {
+    const profile = getChatProfile();
+    if (profile) {
+        addChatMessage({
+            bot: true,
+            username: "ECHO BOT",
+            avatar: CHAT_DEFAULT_AVATAR,
+            role: "SYSTEM",
+            glow: "#9b9b9b",
+            text: `${profile.username} has left Chat_90.`
+        });
+    }
+    localStorage.removeItem("echoChatProfile");
+    returnToArchive();
+});
+chatSendButton.addEventListener("click", () => {
+    sendChatMessage(chatMessageInput.value);
+    chatMessageInput.value = "";
+    chatMessageInput.focus();
+});
+chatMessageInput.addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        chatSendButton.click();
+    }
+});
+chatGifButton.addEventListener("click", sendGifPrompt);
+chatImageButton.addEventListener("click", sendImagePrompt);

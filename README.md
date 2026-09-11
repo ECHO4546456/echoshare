@@ -48,3 +48,6 @@ Upload all four files to the same repository/folder, then enable GitHub Pages fo
 
 
 
+
+
+CHAT_90 integration: search for CHAT_90 from the home page to open the protected chat area. Normal password: 56789. Special password: 9!GAG. This static demo uses localStorage; a real multi-user public chat requires a backend.
