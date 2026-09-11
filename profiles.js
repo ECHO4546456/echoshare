@@ -18,6 +18,10 @@ const ECHO_PROFILES = {
         readers: "2M",
         support: "6B",
         status: "ACTIVE",
+
+        theme: "purple",
+
+
         tags: [
             "ARCHIVE",
             "PROFILE",
