@@ -11,7 +11,7 @@ const ECHO_PROFILES = {
     ArchTarken: {
         name: "ArchTarken",
         id: "ES-ARCH-001",
-        image: "Yhttps://images-ext-1.discordapp.net/external/W1bD5iKJFWfHr2NAM8PcqS4baeWciKtI9fNE4fmc5Rk/%3Fsize%3D1280/https/cdn.discordapp.com/avatars/1545845460575457385/b178255208daafc8669b875f7f4f7a8f.webp?format=webp",
+        image: "https://images-ext-1.discordapp.net/external/W1bD5iKJFWfHr2NAM8PcqS4baeWciKtI9fNE4fmc5Rk/%3Fsize%3D1280/https/cdn.discordapp.com/avatars/1545845460575457385/b178255208daafc8669b875f7f4f7a8f.webp?format=webp",
         tagline: "An archived subject preserved inside the ECHO//SHARE network.",
         birthDate: "April 18, 2004",
         joined: "September 10, 2026",
