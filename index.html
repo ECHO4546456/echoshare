@@ -184,14 +184,15 @@
 </audio>
 
 <script>
-    const backgroundNoise = document.getElementById("backgroundNoise");
+const backgroundNoise = document.getElementById("backgroundNoise");
 
-    backgroundNoise.volume = 0.05; // 5% volume
+backgroundNoise.volume = 0.05;
 
-    document.addEventListener("click", function startBackgroundNoise() {
-        backgroundNoise.play().catch(() => {});
-        document.removeEventListener("click", startBackgroundNoise);
-    }, { once: true });
+document.addEventListener("click", function startNoise() {
+    backgroundNoise.play().catch(error => {
+        console.log("Audio could not play:", error);
+    });
+}, { once: true });
 </script>
 
 </body>
