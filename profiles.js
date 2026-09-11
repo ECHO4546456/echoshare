@@ -1,18 +1,36 @@
-const ECHO_PROFILES = {
+/*
+    ECHO//SHARE PROFILE DATABASE
 
-        ContentW09: {
-        name: "ContentW09",
-        id: "ES-Content-001",
-        image: "ARCHTARKEN-IMAGE-URL",
+    Add more profiles inside the ECHO_PROFILES object.
+    The search matches the profile name OR the profile id.
+
+    Replace image URLs with your own direct image addresses.
+*/
+
+const ECHO_PROFILES = {
+    UPDATE: {
+        name: "UPDATE",
+        id: "ES-UPDATE-001",
+        image: "YOUR-ARCHTARKEN-IMAGE-URI-HERE",
         tagline: "An archived subject preserved inside the ECHO//SHARE network.",
-        DocDate: "April 18, 2019",
+        birthDate: "Not here.",
         joined: "September 10, 2026",
         readers: "2M",
         support: "6B",
+        status: "ACTIVE",
+        tags: [
+            "ARCHIVE",
+            "PROFILE",
+            "DOCUMENTED",
+            "ECHO RECORD"
+        ],
+        articleTitle: "ABOUT THE UPDATE",
 
-         theme: "purple",
-
-
+        /*
+            EDIT THIS ARTICLE YOURSELF.
+            Every letter is automatically wrapped by script.js so each
+            individual character can glow bright white + green on hover.
+        */
         article: [
             {
                 heading: "Overview",
