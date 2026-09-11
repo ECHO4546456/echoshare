@@ -32,4 +32,4 @@ const ECHO_PROFILES = {
             }
         ]
     }
-    },
+};

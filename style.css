@@ -913,12 +913,12 @@ button {
     text-shadow:
         0 0 4px #ffffff,
         0 0 12px #ae00ff,
-        0 0 28px #ff0000;
+        0 0 28px #b700ff;
 }
 
 /* PROFILE RECORD */
 .ContentW09-card .record-tag {
-    color: #ffb3b3;
+    color: #e1b3ff;
 
     text-shadow:
         0 0 5px #ffffff,
