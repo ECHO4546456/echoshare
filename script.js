@@ -719,17 +719,16 @@ chatImageButton.addEventListener("click", sendImagePrompt);
 /* ===========================
    CHAT_90 GLOBAL NETWORK LAYER
    =========================== */
+const CHAT90_SERVER_URL = "https://echoshare-0nsm.onrender.com";
 let chatSocket = null;
 let chatConnected = false;
 let chatAuthenticated = false;
-let chatProfileSent = false;
 let chatServerMessages = [];
 let chatOnlineProfiles = [];
 let chatReconnectTimer = null;
 let chatReconnectDelay = 1000;
 let chatPendingPackets = [];
-
-const CHAT_SERVER_URL = "https://echoshare-0nsm.onrender.com";
+let chatManualClose = false;
 
 const CHAT_EFFECTS_50 = [
   ["red-pulse","Red Pulse"],["blood-glitch","Blood Glitch"],["crimson-flare","Crimson Flare"],
@@ -749,166 +748,169 @@ function fillSpecialEffects(){
 fillSpecialEffects();
 
 function chatWSUrl(){
-  const base=new URL(CHAT_SERVER_URL);
-  const proto=base.protocol==='https:'?'wss:':'ws:';
-  return `${proto}//${base.host}/chat90`;
+  const base = new URL(CHAT90_SERVER_URL);
+  return `${base.protocol === "https:" ? "wss:" : "ws:"}//${base.host}/chat90`;
 }
 
-function setChatConnectionStatus(text, ok=false){
-  if(!chatTyping) return;
-  chatTyping.textContent=text||"";
-  chatTyping.classList.toggle("chat-connected",!!ok);
+function chatIsSocketOpen(){
+  return !!chatSocket && chatSocket.readyState === WebSocket.OPEN;
+}
+
+function setChatConnectionState(state){
+  chatConnected = state === "connected";
+  if(chatPage && !chatPage.hidden){
+    chatPage.dataset.connection = state;
+    if(chatOnlineCount) chatOnlineCount.title = state === "connected" ? "CHAT_90 connected" : "CHAT_90 connecting";
+  }
 }
 
 function queueChatPacket(packet){
+  if(chatPendingPackets.length >= 50) chatPendingPackets.shift();
   chatPendingPackets.push(packet);
-  if(chatPendingPackets.length>50) chatPendingPackets.shift();
 }
 
 function flushChatPackets(){
-  if(!chatSocket || chatSocket.readyState!==WebSocket.OPEN || !chatAuthenticated || !chatProfileSent) return;
-  const pending=chatPendingPackets.splice(0);
-  pending.forEach(packet=>chatSocket.send(JSON.stringify(packet)));
+  if(!chatIsSocketOpen() || !chatAuthenticated) return;
+  while(chatPendingPackets.length){
+    const packet=chatPendingPackets.shift();
+    try { chatSocket.send(JSON.stringify(packet)); } catch(_){ chatPendingPackets.unshift(packet); break; }
+  }
 }
 
-function sendProfileToServer(){
+function sendChatAuthAndProfile(){
+  if(!chatIsSocketOpen()) return;
+  chatAuthenticated=false;
+  const password=window.chat90Password || (getChatProfile()?.access === "special" ? CHAT_SPECIAL_PASSWORD : CHAT_NORMAL_PASSWORD);
+  try { chatSocket.send(JSON.stringify({type:"auth",password})); } catch(_){ return; }
+}
+
+function sendChatProfileToServer(){
+  if(!chatIsSocketOpen() || !chatAuthenticated) return;
   const p=getChatProfile();
-  if(!p || !chatSocket || chatSocket.readyState!==WebSocket.OPEN || !chatAuthenticated) return false;
-  chatSocket.send(JSON.stringify({...p,type:'profile',tags:p.tags||[]}));
-  chatProfileSent=true;
-  flushChatPackets();
-  return true;
+  if(!p) return;
+  try { chatSocket.send(JSON.stringify({...p,type:"profile",tags:p.tags||[]})); } catch(_){ }
 }
 
 function scheduleChatReconnect(){
-  if(chatReconnectTimer || chatPage.hidden) return;
-  setChatConnectionStatus("CONNECTING TO CHAT_90...",false);
-  chatReconnectTimer=setTimeout(()=>{
-    chatReconnectTimer=null;
-    connectChatSocket();
-  },chatReconnectDelay);
-  chatReconnectDelay=Math.min(chatReconnectDelay*2,10000);
+  if(chatManualClose || chatPage.hidden || chatReconnectTimer) return;
+  const delay=chatReconnectDelay;
+  chatReconnectDelay=Math.min(chatReconnectDelay*2,15000);
+  chatReconnectTimer=setTimeout(()=>{ chatReconnectTimer=null; connectChatSocket(); },delay);
 }
 
 function connectChatSocket(){
-  if(chatPage.hidden) return;
+  if(chatManualClose || chatPage.hidden) return;
   if(chatSocket && (chatSocket.readyState===WebSocket.OPEN || chatSocket.readyState===WebSocket.CONNECTING)) return;
+  setChatConnectionState("connecting");
+  try {
+    chatSocket=new WebSocket(chatWSUrl());
+  } catch(e) {
+    setChatConnectionState("disconnected");
+    scheduleChatReconnect();
+    return;
+  }
 
-  chatAuthenticated=false;
-  chatProfileSent=false;
-  setChatConnectionStatus("CONNECTING TO CHAT_90...",false);
-
-  try { chatSocket=new WebSocket(chatWSUrl()); }
-  catch(e){ scheduleChatReconnect(); return; }
-
-  chatSocket.addEventListener('open',()=>{
-    chatConnected=true;
+  chatSocket.addEventListener("open",()=>{
     chatReconnectDelay=1000;
-    setChatConnectionStatus("CONNECTED",true);
-    chatSocket.send(JSON.stringify({type:'auth',password:window.chat90Password||''}));
+    setChatConnectionState("connected");
+    sendChatAuthAndProfile();
   });
 
-  chatSocket.addEventListener('close',()=>{
-    chatConnected=false;
+  chatSocket.addEventListener("error",()=>{
+    setChatConnectionState("disconnected");
+  });
+
+  chatSocket.addEventListener("close",()=>{
     chatAuthenticated=false;
-    chatProfileSent=false;
-    setChatConnectionStatus("CHAT_90 CONNECTION LOST — RECONNECTING...",false);
+    setChatConnectionState("disconnected");
+    chatSocket=null;
     scheduleChatReconnect();
   });
 
-  chatSocket.addEventListener('error',()=>{
-    chatConnected=false;
-    setChatConnectionStatus("CHAT_90 CONNECTION ERROR — RECONNECTING...",false);
-  });
-
-  chatSocket.addEventListener('message',event=>{
+  chatSocket.addEventListener("message",event=>{
     let packet;
-    try{packet=JSON.parse(event.data)}catch(_){return;}
+    try { packet=JSON.parse(event.data); } catch(_) { return; }
 
-    if(packet.type==='hello'){
-      chatServerMessages=packet.history||[];
-      chatOnlineProfiles=packet.online||[];
+    if(packet.type==="hello"){
+      chatServerMessages=Array.isArray(packet.history)?packet.history:[];
+      chatOnlineProfiles=Array.isArray(packet.online)?packet.online:[];
       renderGlobalChat();
       return;
     }
 
-    if(packet.type==='authResult'){
+    if(packet.type==="authResult"){
       if(!packet.ok){
         chatAuthenticated=false;
-        chatConnected=false;
-        setChatConnectionStatus("CHAT_90 AUTHENTICATION FAILED",false);
+        setChatConnectionState("disconnected");
+        console.error("CHAT_90 authentication failed:",packet.message);
         return;
       }
       chatAuthenticated=true;
-      setChatConnectionStatus("CONNECTED",true);
-      sendProfileToServer();
+      chatAccessLevel=packet.special?"special":"normal";
+      sendChatProfileToServer();
+      flushChatPackets();
       return;
     }
 
-    if(packet.type==='profileSaved'){
+    if(packet.type==="profileSaved"){
       if(packet.profile){
-        saveChatProfile({...getChatProfile(),...packet.profile});
-        renderMe(getChatProfile()||{});
+        const existing=getChatProfile();
+        if(existing) saveChatProfile({...existing,...packet.profile});
       }
       return;
     }
 
-    if(packet.type==='message'){
-      if(!chatServerMessages.some(x=>x.id===packet.message.id)) chatServerMessages.push(packet.message);
+    if(packet.type==="message"){
+      if(packet.message && !chatServerMessages.some(x=>x.id===packet.message.id)) chatServerMessages.push(packet.message);
       chatServerMessages=chatServerMessages.slice(-500);
       renderGlobalChat();
       return;
     }
 
-    if(packet.type==='presence'){
-      chatOnlineProfiles=packet.online||[];
+    if(packet.type==="presence"){
+      chatOnlineProfiles=Array.isArray(packet.online)?packet.online:[];
       renderGlobalUsers();
       return;
     }
 
-    if(packet.type==='deleted'){
+    if(packet.type==="deleted"){
       chatServerMessages=chatServerMessages.filter(x=>x.id!==packet.id);
       renderGlobalChat();
       return;
     }
 
-    if(packet.type==='profile'){
+    if(packet.type==="profile"){
       showViewedProfile(packet.profile);
       return;
     }
 
-    if(packet.type==='kicked'){
-      localStorage.removeItem('echoChatProfile');
-      if(chatSocket) chatSocket.close();
-      alert(packet.message||'Removed from CHAT_90.');
+    if(packet.type==="kicked"){
+      localStorage.removeItem("echoChatProfile");
+      chatManualClose=true;
+      try { chatSocket?.close(); } catch(_){ }
       returnToArchive();
-      return;
+      alert(packet.message||"Removed from CHAT_90.");
     }
 
-    if(packet.type==='error'){
-      setChatConnectionStatus(packet.message||"CHAT_90 ERROR",false);
+    if(packet.type==="error"){
+      console.error("CHAT_90 server error:",packet.message);
     }
   });
 }
 
 function wsSend(packet){
-  if(!chatSocket || chatSocket.readyState!==WebSocket.OPEN || !chatAuthenticated || !chatProfileSent){
-    queueChatPacket(packet);
-    connectChatSocket();
-    return false;
+  if(!packet) return;
+  if(chatIsSocketOpen() && chatAuthenticated){
+    try { chatSocket.send(JSON.stringify(packet)); return true; } catch(_){ }
   }
-  chatSocket.send(JSON.stringify(packet));
-  return true;
+  queueChatPacket(packet);
+  if(!chatSocket || chatSocket.readyState===WebSocket.CLOSED) connectChatSocket();
+  return false;
 }
 
 function authenticateChat(){
   const password=chatPasswordInput.value;
-  if(password!==CHAT_NORMAL_PASSWORD && password!==CHAT_SPECIAL_PASSWORD){
-    chatAuthMessage.textContent='ACCESS DENIED — INVALID PASSWORD.';
-    chatPasswordInput.value='';
-    chatPasswordInput.focus();
-    return;
-  }
+  if(password!==CHAT_NORMAL_PASSWORD && password!==CHAT_SPECIAL_PASSWORD){ chatAuthMessage.textContent='ACCESS DENIED — INVALID PASSWORD.'; chatPasswordInput.value=''; chatPasswordInput.focus(); return; }
   window.chat90Password=password;
   chatAccessLevel=password===CHAT_SPECIAL_PASSWORD?'special':'normal';
   chatSpecialOptions.hidden=chatAccessLevel!=='special';
@@ -916,30 +918,14 @@ function authenticateChat(){
   const existing=getChatProfile();
   if(existing){
     existing.access=chatAccessLevel;
-    if(chatAccessLevel==='special'){
-      existing.role='SPECIAL / ADMIN';
-      existing.glow=existing.glow||'#ff2d2d';
-      existing.effect=existing.effect||'red-pulse';
-    } else {
-      existing.role='MEMBER';
-      existing.glow='#39ff88';
-      existing.badge='';
-      existing.effect='normal';
-    }
     saveChatProfile(existing);
     openChat();
     return;
   }
   chatEditing=false;
-  chatUsernameInput.value='';
-  chatAvatarInput.value='';
-  chatBioInput.value='';
-  chatTagsInput.value='';
-  chatGlowInput.value='#ff2d2d';
-  chatBadgeInput.value='';
-  fillSpecialEffects();
-  showOnly(chatSetupPage);
-  chatUsernameInput.focus();
+  chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value='';
+  chatGlowInput.value='#ff2d2d'; chatBadgeInput.value=''; fillSpecialEffects();
+  showOnly(chatSetupPage); chatUsernameInput.focus();
 }
 
 function enterChat(){
@@ -956,20 +942,18 @@ function enterChat(){
     badge:chatAccessLevel==='special'?chatBadgeInput.value.trim():'',
     effect:chatAccessLevel==='special'?chatEffectInput.value:'normal'
   };
-  saveChatProfile(profile);
-  chatEditing=false;
-  openChat();
+  saveChatProfile(profile); chatEditing=false; openChat();
 }
 
 function openChat(){
   const profile=getChatProfile();
   if(!profile) return openChatAuth();
+  chatManualClose=false;
   chatAccessLevel=profile.access==='special'?'special':'normal';
   showOnly(chatPage);
   renderMe(profile);
   chatMessages.innerHTML='';
-  window.chat90Password=window.chat90Password|| (profile.access==='special'?CHAT_SPECIAL_PASSWORD:CHAT_NORMAL_PASSWORD);
-  setChatConnectionStatus("CONNECTING TO CHAT_90...",false);
+  window.chat90Password=window.chat90Password || (profile.access==='special'?CHAT_SPECIAL_PASSWORD:CHAT_NORMAL_PASSWORD);
   connectChatSocket();
   chatMessageInput.focus();
 }
@@ -982,8 +966,7 @@ function renderGlobalUsers(){
   chatUsersList.innerHTML='';
   users.forEach(user=>{
     const row=document.createElement('button');
-    row.type='button';
-    row.className='chat-user-row chat-user-clickable';
+    row.type='button'; row.className='chat-user-row chat-user-clickable';
     row.style.setProperty('--chat-glow',user.glow||'#ff3030');
     row.innerHTML=`<span class="chat-user-dot"></span><img class="chat-user-avatar" src="${escapeText(user.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div class="chat-user-name" style="text-shadow:0 0 8px ${escapeText(user.glow||'#ff3030')}">${escapeText(user.username)} <span class="chat-user-role">${escapeText(user.role||'MEMBER')}</span></div>`;
     row.addEventListener('click',()=>showViewedProfile(user));
@@ -1016,15 +999,16 @@ function renderMessage(message){
 
 function sendChatMessage(text,extra={}){
   const p=getChatProfile();
+  if(!p) return;
   const cleanText=String(text||'').trim();
-  if(!p || (!cleanText&&!extra.image&&!extra.gif)) return false;
-  return wsSend({type:'message',text:cleanText,...extra});
+  const packet={type:'message',text:cleanText,...extra};
+  if(!cleanText && !extra.image && !extra.gif) return;
+  wsSend(packet);
 }
 function deleteChatMessage(id){wsSend({type:'delete',id});}
 function kickCurrentUser(username){wsSend({type:'kick',username:username||getChatProfile()?.username});}
 function sendImagePrompt(){const url=prompt('Paste an image URL:'); if(url) sendChatMessage('',{image:url.trim()});}
 function sendGifPrompt(){const url=prompt('Paste a GIF URL:'); if(url) sendChatMessage('',{gif:url.trim()});}
-
 function showViewedProfile(profile){
   if(!profile) return;
   const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-30).reverse();

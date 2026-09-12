@@ -34,7 +34,12 @@ function onlineProfiles() {
 function send(ws, packet) { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(packet)); }
 
 const server = http.createServer((req,res)=>{
-  let u = decodeURIComponent(req.url.split('?')[0]);
+  const requestPath = decodeURIComponent(req.url.split('?')[0]);
+  if (requestPath === '/health') {
+    res.writeHead(200, {'Content-Type':'application/json','Cache-Control':'no-store'});
+    return res.end(JSON.stringify({ok:true,service:'CHAT_90'}));
+  }
+  let u = requestPath;
   if (u === '/') u='/index.html';
   const file = path.normalize(path.join(ROOT,u));
   if (!file.startsWith(ROOT)) return res.writeHead(403).end();
@@ -46,6 +51,14 @@ const server = http.createServer((req,res)=>{
 });
 
 const wss = new WebSocket.Server({ server, path:'/chat90' });
+const pingTimer = setInterval(()=>{
+  for (const ws of clients.keys()) {
+    if (ws.readyState === WebSocket.OPEN) {
+      try { ws.ping(); } catch (_) {}
+    }
+  }
+}, 30000);
+pingTimer.unref();
 wss.on('connection',(ws)=>{
   const sid=id(); sessions.set(sid,{ws,username:null,special:false}); clients.set(ws,sid);
   send(ws,{type:'hello',sessionId:sid,history:state.messages.slice(-250),online:onlineProfiles()});
@@ -91,19 +104,4 @@ wss.on('connection',(ws)=>{
   });
   ws.on('close',()=>{ const s=sessions.get(sid); sessions.delete(sid); clients.delete(ws); if(s&&s.username){ const msg={id:id(),time:new Date().toISOString(),bot:true,username:'ECHO BOT',avatar:'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',role:'SYSTEM',glow:'#9b9b9b',text:`${s.username} has left Chat_90.`}; state.messages.push(msg); state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); } broadcast({type:'presence',online:onlineProfiles()}); });
 });
-// Keep WebSocket connections healthy so stale connections are cleaned up.
-const heartbeat = setInterval(()=>{
-  for(const ws of wss.clients){
-    if(ws.isAlive===false){ ws.terminate(); continue; }
-    ws.isAlive=false;
-    try{ ws.ping(); }catch(_){ }
-  }
-},30000);
-
-wss.on('connection',(ws)=>{
-  ws.isAlive=true;
-  ws.on('pong',()=>{ ws.isAlive=true; });
-});
-
-server.on('close',()=>clearInterval(heartbeat));
 server.listen(PORT, '0.0.0.0', ()=>console.log(`ECHO//SHARE CHAT_90 server running on port ${PORT}`));
