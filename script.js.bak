@@ -985,9 +985,7 @@ function renderGlobalChat(){
 
 function renderMessage(message){
   const article=document.createElement('article');
-  const isSpecialMessage = String(message.role || '').toUpperCase().includes('SPECIAL') || (message.effect && message.effect !== 'normal');
-  article.className=`chat-message ${message.bot?'bot':''} ${isSpecialMessage?'special-message':''} ${message.effect||''}`;
-  article.dataset.effect=message.effect||'normal';
+  article.className=`chat-message ${message.bot?'bot':''} ${message.effect||''}`;
   article.style.setProperty('--chat-glow',message.glow||'#ff3030');
   article.dataset.messageId=message.id||'';
   const badge=message.badge?`<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">`:'';
