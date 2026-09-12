@@ -872,7 +872,7 @@ body {
             rgba(0, 0, 0, 0.65),
             rgba(0, 0, 0, 0.65)
         ),
-        url("https://64.media.tumblr.com/ccec0256ac9d3d32324e97ce1e0f9062/ba10f7223c72107f-17/s640x960/bc5e3a173d7a2f830f0c545c888038f157006dca.gif");
+        url("https://i.pinimg.com/originals/70/47/c1/7047c10758bca2768de60d79271f6c45.gif");
 
     background-size: cover;
     background-position: center;
@@ -1593,3 +1593,60 @@ body {
 
 /* Keep the CHAT_90 profile modal hidden until JavaScript opens it. */
 .chat-profile-modal[hidden]{display:none!important}
+
+/* CHAT_90 QUALITY UPDATE — additive only */
+.chat-composer { position: sticky; bottom: 0; z-index: 20; }
+.chat-main { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.chat-messages { flex: 1 1 auto; min-height: 0; max-height: none; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding-right: 8px; }
+.chat-file-button { width: 100%; margin-top: 8px; padding: 9px; border: 1px solid rgba(255,60,60,.25); border-radius: 9px; color: #d99b9b; background: rgba(255,0,0,.04); cursor: pointer; font-size: 8px; font-weight: 900; letter-spacing: 1px; }
+.chat-file-button:hover { box-shadow: 0 0 20px rgba(255,0,0,.18); }
+.chat-reply-bar { display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 8px 12px; border-top: 1px solid rgba(255,255,255,.08); border-left: 2px solid var(--chat-glow,#ff3030); background: rgba(12,6,8,.94); color: #bca6a6; font-size: 9px; }
+.chat-reply-bar span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-reply-bar button { margin-left: auto; border: 0; background: none; color: #ff8b8b; font-size: 18px; cursor: pointer; }
+.chat-reply-preview { margin: -2px 0 9px; padding: 7px 9px; border-left: 2px solid var(--chat-glow,#ff3030); border-radius: 5px; background: rgba(255,255,255,.035); color: #8d7b7b; font-size: 8px; }
+.chat-reply-preview b { display: block; color: var(--chat-glow,#ff8585); margin-bottom: 3px; }
+.chat-reply-preview span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-message-tools { display: flex; align-items: center; gap: 6px; margin-top: 10px; opacity: .78; }
+.chat-tool-button { border: 1px solid rgba(255,255,255,.09); border-radius: 7px; padding: 5px 7px; background: rgba(0,0,0,.32); color: #a99191; cursor: pointer; font-size: 7px; font-weight: 900; letter-spacing: .5px; }
+.chat-tool-button:hover { color: white; border-color: color-mix(in srgb,var(--chat-glow,#ff3030) 45%,transparent); box-shadow: 0 0 12px color-mix(in srgb,var(--chat-glow,#ff3030) 20%,transparent); }
+.chat-reaction-count { display: inline-flex; align-items: center; gap: 5px; padding: 3px 6px; border: 1px solid rgba(255,255,255,.1); border-radius: 7px; color: #ddd; font-size: 8px; background: rgba(255,255,255,.04); }
+.chat-reaction-count img { width: 24px; height: 24px; object-fit: cover; border-radius: 5px; }
+.chat-message-media img, .chat-message-media video { display: block; width: auto; max-width: min(520px,100%); max-height: 390px; margin-top: 9px; border-radius: 13px; border: 1px solid rgba(255,255,255,.13); background: #000; box-shadow: 0 0 20px color-mix(in srgb,var(--chat-glow,#ff3030) 12%,transparent); }
+.chat-message-media video { width: min(520px,100%); }
+.chat-me-card { position: relative; overflow: hidden; min-height: 240px; border: 1px solid color-mix(in srgb,var(--chat-glow,#ff3030) 22%,transparent); border-radius: 16px; padding: 0 12px 18px; background: rgba(0,0,0,.28); box-shadow: 0 0 28px color-mix(in srgb,var(--chat-glow,#ff3030) 10%,transparent); }
+.chat-me-banner { height: 92px; margin: 0 -12px 18px; background-position: center; background-size: cover; border-bottom: 1px solid color-mix(in srgb,var(--chat-glow,#ff3030) 30%,transparent); box-shadow: inset 0 -30px 35px rgba(0,0,0,.45); }
+.chat-me-avatar { position: relative; margin-top: -42px; }
+.viewed-profile-banner { height: 145px; margin: -28px -28px 18px; background-size: cover; background-position: center; border-bottom: 1px solid color-mix(in srgb,var(--chat-glow,#ff3030) 45%,transparent); box-shadow: inset 0 -55px 60px rgba(0,0,0,.58); }
+.viewed-profile-hero { position: relative; z-index: 1; }
+.viewed-profile-hero>img { width: 112px; height: 112px; border-width: 2px; }
+.viewed-profile-hero h2 { font-size: 30px; }
+.chat-profile-modal-card { width: min(680px,95vw); }
+
+/* STAR-MID: white starlight, animated aura, stars around the message, and a tiny star after the text. */
+.chat-message.star-mid {
+  --chat-glow: #ffffff !important;
+  color: #fff;
+  border-color: rgba(255,255,255,.78);
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,.24), transparent 42%), linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.025) 48%, rgba(160,190,255,.09));
+  box-shadow: 0 0 12px rgba(255,255,255,.55), 0 0 34px rgba(190,215,255,.28), inset 0 0 28px rgba(255,255,255,.08);
+  animation: starMidPulse 2.8s ease-in-out infinite;
+}
+.chat-message.star-mid::before { content:"✦  ·  ✧     ˚     ✦   ·     ✧  ·   ✦"; position:absolute; inset:4px 9px auto; color:rgba(255,255,255,.9); font-size:10px; letter-spacing:10px; white-space:nowrap; overflow:hidden; pointer-events:none; animation:starDrift 6s linear infinite; }
+.chat-message.star-mid::after { content:"✦     ˚    ✧        ·       ✦      ˚    ✧"; position:absolute; right:8px; bottom:7px; color:rgba(255,255,255,.7); font-size:8px; letter-spacing:7px; pointer-events:none; animation:starTwinkle 1.5s steps(2,end) infinite; }
+.chat-message.star-mid .chat-message-name { color:#fff; text-shadow:0 0 7px #fff,0 0 18px #d8e7ff,0 0 32px #fff; animation:starNameAura 1.7s ease-in-out infinite alternate; }
+.chat-message.star-mid .chat-message-body { color:#fff; text-shadow:0 0 7px #fff,0 0 18px rgba(210,230,255,.8); }
+.chat-message.star-mid .message-mini-star { display:inline-block; margin-left:6px; color:#fff; text-shadow:0 0 7px #fff,0 0 18px #bcd6ff; animation:miniStarSpin 1.25s ease-in-out infinite; }
+.chat-page:has(.chat-me-card[data-effect="star-mid"]) .chat-main { box-shadow: inset 0 0 42px rgba(255,255,255,.045), 0 0 32px rgba(255,255,255,.06); }
+.chat-page:has(.chat-me-card[data-effect="star-mid"]) .chat-composer { border-top-color:rgba(255,255,255,.35); box-shadow:0 -5px 30px rgba(255,255,255,.12); }
+.chat-page:has(.chat-me-card[data-effect="star-mid"]) .chat-composer button { color:#fff; border-color:rgba(255,255,255,.38); box-shadow:0 0 13px rgba(255,255,255,.12); }
+@keyframes starMidPulse { 0%,100% { box-shadow:0 0 12px rgba(255,255,255,.48),0 0 28px rgba(190,215,255,.22),inset 0 0 22px rgba(255,255,255,.06); } 50% { box-shadow:0 0 22px rgba(255,255,255,.82),0 0 58px rgba(190,215,255,.38),inset 0 0 36px rgba(255,255,255,.13); } }
+@keyframes starNameAura { to { text-shadow:0 0 10px #fff,0 0 24px #dceaff,0 0 42px #fff; } }
+@keyframes starDrift { to { transform:translateX(-24px); opacity:.65; } }
+@keyframes starTwinkle { 0%,100%{opacity:.35;transform:scale(.9)} 50%{opacity:1;transform:scale(1.12)} }
+@keyframes miniStarSpin { 0%,100%{transform:scale(.8) rotate(-15deg);opacity:.65} 50%{transform:scale(1.25) rotate(15deg);opacity:1} }
+
+/* More pronounced VFX layers for special identities. */
+.chat-message.special-message .chat-message-avatar { box-shadow:0 0 10px var(--chat-glow),0 0 24px color-mix(in srgb,var(--chat-glow) 42%,transparent); }
+.chat-message.special-message .chat-message-tools { opacity:1; }
+.chat-message.special-message .chat-message-head { position:relative; }
+.chat-message.special-message .chat-message-head::after { content:"SPECIAL"; margin-left:4px; padding:2px 5px; border:1px solid color-mix(in srgb,var(--chat-glow) 55%,transparent); border-radius:4px; color:var(--chat-glow); font-size:6px; letter-spacing:1px; box-shadow:0 0 10px color-mix(in srgb,var(--chat-glow) 28%,transparent); }

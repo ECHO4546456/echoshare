@@ -200,6 +200,8 @@
                 <div class="special-title">SPECIAL ACCESS</div>
                 <label>GLOW COLOR<input id="chatGlowInput" type="text" value="#ff2d2d" placeholder="#ff2d2d"></label>
                 <label>BADGE IMAGE URL<input id="chatBadgeInput" placeholder="https://..."></label>
+                <label>PROFILE BANNER<input id="chatBannerInput" placeholder="Optional banner image URL"></label>
+                <button id="chatBannerUploadButton" class="chat-file-button" type="button">UPLOAD BANNER</button>
                 <label>MESSAGE EFFECT<select id="chatEffectInput"><option value="red-pulse">Red Pulse</option><option value="blood-glitch">Blood Glitch</option><option value="crimson-flare">Crimson Flare</option></select></label>
             </div>
             <button id="chatEnterButton" type="button">ENTER CHAT_90</button>
@@ -225,13 +227,16 @@
             <main class="chat-main">
                 <div id="chatMessages" class="chat-messages"></div>
                 <div id="chatTyping" class="chat-typing"></div>
+                <div id="chatReplyBar" class="chat-reply-bar" hidden></div>
                 <div class="chat-composer">
-                    <button id="chatGifButton" type="button" title="Send GIF">GIF</button>
-                    <button id="chatImageButton" type="button" title="Send image URL">IMG</button>
+                    <button id="chatMediaButton" type="button" title="Send image, GIF, or video">MEDIA</button>
                     <input id="chatMessageInput" maxlength="500" autocomplete="off" placeholder="Type a message...">
                     <button id="chatSendButton" class="chat-send" type="button">➤</button>
                 </div>
-                <div class="chat-composer-hint">GIF opens a GIF URL prompt. IMG opens an image URL prompt.</div>
+                <div class="chat-composer-hint">MEDIA opens your files so you can send an image, GIF, or video.</div>
+                <input id="chatMediaInput" type="file" accept="image/*,video/*,.gif" hidden>
+                <input id="chatBannerFileInput" type="file" accept="image/*" hidden>
+                <input id="chatReactionFileInput" type="file" accept="image/gif,.gif" hidden>
             </main>
 
             <aside class="chat-profile-panel">
