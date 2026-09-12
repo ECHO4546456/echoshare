@@ -878,6 +878,10 @@ function connectChatSocket(){
     }
 
     if(packet.type==="message"){
+      if(packet.message && packet.message.username!==getChatProfile()?.username && !packet.message.bot){
+        showChatNotification(packet.message.username, packet.message.text || (packet.message.mediaType==="video"?"sent a video":packet.message.mediaType==="gif"?"sent a GIF":"sent an image"), packet.message.glow);
+        playChatNotificationSound();
+      }
       if(packet.message && !chatServerMessages.some(x=>x.id===packet.message.id)) chatServerMessages.push(packet.message);
       chatServerMessages=chatServerMessages.slice(-500);
       renderGlobalChat();
@@ -901,6 +905,32 @@ function connectChatSocket(){
       return;
     }
 
+    if(packet.type==="friends"){
+      window.chatFriends=Array.isArray(packet.friends)?packet.friends:[];
+      renderSocialPanel();
+      return;
+    }
+    if(packet.type==="friendNotice"){
+      showChatNotification(packet.username, packet.added ? "added you as a friend" : "removed you from friends");
+      try{playChatNotificationSound();}catch(_){}
+      return;
+    }
+    if(packet.type==="dm"){
+      if(packet.message) {
+        if(!window.chatDMHistory) window.chatDMHistory=[];
+        window.chatDMHistory.push(packet.message);
+        window.chatDMHistory=window.chatDMHistory.slice(-200);
+        if(window.chatDMTarget && (packet.message.from===window.chatDMTarget || packet.message.to===window.chatDMTarget)) renderDMHistory();
+        if(packet.message.from!==getChatProfile()?.username) { showChatNotification(packet.message.from,"sent you a private message"); playChatNotificationSound(); }
+      }
+      return;
+    }
+    if(packet.type==="dmHistory"){
+      window.chatDMTarget=packet.with;
+      window.chatDMHistory=Array.isArray(packet.messages)?packet.messages:[];
+      renderDMHistory();
+      return;
+    }
     if(packet.type==="profile"){
       showViewedProfile(packet.profile);
       return;
@@ -1056,3 +1086,89 @@ function showViewedProfile(profile){
 
 chatProfileClose.addEventListener('click',()=>chatProfileModal.hidden=true);
 chatProfileModal.addEventListener('click',e=>{if(e.target===chatProfileModal) chatProfileModal.hidden=true;});
+
+
+/* ===========================
+   CHAT_90 SOCIAL / NOTIFICATION EXPERIENCE
+   =========================== */
+window.chatFriends = window.chatFriends || [];
+window.chatDMTarget = null;
+window.chatDMHistory = window.chatDMHistory || [];
+
+const chatNotificationStack = document.getElementById("chatNotificationStack");
+const chatNotificationSound = document.getElementById("chatNotificationSound");
+const chatDMModal = document.getElementById("chatDMModal");
+const chatDMTitle = document.getElementById("chatDMTitle");
+const chatDMMessages = document.getElementById("chatDMMessages");
+const chatDMInput = document.getElementById("chatDMInput");
+const chatDMSend = document.getElementById("chatDMSend");
+const chatDMClose = document.getElementById("chatDMClose");
+const chatFriendsButton = document.getElementById("chatFriendsButton");
+const chatDMButton = document.getElementById("chatDMButton");
+const chatSocialCard = document.getElementById("chatSocialCard");
+const chatSocialList = document.getElementById("chatSocialList");
+
+function playChatNotificationSound(){
+  if(chatNotificationSound){
+    try { chatNotificationSound.currentTime=0; const p=chatNotificationSound.play(); if(p?.catch)p.catch(()=>{}); return; } catch(_){}
+  }
+  try{
+    const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+    const c=new C(),o=c.createOscillator(),g=c.createGain(),n=c.currentTime;
+    o.type="sine";o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(980,n+.08);
+    g.gain.setValueAtTime(.0001,n);g.gain.exponentialRampToValueAtTime(.11,n+.015);g.gain.exponentialRampToValueAtTime(.0001,n+.24);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(n+.25);o.onended=()=>c.close();
+  }catch(_){}
+}
+function showChatNotification(username,text,glow){
+  if(!chatNotificationStack)return;
+  const n=document.createElement("div");n.className="chat-notification";n.style.setProperty("--n-glow",glow||"#39ff88");
+  n.innerHTML=`<i class="n-dot"></i><div><b>${escapeText(username)}</b><br><span>${escapeText(text)}</span></div>`;
+  chatNotificationStack.appendChild(n);setTimeout(()=>n.remove(),5200);
+}
+function requestFriends(){
+  wsSend({type:"getFriends"});
+  chatSocialCard.hidden=false; renderSocialPanel();
+}
+function renderSocialPanel(){
+  if(!chatSocialList)return;
+  const names=window.chatFriends||[];
+  chatSocialList.innerHTML=names.length?names.map(n=>`<div class="chat-social-item"><b>${escapeText(n)}</b><br><button type="button" data-dm="${escapeText(n)}">MESSAGE</button><button type="button" data-friend-remove="${escapeText(n)}">REMOVE</button></div>`).join(""):'<div class="chat-social-item">No friends yet.</div>';
+  chatSocialList.querySelectorAll("[data-dm]").forEach(b=>b.onclick=()=>openDM(b.dataset.dm));
+  chatSocialList.querySelectorAll("[data-friend-remove]").forEach(b=>b.onclick=()=>wsSend({type:"friendToggle",username:b.dataset.friendRemove}));
+}
+function openDM(username){
+  if(!username || username===getChatProfile()?.username)return;
+  window.chatDMTarget=username; chatDMTitle.textContent=`DIRECT SIGNAL // ${username}`; chatDMModal.hidden=false;
+  wsSend({type:"dmHistory",with:username}); chatDMInput.focus();
+}
+function renderDMHistory(){
+  if(!chatDMMessages)return;
+  const me=getChatProfile()?.username;
+  chatDMMessages.innerHTML=(window.chatDMHistory||[]).map(m=>`<div class="chat-dm-line" style="--chat-glow:${escapeText(m.from===me?(getChatProfile()?.glow||"#39ff88"):"#8a63ff")}"><b>${escapeText(m.from)}</b><div>${escapeText(m.text)}</div><small>${escapeText(new Date(m.time).toLocaleString())}</small></div>`).join("")||'<div class="viewed-empty">No private messages yet.</div>';
+  chatDMMessages.scrollTop=chatDMMessages.scrollHeight;
+}
+function sendDM(){
+  const text=chatDMInput.value.trim(); if(!text||!window.chatDMTarget)return;
+  wsSend({type:"dmSend",to:window.chatDMTarget,text});chatDMInput.value="";chatDMInput.focus();
+}
+chatFriendsButton?.addEventListener("click",requestFriends);
+chatDMButton?.addEventListener("click",()=>{chatSocialCard.hidden=false;requestFriends();});
+chatDMClose?.addEventListener("click",()=>chatDMModal.hidden=true);
+chatDMModal?.addEventListener("click",e=>{if(e.target===chatDMModal)chatDMModal.hidden=true});
+chatDMSend?.addEventListener("click",sendDM);
+chatDMInput?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();sendDM();}});
+
+/* High-quality profile modal: social controls + full visual hierarchy. */
+showViewedProfile = function(profile){
+  if(!profile)return;
+  const me=getChatProfile();
+  const isMe=me?.username===profile.username;
+  const isFriend=(window.chatFriends||[]).includes(profile.username);
+  const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-30).reverse();
+  const banner=profile.banner?`<div class="viewed-profile-banner" style="background-image:url("${escapeText(profile.banner)}")"></div>`:`<div class="viewed-profile-banner viewed-profile-banner-empty"></div>`;
+  chatViewedProfile.innerHTML=`${banner}<div class="viewed-profile-hero" style="--chat-glow:${escapeText(profile.glow||"#ff3030")}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div><div class="viewed-status">${profile.effect&&profile.effect!=='normal'?`✦ ${escapeText(profile.effect)}`:'ACTIVE ON CHAT_90'}</div></div></div><div class="viewed-profile-actions">${!isMe?`<button type="button" id="viewDM">MESSAGE</button><button type="button" id="viewFriend">${isFriend?'REMOVE FRIEND':'ADD FRIEND'}</button>`:'<span>THIS IS YOUR PROFILE</span>'}</div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.mediaType==='video'?'[VIDEO]':m.gif?'[GIF]':'[MEDIA]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
+  chatProfileModal.hidden=false;
+  document.getElementById("viewDM")?.addEventListener("click",()=>{chatProfileModal.hidden=true;openDM(profile.username)});
+  document.getElementById("viewFriend")?.addEventListener("click",()=>{wsSend({type:"friendToggle",username:profile.username});document.getElementById("viewFriend").textContent=isFriend?'ADD FRIEND':'REMOVE FRIEND';});
+};

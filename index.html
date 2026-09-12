@@ -219,6 +219,7 @@
 
         <div class="chat-layout">
             <aside class="chat-users-panel">
+                <div class="chat-social-tabs"><button id="chatFriendsButton" type="button">FRIENDS</button><button id="chatDMButton" type="button">DMs</button></div>
                 <div class="chat-panel-title">ONLINE USERS</div>
                 <div id="chatUsersList" class="chat-users-list"></div>
                 <div class="chat-user-count"><b id="chatOnlineCountSide">1</b> USERS CONNECTED</div>
@@ -240,6 +241,10 @@
             </main>
 
             <aside class="chat-profile-panel">
+                <div class="chat-social-card" id="chatSocialCard" hidden>
+                    <div class="chat-panel-title">SOCIAL</div>
+                    <div id="chatSocialList" class="chat-social-list"></div>
+                </div>
                 <div class="chat-panel-title">YOUR IDENTITY</div>
                 <div id="chatMeCard" class="chat-me-card"></div>
                 <button id="chatEditProfile" class="chat-profile-button" type="button">EDIT PROFILE</button>
@@ -248,6 +253,17 @@
         </div>
     </section>
 
+
+    <div id="chatNotificationStack" class="chat-notification-stack" aria-live="polite"></div>
+
+    <div id="chatDMModal" class="chat-dm-modal" hidden>
+        <div class="chat-dm-card">
+            <button id="chatDMClose" class="chat-modal-close" type="button">×</button>
+            <div class="chat-dm-head"><span>DIRECT SIGNAL</span><b id="chatDMTitle">DM</b></div>
+            <div id="chatDMMessages" class="chat-dm-messages"></div>
+            <div class="chat-dm-composer"><input id="chatDMInput" maxlength="500" placeholder="Send a private message..."><button id="chatDMSend" type="button">➤</button></div>
+        </div>
+    </div>
 
     <div id="chatProfileModal" class="chat-profile-modal" hidden>
         <div class="chat-profile-modal-card">
@@ -264,8 +280,9 @@
     <script src="profiles.js"></script>
     <script src="script.js"></script>
 
+    <audio id="chatNotificationSound" preload="auto"><source src="audio/chat-notification.wav" type="audio/wav"></audio>
     <audio id="backgroundNoise" loop preload="auto">
-        <source src="audio/background-noise.mp3" type="audio/mpeg">
+        <source src="audio/background-noise.wav" type="audio/mpeg">
     </audio>
 
 </body>

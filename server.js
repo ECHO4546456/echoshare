@@ -10,9 +10,9 @@ const DB = path.join(ROOT, 'chat90-data.json');
 const NORMAL_PASSWORD = process.env.CHAT90_PASSWORD || '56789';
 const SPECIAL_PASSWORD = process.env.CHAT90_SPECIAL_PASSWORD || '9!GAG';
 
-let state = { profiles: {}, messages: [], banned: [] };
+let state = { profiles: {}, messages: [], banned: [], friends: {}, dms: {} };
 try { state = JSON.parse(fs.readFileSync(DB, 'utf8')); } catch (_) {}
-state.profiles ||= {}; state.messages ||= []; state.banned ||= [];
+state.profiles ||= {}; state.messages ||= []; state.banned ||= []; state.friends ||= {}; state.dms ||= {};
 const clients = new Map();
 const sessions = new Map();
 
@@ -115,6 +115,47 @@ wss.on('connection',(ws)=>{
       if(!s.special) return; const target=clean(m.username,24); state.banned.push(target.toLowerCase()); save();
       for(const [id2,ss] of sessions) if(ss.username===target){ send(ss.ws,{type:'kicked',message:'You were removed from CHAT_90 by an administrator.'}); ss.ws.close(); }
       broadcast({type:'presence',online:onlineProfiles()}); return;
+    }
+
+    if(m.type==='friendToggle') {
+      if(!s.username) return;
+      const target=clean(m.username,24);
+      if(!state.profiles[target] || target===s.username) return;
+      state.friends[s.username] ||= [];
+      const list=state.friends[s.username];
+      const idx=list.indexOf(target);
+      if(idx>=0) list.splice(idx,1); else list.push(target);
+      save();
+      send(ws,{type:'friends',friends:list});
+      const targetSession=[...sessions.values()].find(x=>x.username===target);
+      if(targetSession) send(targetSession.ws,{type:'friendNotice',username:s.username,added:idx<0});
+      return;
+    }
+    if(m.type==='getFriends') {
+      if(!s.username) return;
+      send(ws,{type:'friends',friends:state.friends[s.username]||[]});
+      return;
+    }
+    if(m.type==='dmSend') {
+      if(!s.username) return;
+      const target=clean(m.to,24), text=clean(m.text,500);
+      if(!target || !text || !state.profiles[target]) return;
+      const key=[s.username,target].sort().join('|||');
+      state.dms[key] ||= [];
+      const dm={id:id(),time:new Date().toISOString(),from:s.username,to:target,text};
+      state.dms[key].push(dm); state.dms[key]=state.dms[key].slice(-200); save();
+      const packet={type:'dm',message:dm};
+      send(ws,packet);
+      const targetSession=[...sessions.values()].find(x=>x.username===target);
+      if(targetSession) send(targetSession.ws,packet);
+      return;
+    }
+    if(m.type==='dmHistory') {
+      if(!s.username) return;
+      const target=clean(m.with,24);
+      const key=[s.username,target].sort().join('|||');
+      send(ws,{type:'dmHistory',with:target,messages:state.dms[key]||[]});
+      return;
     }
     if(m.type==='requestProfile') {
       const p=state.profiles[clean(m.username,24)]; if(p) send(ws,{type:'profile',profile:publicProfile(p)}); return;
