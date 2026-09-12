@@ -1128,6 +1128,255 @@ body {
 
 
 /* =========================================
+   VFX PROFILE THEME
+   BLACK GALAXY / COSMIC AURA
+   ========================================= */
+
+.Custom-profile {
+    background:
+        radial-gradient(
+            circle at 50% 10%,
+            rgba(150, 70, 255, 0.13),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 15% 75%,
+            rgba(70, 30, 180, 0.10),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 85% 60%,
+            rgba(190, 40, 255, 0.08),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #010103,
+            #05030a,
+            #020205,
+            #08030c,
+            #010102
+        );
+
+    position: relative;
+    overflow: hidden;
+}
+
+
+/* =========================================
+   COSMIC ATMOSPHERE
+   ========================================= */
+
+.Custom-profile::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(255, 255, 255, 0.08) 0 1px,
+            transparent 2px
+        ),
+        radial-gradient(
+            circle at 70% 35%,
+            rgba(190, 130, 255, 0.10) 0 1px,
+            transparent 2px
+        ),
+        radial-gradient(
+            circle at 40% 80%,
+            rgba(255, 255, 255, 0.06) 0 1px,
+            transparent 2px
+        );
+
+    background-size:
+        150px 150px,
+        210px 210px,
+        180px 180px;
+
+    opacity: 0.55;
+}
+
+
+/* =========================================
+   PROFILE HERO
+   ========================================= */
+
+.Custom-profile .profile-hero {
+    border-color: rgba(190, 120, 255, 0.28);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.035),
+            rgba(100, 40, 180, 0.045),
+            rgba(0, 0, 0, 0.82)
+        );
+
+    box-shadow:
+        0 0 18px rgba(150, 60, 255, 0.10),
+        0 0 55px rgba(100, 40, 200, 0.06),
+        inset 0 0 30px rgba(255, 255, 255, 0.018);
+}
+
+
+/* =========================================
+   DEEP GALAXY HERO GLOW
+   ========================================= */
+
+.Custom-profile .profile-hero-bg {
+    background:
+        radial-gradient(
+            circle at 50% 45%,
+            rgba(180, 80, 255, 0.16),
+            transparent 38%
+        ),
+        radial-gradient(
+            ellipse at 20% 70%,
+            rgba(70, 30, 170, 0.12),
+            transparent 55%
+        ),
+        radial-gradient(
+            ellipse at 85% 25%,
+            rgba(220, 80, 255, 0.08),
+            transparent 50%
+        );
+
+    filter: blur(8px);
+}
+
+
+/* =========================================
+   PROFILE NAME
+   ========================================= */
+
+.Custom-profile #profileName {
+    color: #ffffff;
+
+    text-shadow:
+        0 0 4px rgba(255, 255, 255, 0.9),
+        0 0 12px rgba(210, 150, 255, 0.8),
+        0 0 28px rgba(160, 60, 255, 0.55),
+        0 0 55px rgba(100, 30, 200, 0.28);
+}
+
+
+/* =========================================
+   AVATAR
+   ========================================= */
+
+.Custom-profile .profile-avatar-frame {
+    border-color: rgba(255, 255, 255, 0.8);
+
+    box-shadow:
+        0 0 7px rgba(255, 255, 255, 0.8),
+        0 0 18px rgba(200, 120, 255, 0.55),
+        0 0 38px rgba(150, 50, 255, 0.28),
+        0 0 70px rgba(80, 20, 180, 0.16);
+}
+
+
+/* =========================================
+   SIDEBAR + ARTICLE
+   ========================================= */
+
+.Custom-profile .side-card,
+.Custom-profile .wiki-article {
+    border-color: rgba(190, 120, 255, 0.22);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.035),
+            rgba(90, 35, 150, 0.045),
+            rgba(0, 0, 0, 0.88)
+        );
+
+    box-shadow:
+        0 0 15px rgba(150, 60, 255, 0.07),
+        0 0 40px rgba(90, 30, 180, 0.045),
+        inset 0 0 20px rgba(255, 255, 255, 0.012);
+}
+
+
+/* =========================================
+   VFX HEADINGS
+   ========================================= */
+
+.Custom-profile .record-tag,
+.Custom-profile .side-title {
+    color: #e9d8ff;
+
+    text-shadow:
+        0 0 5px rgba(255, 255, 255, 0.8),
+        0 0 12px rgba(190, 110, 255, 0.65),
+        0 0 25px rgba(130, 40, 220, 0.4);
+}
+
+
+/* =========================================
+   STATS
+   ========================================= */
+
+.Custom-profile .stat {
+    border-color: rgba(180, 100, 255, 0.22);
+
+    box-shadow:
+        inset 0 0 12px rgba(150, 60, 255, 0.035);
+}
+
+.Custom-profile .stat-number {
+    color: #ffffff;
+
+    text-shadow:
+        0 0 5px rgba(255, 255, 255, 0.9),
+        0 0 14px rgba(200, 130, 255, 0.7),
+        0 0 28px rgba(130, 40, 220, 0.45);
+}
+
+
+/* =========================================
+   TAGS
+   ========================================= */
+
+.Custom-profile .tag {
+    border-color: rgba(190, 110, 255, 0.32);
+
+    background: rgba(120, 40, 200, 0.035);
+
+    box-shadow:
+        0 0 7px rgba(150, 50, 255, 0.10),
+        inset 0 0 10px rgba(170, 80, 255, 0.04);
+}
+
+
+/* =========================================
+   ARTICLE HEADINGS
+   ========================================= */
+
+.Custom-profile .wiki-article h3 {
+    color: #ffffff;
+
+    text-shadow:
+        0 0 5px rgba(255, 255, 255, 0.85),
+        0 0 14px rgba(200, 120, 255, 0.65),
+        0 0 30px rgba(130, 40, 220, 0.4);
+}
+
+
+/* =========================================
+   SUBTLE VFX AURA
+   ========================================= */
+
+.Custom-profile .wiki-article,
+.Custom-profile .side-card,
+.Custom-profile .profile-hero {
+    backdrop-filter: blur(18px);
+}
+
+
+/* =========================================
    RED PROFILE THEME
    ========================================= */
 

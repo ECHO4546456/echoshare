@@ -175,7 +175,8 @@ function openProfile(profile) {
         "red-profile",
         "blue-profile",
         "purple-profile",
-        "green-profile"
+        "green-profile",
+        "Custom-profile"
     );
 if (profile.theme === "red") {
     profilePage.classList.add("red-profile");
@@ -183,6 +184,10 @@ if (profile.theme === "red") {
 
 if (profile.theme === "purple") {
     profilePage.classList.add("purple-profile");
+}
+
+if (profile.theme === "Custom") {
+    profilePage.classList.add("Custom-profile");
 }
 
     document.getElementById("profileImage").src = profile.image;
