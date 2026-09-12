@@ -2229,3 +2229,34 @@ body {
 .viewed-profile-actions{display:flex;gap:8px;flex-wrap:wrap;padding:0 22px 16px}
 .viewed-profile-actions button{border:1px solid color-mix(in srgb,var(--chat-glow) 45%,transparent);background:rgba(255,255,255,.045);padding:9px 13px;border-radius:10px;cursor:pointer;box-shadow:0 0 15px color-mix(in srgb,var(--chat-glow) 10%,transparent)}
 .viewed-profile-actions button:hover{background:rgba(255,255,255,.09);box-shadow:0 0 24px color-mix(in srgb,var(--chat-glow) 22%,transparent)}
+
+
+/* ===== CHAT_90 FINAL POLISH / SETTINGS ===== */
+.header-actions{display:flex;align-items:center;gap:14px}
+.site-settings-button,.chat-top-actions>button{border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.55);color:#fff;padding:8px 11px;border-radius:9px;font-size:8px;font-weight:900;letter-spacing:1px;cursor:pointer;box-shadow:0 0 18px rgba(255,255,255,.04)}
+.site-settings-button:hover,.chat-top-actions>button:hover{border-color:rgba(255,255,255,.35);box-shadow:0 0 22px rgba(255,255,255,.1)}
+.chat-top-actions{display:flex;align-items:center;gap:12px}
+.chat-profile-modal-card{background:linear-gradient(145deg,#07080c,#030305);border-color:rgba(255,255,255,.16);box-shadow:0 0 60px rgba(0,0,0,.8),0 0 35px rgba(255,0,0,.12)}
+.viewed-profile-actions button{background:#050505!important;color:#fff!important;border-color:rgba(255,255,255,.22)!important}
+.viewed-profile-actions button:hover{background:#101010!important;color:#fff!important;border-color:var(--chat-glow)!important}
+.chat-message{isolation:isolate}
+.chat-message.special-message::before{inset:0!important;border-radius:inherit;overflow:hidden;background:conic-gradient(from 0deg,transparent 0 18%,color-mix(in srgb,var(--chat-glow,#ff2020) 16%,transparent) 25%,transparent 35% 58%,color-mix(in srgb,var(--chat-glow,#ff2020) 12%,transparent) 70%,transparent 82%);animation:fxSpecialAura 7s linear infinite;opacity:.65}
+.chat-message.special-message::after{z-index:3!important}
+.chat-message.special-message .chat-message-body{position:relative;z-index:2}
+.chat-message.special-message .chat-message-head{position:relative;z-index:3}
+.chat-message.star-mid,.chat-message[data-effect="star-mid"]{overflow:hidden;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.2),transparent 38%),linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.025) 45%,rgba(120,170,255,.08));border-color:rgba(255,255,255,.72)!important;box-shadow:0 0 22px rgba(255,255,255,.28),0 0 70px rgba(150,190,255,.18),inset 0 0 30px rgba(255,255,255,.08)!important}
+.chat-message.star-mid::before{content:"✦  ✧  ★  ✦  ✧  ★  ✦";inset:auto 0 2px 0!important;height:26px;display:block;white-space:nowrap;color:rgba(255,255,255,.7);font-size:13px;letter-spacing:17px;transform:none!important;animation:starDrift 5s linear infinite!important;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent)!important;opacity:.9}
+.chat-message.star-mid::after{content:"STAR-MID";color:#fff;opacity:.55;text-shadow:0 0 8px #fff,0 0 20px #9ecaff}
+.chat-message.star-mid .chat-message-name{color:#fff;text-shadow:0 0 8px #fff,0 0 18px #b8d8ff,0 0 35px #fff;animation:starName 1.7s ease-in-out infinite alternate}
+.chat-message.star-mid .message-mini-star{display:inline-block;margin-left:5px;color:#fff;text-shadow:0 0 7px #fff,0 0 15px #9ecaff;animation:miniStarPop 1.2s ease-in-out infinite alternate}
+@keyframes starDrift{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
+@keyframes starName{from{filter:brightness(1);text-shadow:0 0 7px #fff,0 0 14px #b8d8ff}to{filter:brightness(1.5);text-shadow:0 0 10px #fff,0 0 25px #b8d8ff,0 0 40px #fff}}
+@keyframes miniStarPop{from{transform:scale(.8) rotate(-8deg);opacity:.65}to{transform:scale(1.25) rotate(8deg);opacity:1}}
+.chat-message-media{position:relative;z-index:2;max-width:100%}.chat-message-media img,.chat-message-media video{display:block;max-width:min(520px,100%);max-height:390px;width:auto;border-radius:13px;border:1px solid rgba(255,255,255,.16);box-shadow:0 8px 35px rgba(0,0,0,.35)}
+.chat-messages{scroll-behavior:smooth}
+.site-settings-modal{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.82);backdrop-filter:blur(12px)}
+.site-settings-modal[hidden]{display:none!important}.site-settings-card{position:relative;width:min(900px,96vw);max-height:90vh;overflow:auto;padding:30px;border:1px solid rgba(255,255,255,.16);border-radius:22px;background:linear-gradient(145deg,#0a0b10,#030305);box-shadow:0 0 70px rgba(0,0,0,.8),0 0 35px rgba(255,0,0,.1);color:#fff}.settings-kicker{font-size:8px;letter-spacing:2.5px;color:#9d8c8c}.site-settings-card h2{margin:7px 0 4px;font:800 38px "Space Grotesk",sans-serif;text-shadow:0 0 14px #fff}.settings-subtitle{margin:0 0 22px;color:#786e6e;font-size:10px}.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.settings-section{padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:15px;background:rgba(255,255,255,.025)}.settings-section h3{margin:0 0 15px;font-size:10px;letter-spacing:1.5px;color:#fff}.settings-section label:not(.settings-toggle){display:block;color:#a89d9d;font-size:8px;font-weight:900;letter-spacing:1px;margin:12px 0}.settings-section input[type=range]{display:block;width:100%;margin-top:8px;accent-color:#fff}.settings-toggle{display:flex;align-items:center;gap:9px;margin:12px 0;color:#aaa;font-size:9px;font-weight:800}.settings-toggle input{accent-color:#fff}.settings-action{width:100%;margin-top:8px;padding:10px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:#050505;color:#fff;cursor:pointer;font-size:8px;font-weight:900;letter-spacing:1px}.settings-action:hover{border-color:#fff;box-shadow:0 0 18px rgba(255,255,255,.08)}.settings-action.danger{color:#ff6b6b;border-color:rgba(255,80,80,.25)}.settings-save-note{margin-top:17px;color:#6f8c74;font-size:8px;letter-spacing:1px}
+body.settings-compact .chat-message{padding:9px!important;margin-bottom:6px!important}body.settings-compact .chat-message-body{font-size:12px!important}body.settings-no-motion *,body.settings-no-motion *::before,body.settings-no-motion *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+body.settings-no-vfx .chat-message.special-message::before,body.settings-no-vfx .chat-message.special-message::after{display:none!important}body.settings-no-vfx .chat-message{animation:none!important;box-shadow:none!important}
+body.settings-no-banners .viewed-profile-banner{display:none!important}
+@media(max-width:700px){.header-actions .status{display:none}.settings-grid{grid-template-columns:1fr}.site-settings-card{padding:22px}.chat-top-actions>button{display:none}}

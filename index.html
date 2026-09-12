@@ -24,9 +24,12 @@
             <span>ECHO<span class="brand-slashes">//</span>SHARE</span>
         </a>
 
-        <div class="status">
-            <span class="status-dot"></span>
-            ARCHIVE ONLINE
+        <div class="header-actions">
+            <button id="siteSettingsButton" class="site-settings-button" type="button">⚙ SETTINGS</button>
+            <div class="status">
+                <span class="status-dot"></span>
+                ARCHIVE ONLINE
+            </div>
         </div>
     </header>
 
@@ -214,7 +217,7 @@
         <div class="chat-topbar">
             <button id="chatBackButton" type="button">← ECHO//SHARE</button>
             <div class="chat-brand"><span>CHAT_90</span><small>LIVE ARCHIVE CHANNEL</small></div>
-            <div class="chat-online"><span></span><b id="chatOnlineCount">1</b> ONLINE</div>
+            <div class="chat-top-actions"><button id="chatSettingsButton" type="button">⚙ SETTINGS</button><div class="chat-online"><span></span><b id="chatOnlineCount">1</b> ONLINE</div></div>
         </div>
 
         <div class="chat-layout">
@@ -273,6 +276,47 @@
     </div>
 
 
+    <div id="siteSettingsModal" class="site-settings-modal" hidden>
+        <div class="site-settings-card">
+            <button id="siteSettingsClose" class="chat-modal-close" type="button">×</button>
+            <div class="settings-kicker">ECHO//SHARE // CONTROL CENTER</div>
+            <h2>SETTINGS</h2>
+            <p class="settings-subtitle">Tune the archive, CHAT_90, profiles and sound without changing the site's visual identity.</p>
+            <div class="settings-grid">
+                <section class="settings-section">
+                    <h3>🔊 AUDIO</h3>
+                    <label>MASTER VOLUME <input id="settingMasterVolume" type="range" min="0" max="100" value="100"></label>
+                    <label>BACKGROUND VOLUME <input id="settingBackgroundVolume" type="range" min="0" max="100" value="5"></label>
+                    <label>NOTIFICATION VOLUME <input id="settingNotificationVolume" type="range" min="0" max="100" value="70"></label>
+                    <button id="settingTestNotification" class="settings-action" type="button">TEST NOTIFICATION SOUND</button>
+                    <button id="settingToggleBackground" class="settings-action" type="button">TOGGLE BACKGROUND SOUND</button>
+                </section>
+                <section class="settings-section">
+                    <h3>💬 CHAT_90</h3>
+                    <label class="settings-toggle"><input id="settingAnimations" type="checkbox" checked> ENABLE MESSAGE VFX</label>
+                    <label class="settings-toggle"><input id="settingTimestamps" type="checkbox" checked> SHOW TIMESTAMPS</label>
+                    <label class="settings-toggle"><input id="settingAutoplayMedia" type="checkbox" checked> AUTOPLAY VIDEO MEDIA</label>
+                    <label class="settings-toggle"><input id="settingEnterSend" type="checkbox" checked> ENTER SENDS MESSAGE</label>
+                    <label class="settings-toggle"><input id="settingDesktopNotifications" type="checkbox"> DESKTOP NOTIFICATIONS</label>
+                    <button id="settingRequestNotifications" class="settings-action" type="button">ALLOW DESKTOP NOTIFICATIONS</button>
+                </section>
+                <section class="settings-section">
+                    <h3>👤 PROFILES</h3>
+                    <label class="settings-toggle"><input id="settingProfileAnimations" type="checkbox" checked> PROFILE GLOW ANIMATIONS</label>
+                    <label class="settings-toggle"><input id="settingShowBanners" type="checkbox" checked> SHOW PROFILE BANNERS</label>
+                    <label class="settings-toggle"><input id="settingRememberProfile" type="checkbox" checked> REMEMBER LOCAL PROFILE</label>
+                </section>
+                <section class="settings-section">
+                    <h3>🖥 INTERFACE</h3>
+                    <label class="settings-toggle"><input id="settingCompact" type="checkbox"> COMPACT CHAT</label>
+                    <label class="settings-toggle"><input id="settingReduceMotion" type="checkbox"> REDUCE MOTION</label>
+                    <button id="settingReset" class="settings-action danger" type="button">RESET SETTINGS</button>
+                </section>
+            </div>
+            <div class="settings-save-note">✓ Settings save instantly on this device.</div>
+        </div>
+    </div>
+
     <footer class="site-footer">
         Made By: Hero until dawn / Frogmen
     </footer>
@@ -280,9 +324,9 @@
     <script src="profiles.js"></script>
     <script src="script.js"></script>
 
-    <audio id="chatNotificationSound" preload="auto"><source src="audio/chat-notification.wav" type="audio/wav"></audio>
+    <audio id="chatNotificationSound" preload="auto"><source src="audio/chat-notification.mp3" type="audio/mpeg"></audio>
     <audio id="backgroundNoise" loop preload="auto">
-        <source src="audio/background-noise.wav" type="audio/mpeg">
+        <source src="audio/background-noise.mp3" type="audio/mpeg">
     </audio>
 
 </body>

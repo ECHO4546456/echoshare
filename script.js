@@ -1109,9 +1109,15 @@ const chatSocialCard = document.getElementById("chatSocialCard");
 const chatSocialList = document.getElementById("chatSocialList");
 
 function playChatNotificationSound(){
-  if(chatNotificationSound){
-    try { chatNotificationSound.currentTime=0; const p=chatNotificationSound.play(); if(p?.catch)p.catch(()=>{}); return; } catch(_){}
-  }
+  try{
+    const st=window.echoShareGetSetting?window.echoShareGetSetting('notification'):70;
+    const master=window.echoShareGetSetting?window.echoShareGetSetting('master'):100;
+    if(st<=0 || master<=0) return;
+    if(chatNotificationSound){ chatNotificationSound.volume=(st/100)*(master/100); chatNotificationSound.currentTime=0; const p=chatNotificationSound.play(); if(p?.catch)p.catch(()=>{}); }
+    if(window.echoShareGetSetting?.('desktop') && 'Notification' in window && Notification.permission==='granted'){ new Notification('CHAT_90',{body:'New message received.'}); }
+    return;
+  }catch(_){}
+  /* WebAudio fallback */
   try{
     const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
     const c=new C(),o=c.createOscillator(),g=c.createGain(),n=c.currentTime;
@@ -1172,3 +1178,50 @@ showViewedProfile = function(profile){
   document.getElementById("viewDM")?.addEventListener("click",()=>{chatProfileModal.hidden=true;openDM(profile.username)});
   document.getElementById("viewFriend")?.addEventListener("click",()=>{wsSend({type:"friendToggle",username:profile.username});document.getElementById("viewFriend").textContent=isFriend?'ADD FRIEND':'REMOVE FRIEND';});
 };
+
+/* ===========================
+   ECHO//SHARE UNIVERSAL SETTINGS
+   =========================== */
+(function initUniversalSettings(){
+  const modal=document.getElementById('siteSettingsModal');
+  const openers=[document.getElementById('siteSettingsButton'),document.getElementById('chatSettingsButton')].filter(Boolean);
+  const close=document.getElementById('siteSettingsClose');
+  if(!modal)return;
+  const defaults={master:100,background:5,notification:70,animations:true,timestamps:true,autoplay:true,enterSend:true,desktop:false,profileAnimations:true,banners:true,remember:true,compact:false,reduceMotion:false,backgroundOn:true};
+  let settings={...defaults};
+  try{settings={...defaults,...JSON.parse(localStorage.getItem('echoShareSettings')||'{}')}}catch(_){ }
+  const bg=document.getElementById('backgroundNoise');
+  const notif=document.getElementById('chatNotificationSound');
+  let audioUnlocked=false;
+  function save(){localStorage.setItem('echoShareSettings',JSON.stringify(settings));apply();}
+  function apply(){
+    const master=(Number(settings.master)||0)/100;
+    if(bg){bg.volume=master*(Number(settings.background)||0)/100; if(!settings.backgroundOn){bg.pause()}else if(audioUnlocked&&bg.paused){bg.play().catch(()=>{})}}
+    if(notif)notif.volume=master*(Number(settings.notification)||0)/100;
+    document.body.classList.toggle('settings-compact',!!settings.compact);
+    document.body.classList.toggle('settings-no-motion',!!settings.reduceMotion||!settings.profileAnimations);
+    document.body.classList.toggle('settings-no-vfx',!settings.animations);
+    document.body.classList.toggle('settings-no-banners',!settings.banners);
+  }
+  function unlockAudio(){
+    audioUnlocked=true; apply();
+    if(bg&&settings.backgroundOn&&Number(settings.background)>0)bg.play().catch(()=>{});
+    document.removeEventListener('pointerdown',unlockAudio);document.removeEventListener('keydown',unlockAudio);
+  }
+  document.addEventListener('pointerdown',unlockAudio,{passive:true});
+  document.addEventListener('keydown',unlockAudio,{passive:true});
+  function syncUI(){
+    const map={settingMasterVolume:'master',settingBackgroundVolume:'background',settingNotificationVolume:'notification',settingAnimations:'animations',settingTimestamps:'timestamps',settingAutoplayMedia:'autoplay',settingEnterSend:'enterSend',settingDesktopNotifications:'desktop',settingProfileAnimations:'profileAnimations',settingShowBanners:'banners',settingRememberProfile:'remember',settingCompact:'compact',settingReduceMotion:'reduceMotion'};
+    Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;if(el.type==='range')el.value=settings[key];else el.checked=!!settings[key]});
+  }
+  function open(){syncUI();modal.hidden=false;apply()}
+  openers.forEach(b=>b.addEventListener('click',open));close?.addEventListener('click',()=>modal.hidden=true);modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
+  const map={settingMasterVolume:'master',settingBackgroundVolume:'background',settingNotificationVolume:'notification',settingAnimations:'animations',settingTimestamps:'timestamps',settingAutoplayMedia:'autoplay',settingEnterSend:'enterSend',settingDesktopNotifications:'desktop',settingProfileAnimations:'profileAnimations',settingShowBanners:'banners',settingRememberProfile:'remember',settingCompact:'compact',settingReduceMotion:'reduceMotion'};
+  Object.entries(map).forEach(([id,key])=>document.getElementById(id)?.addEventListener(document.getElementById(id)?.type==='range'?'input':'change',e=>{settings[key]=e.target.type==='range'?Number(e.target.value):e.target.checked;save()}));
+  document.getElementById('settingToggleBackground')?.addEventListener('click',()=>{settings.backgroundOn=!settings.backgroundOn;save();syncUI()});
+  document.getElementById('settingTestNotification')?.addEventListener('click',()=>{unlockAudio();if(notif){notif.currentTime=0;notif.play().catch(()=>{})}});
+  document.getElementById('settingRequestNotifications')?.addEventListener('click',async()=>{if('Notification' in window){try{const p=await Notification.requestPermission();settings.desktop=p==='granted';save();syncUI()}catch(_){}}});
+  document.getElementById('settingReset')?.addEventListener('click',()=>{settings={...defaults};save();syncUI()});
+  window.echoShareSettings=settings; window.echoShareGetSetting=k=>settings[k];
+  apply();syncUI();
+})();
