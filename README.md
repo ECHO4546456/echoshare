@@ -50,4 +50,6 @@ Upload all four files to the same repository/folder, then enable GitHub Pages fo
 
 
 
-CHAT_90 integration: search for CHAT_90 from the home page to open the protected chat area. Normal password: 56789. Special password: 9!GAG. This static demo uses localStorage; a real multi-user public chat requires a backend.
+CHAT_90 integration: search for CHAT_90 from the home page to open the protected chat area. Normal password: 56789. Special password: 9!GAG. CHAT_90 now includes clickable user profiles (bio + tags), GIF/image sharing, live join/leave presence, cross-tab live message syncing, and 50 special-password message effects.
+
+Important: because this build is still a static website, its live presence/message bridge works between open CHAT_90 tabs/windows on the same site/browser using BroadcastChannel + localStorage. For people on different devices/browsers to see each other over the public internet, the site needs a real hosted backend/database or WebSocket server.
