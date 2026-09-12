@@ -1518,6 +1518,7 @@ body {
 .chat-user-clickable:hover{background:rgba(255,255,255,.045);box-shadow:inset 0 0 18px rgba(255,0,0,.06)}
 .chat-message-identity{display:flex;align-items:center;gap:8px;padding:0}
 .chat-profile-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);display:grid;place-items:center;padding:20px}
+.chat-profile-modal[hidden]{display:none!important}
 .chat-profile-modal-card{position:relative;width:min(560px,95vw);max-height:88vh;overflow:auto;padding:28px;border:1px solid rgba(255,50,50,.5);border-radius:18px;background:linear-gradient(145deg,#11070a,#09090c);box-shadow:0 0 40px rgba(255,0,0,.2)}
 .chat-modal-close{position:absolute;right:14px;top:10px;border:0;background:none;color:#fff;font-size:30px;cursor:pointer}
 .viewed-profile-hero{display:flex;align-items:center;gap:18px;padding:10px 0 22px}
