@@ -668,11 +668,11 @@ const ECHO_PROFILES = {
         ]
     },
 
-    Villanueva_Life_Story: {
-        name: "Villanueva_Life_Story",
+    Villanueva: {
+        name: "Villanueva",
         id: "ES-Kuya_Story-001",
-        image: "https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png",
-        tagline: "This is the very beginning of the Echo//Share network.",
+        image: "https://media.discordapp.net/attachments/1535462023402364938/1535837888212901939/decf79dfd7fbcc31b3ead4ae895a09467e177c64_full.png?ex=6aa6b3bf&is=6aa5623f&hm=9a99265dcde92f27f546940306999c83fad6fc825743153eb7d0edfdef620a9f&=&format=webp&quality=lossless",
+        tagline: "We'd like for you to read this with care and understand what [Villanueva] Has went through and put an a warrior effort to fight for peace. please be respectful and kind Archivist bless SSML",
         birthDate: "November 5, 2007",
         joined: "4 year's ago.",
         readers: "3.9K",

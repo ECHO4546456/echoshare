@@ -1128,122 +1128,191 @@ body {
 
 
 /* =========================================
-   VFX PROFILE THEME
-   BLACK GALAXY / COSMIC AURA
+   VFX PROFILE
+   BLACK GALAXY // COSMIC ANOMALY
    ========================================= */
 
 .Custom-profile {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
     background:
         radial-gradient(
-            circle at 50% 10%,
-            rgba(150, 70, 255, 0.13),
-            transparent 35%
+            ellipse at 50% 45%,
+            rgba(120, 40, 255, 0.12),
+            transparent 25%
         ),
         radial-gradient(
-            circle at 15% 75%,
-            rgba(70, 30, 180, 0.10),
-            transparent 32%
-        ),
-        radial-gradient(
-            circle at 85% 60%,
-            rgba(190, 40, 255, 0.08),
+            ellipse at 10% 20%,
+            rgba(20, 90, 255, 0.10),
             transparent 30%
         ),
-        linear-gradient(
-            135deg,
-            #010103,
-            #05030a,
-            #020205,
-            #08030c,
-            #010102
-        );
-
-    position: relative;
-    overflow: hidden;
+        radial-gradient(
+            ellipse at 90% 80%,
+            rgba(220, 40, 255, 0.10),
+            transparent 30%
+        ),
+        radial-gradient(
+            ellipse at 50% 100%,
+            rgba(70, 0, 160, 0.12),
+            transparent 45%
+        ),
+        #010102;
 }
 
 
 /* =========================================
-   COSMIC ATMOSPHERE
+   DEEP SPACE BACKGROUND
    ========================================= */
 
 .Custom-profile::before {
     content: "";
     position: absolute;
-    inset: 0;
-    pointer-events: none;
+    z-index: -3;
+    inset: -20%;
 
     background:
         radial-gradient(
-            circle at 20% 20%,
-            rgba(255, 255, 255, 0.08) 0 1px,
-            transparent 2px
+            ellipse at 25% 30%,
+            rgba(90, 20, 255, 0.14),
+            transparent 25%
         ),
         radial-gradient(
-            circle at 70% 35%,
-            rgba(190, 130, 255, 0.10) 0 1px,
-            transparent 2px
+            ellipse at 75% 25%,
+            rgba(220, 30, 255, 0.10),
+            transparent 24%
         ),
         radial-gradient(
-            circle at 40% 80%,
-            rgba(255, 255, 255, 0.06) 0 1px,
-            transparent 2px
+            ellipse at 50% 75%,
+            rgba(30, 80, 255, 0.08),
+            transparent 28%
         );
 
-    background-size:
-        150px 150px,
-        210px 210px,
-        180px 180px;
+    filter: blur(35px);
 
-    opacity: 0.55;
+    animation: cosmicDrift 14s ease-in-out infinite alternate;
 }
 
 
 /* =========================================
-   PROFILE HERO
+   GALAXY STAR FIELD
    ========================================= */
 
-.Custom-profile .profile-hero {
-    border-color: rgba(190, 120, 255, 0.28);
+.Custom-profile::after {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    inset: 0;
 
-    background:
-        linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.035),
-            rgba(100, 40, 180, 0.045),
-            rgba(0, 0, 0, 0.82)
-        );
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,.75) 0 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(190,130,255,.55) 0 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(110,170,255,.45) 0 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(255,255,255,.35) 0 1px, transparent 1.5px);
 
-    box-shadow:
-        0 0 18px rgba(150, 60, 255, 0.10),
-        0 0 55px rgba(100, 40, 200, 0.06),
-        inset 0 0 30px rgba(255, 255, 255, 0.018);
+    background-size:
+        170px 170px,
+        240px 240px,
+        310px 310px,
+        130px 130px;
+
+    background-position:
+        10px 20px,
+        80px 120px,
+        40px 70px,
+        150px 30px;
+
+    opacity: .38;
+
+    animation: starDrift 35s linear infinite;
 }
 
 
 /* =========================================
-   DEEP GALAXY HERO GLOW
+   MOVING COSMIC GLOW
    ========================================= */
 
 .Custom-profile .profile-hero-bg {
     background:
-        radial-gradient(
-            circle at 50% 45%,
-            rgba(180, 80, 255, 0.16),
-            transparent 38%
+        conic-gradient(
+            from 0deg at 50% 50%,
+            transparent,
+            rgba(120, 40, 255, .12),
+            transparent,
+            rgba(220, 40, 255, .10),
+            transparent
         ),
         radial-gradient(
-            ellipse at 20% 70%,
-            rgba(70, 30, 170, 0.12),
-            transparent 55%
-        ),
-        radial-gradient(
-            ellipse at 85% 25%,
-            rgba(220, 80, 255, 0.08),
-            transparent 50%
+            circle at 50% 50%,
+            rgba(160, 60, 255, .18),
+            transparent 48%
         );
 
-    filter: blur(8px);
+    filter: blur(12px);
+
+    animation: cosmicSpin 18s linear infinite;
+}
+
+
+/* =========================================
+   HERO GLASS
+   ========================================= */
+
+.Custom-profile .profile-hero {
+    position: relative;
+
+    border-color: rgba(210, 160, 255, .32);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.055),
+            rgba(90,30,160,.055),
+            rgba(0,0,0,.82)
+        );
+
+    backdrop-filter: blur(18px);
+
+    box-shadow:
+        0 0 12px rgba(255,255,255,.05),
+        0 0 35px rgba(120,40,255,.12),
+        0 0 90px rgba(100,20,220,.08),
+        inset 0 0 35px rgba(255,255,255,.025);
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   HERO ENERGY LINE
+   ========================================= */
+
+.Custom-profile .profile-hero::after {
+    content: "";
+
+    position: absolute;
+    left: -100%;
+    bottom: 0;
+
+    width: 60%;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #ffffff,
+            #c56cff,
+            transparent
+        );
+
+    box-shadow:
+        0 0 8px #ffffff,
+        0 0 20px #9b3cff,
+        0 0 40px #7b20ff;
+
+    animation: energySweep 5s linear infinite;
 }
 
 
@@ -1255,63 +1324,130 @@ body {
     color: #ffffff;
 
     text-shadow:
-        0 0 4px rgba(255, 255, 255, 0.9),
-        0 0 12px rgba(210, 150, 255, 0.8),
-        0 0 28px rgba(160, 60, 255, 0.55),
-        0 0 55px rgba(100, 30, 200, 0.28);
+        0 0 4px #ffffff,
+        0 0 10px rgba(255,255,255,.9),
+        0 0 22px #d28aff,
+        0 0 45px #8b2cff,
+        0 0 80px rgba(100,20,255,.65);
+
+    animation: namePulse 4s ease-in-out infinite;
 }
 
 
 /* =========================================
-   AVATAR
+   AVATAR ENERGY AURA
    ========================================= */
 
 .Custom-profile .profile-avatar-frame {
-    border-color: rgba(255, 255, 255, 0.8);
+    position: relative;
+
+    border-color: rgba(255,255,255,.9);
 
     box-shadow:
-        0 0 7px rgba(255, 255, 255, 0.8),
-        0 0 18px rgba(200, 120, 255, 0.55),
-        0 0 38px rgba(150, 50, 255, 0.28),
-        0 0 70px rgba(80, 20, 180, 0.16);
+        0 0 5px #ffffff,
+        0 0 15px #ffffff,
+        0 0 30px #d06cff,
+        0 0 55px #8c24ff,
+        0 0 100px rgba(90,20,255,.35);
+
+    animation: avatarAura 4s ease-in-out infinite;
 }
 
 
 /* =========================================
-   SIDEBAR + ARTICLE
+   AVATAR OUTER ENERGY
+   ========================================= */
+
+.Custom-profile .profile-avatar-frame::before {
+    content: "";
+
+    position: absolute;
+    inset: -14px;
+
+    border-radius: inherit;
+
+    border:
+        1px solid rgba(210,150,255,.25);
+
+    box-shadow:
+        0 0 15px rgba(170,80,255,.25),
+        inset 0 0 15px rgba(170,80,255,.12);
+
+    animation: avatarRing 5s linear infinite;
+}
+
+
+/* =========================================
+   GLASS CARDS
    ========================================= */
 
 .Custom-profile .side-card,
 .Custom-profile .wiki-article {
-    border-color: rgba(190, 120, 255, 0.22);
+    position: relative;
+
+    border-color: rgba(190,120,255,.25);
 
     background:
         linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.035),
-            rgba(90, 35, 150, 0.045),
-            rgba(0, 0, 0, 0.88)
+            rgba(255,255,255,.045),
+            rgba(100,30,170,.055),
+            rgba(0,0,0,.82)
         );
 
+    backdrop-filter: blur(22px);
+
     box-shadow:
-        0 0 15px rgba(150, 60, 255, 0.07),
-        0 0 40px rgba(90, 30, 180, 0.045),
-        inset 0 0 20px rgba(255, 255, 255, 0.012);
+        0 0 15px rgba(120,40,255,.08),
+        0 0 45px rgba(80,20,180,.06),
+        inset 0 0 25px rgba(255,255,255,.018);
+
+    overflow: hidden;
 }
 
 
 /* =========================================
-   VFX HEADINGS
+   CARD VFX SCAN
+   ========================================= */
+
+.Custom-profile .side-card::before,
+.Custom-profile .wiki-article::before {
+    content: "";
+
+    position: absolute;
+    top: -100%;
+    left: 0;
+
+    width: 100%;
+    height: 30%;
+
+    background:
+        linear-gradient(
+            180deg,
+            transparent,
+            rgba(190,100,255,.08),
+            transparent
+        );
+
+    pointer-events: none;
+
+    animation: cardScan 8s linear infinite;
+}
+
+
+/* =========================================
+   RECORD / TITLES
    ========================================= */
 
 .Custom-profile .record-tag,
 .Custom-profile .side-title {
-    color: #e9d8ff;
+    color: #f1ddff;
 
     text-shadow:
-        0 0 5px rgba(255, 255, 255, 0.8),
-        0 0 12px rgba(190, 110, 255, 0.65),
-        0 0 25px rgba(130, 40, 220, 0.4);
+        0 0 4px #ffffff,
+        0 0 10px #d58cff,
+        0 0 22px #8b32ff,
+        0 0 40px rgba(110,30,255,.45);
 }
 
 
@@ -1320,19 +1456,28 @@ body {
    ========================================= */
 
 .Custom-profile .stat {
-    border-color: rgba(180, 100, 255, 0.22);
+    border-color: rgba(190,110,255,.25);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.025),
+            rgba(120,40,200,.035)
+        );
 
     box-shadow:
-        inset 0 0 12px rgba(150, 60, 255, 0.035);
+        inset 0 0 15px rgba(140,50,255,.04),
+        0 0 12px rgba(100,30,200,.05);
 }
 
 .Custom-profile .stat-number {
     color: #ffffff;
 
     text-shadow:
-        0 0 5px rgba(255, 255, 255, 0.9),
-        0 0 14px rgba(200, 130, 255, 0.7),
-        0 0 28px rgba(130, 40, 220, 0.45);
+        0 0 4px #ffffff,
+        0 0 12px #d68cff,
+        0 0 25px #913cff,
+        0 0 45px rgba(100,20,255,.45);
 }
 
 
@@ -1341,13 +1486,30 @@ body {
    ========================================= */
 
 .Custom-profile .tag {
-    border-color: rgba(190, 110, 255, 0.32);
+    border-color: rgba(200,120,255,.35);
 
-    background: rgba(120, 40, 200, 0.035);
+    background:
+        rgba(100,30,180,.045);
 
     box-shadow:
-        0 0 7px rgba(150, 50, 255, 0.10),
-        inset 0 0 10px rgba(170, 80, 255, 0.04);
+        0 0 8px rgba(150,50,255,.10),
+        inset 0 0 12px rgba(180,80,255,.045);
+
+    transition:
+        .3s ease;
+}
+
+.Custom-profile .tag:hover {
+    border-color: rgba(255,255,255,.7);
+
+    color: #ffffff;
+
+    box-shadow:
+        0 0 8px #ffffff,
+        0 0 20px #bd62ff,
+        0 0 40px rgba(130,40,255,.5);
+
+    transform: translateY(-2px);
 }
 
 
@@ -1359,26 +1521,138 @@ body {
     color: #ffffff;
 
     text-shadow:
-        0 0 5px rgba(255, 255, 255, 0.85),
-        0 0 14px rgba(200, 120, 255, 0.65),
-        0 0 30px rgba(130, 40, 220, 0.4);
+        0 0 4px #ffffff,
+        0 0 12px #d38aff,
+        0 0 28px #8c2cff,
+        0 0 50px rgba(110,20,255,.45);
 }
 
 
 /* =========================================
-   SUBTLE VFX AURA
+   ARTICLE TEXT
    ========================================= */
 
-.Custom-profile .wiki-article,
-.Custom-profile .side-card,
-.Custom-profile .profile-hero {
-    backdrop-filter: blur(18px);
+.Custom-profile .article-letter {
+    transition:
+        color .15s ease,
+        text-shadow .15s ease;
+}
+
+.Custom-profile .article-letter:hover {
+    color: #ffffff;
+
+    text-shadow:
+        0 0 3px #ffffff,
+        0 0 8px #ffffff,
+        0 0 16px #c45cff,
+        0 0 28px #8125ff;
 }
 
 
 /* =========================================
-   RED PROFILE THEME
+   ANIMATIONS
    ========================================= */
+
+@keyframes cosmicDrift {
+    0% {
+        transform: translate3d(-2%, -1%, 0) scale(1);
+    }
+
+    50% {
+        transform: translate3d(2%, 2%, 0) scale(1.06);
+    }
+
+    100% {
+        transform: translate3d(-1%, 3%, 0) scale(1.02);
+    }
+}
+
+
+@keyframes starDrift {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-180px);
+    }
+}
+
+
+@keyframes cosmicSpin {
+    from {
+        transform: rotate(0deg) scale(1.15);
+    }
+
+    to {
+        transform: rotate(360deg) scale(1.15);
+    }
+}
+
+
+@keyframes energySweep {
+    0% {
+        left: -70%;
+    }
+
+    100% {
+        left: 120%;
+    }
+}
+
+
+@keyframes namePulse {
+    0%, 100% {
+        filter: brightness(.95);
+    }
+
+    50% {
+        filter: brightness(1.15);
+    }
+}
+
+
+@keyframes avatarAura {
+    0%, 100% {
+        box-shadow:
+            0 0 5px #ffffff,
+            0 0 15px #ffffff,
+            0 0 30px #d06cff,
+            0 0 55px #8c24ff,
+            0 0 90px rgba(90,20,255,.25);
+    }
+
+    50% {
+        box-shadow:
+            0 0 7px #ffffff,
+            0 0 20px #ffffff,
+            0 0 42px #df83ff,
+            0 0 75px #9c35ff,
+            0 0 120px rgba(90,20,255,.4);
+    }
+}
+
+
+@keyframes avatarRing {
+    from {
+        transform: rotate(0deg) scale(.98);
+    }
+
+    to {
+        transform: rotate(360deg) scale(1.04);
+    }
+}
+
+
+@keyframes cardScan {
+    0% {
+        top: -40%;
+    }
+
+    100% {
+        top: 120%;
+    }
+}
 
 .red-profile {
     background:
