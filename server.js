@@ -91,4 +91,19 @@ wss.on('connection',(ws)=>{
   });
   ws.on('close',()=>{ const s=sessions.get(sid); sessions.delete(sid); clients.delete(ws); if(s&&s.username){ const msg={id:id(),time:new Date().toISOString(),bot:true,username:'ECHO BOT',avatar:'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',role:'SYSTEM',glow:'#9b9b9b',text:`${s.username} has left Chat_90.`}; state.messages.push(msg); state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); } broadcast({type:'presence',online:onlineProfiles()}); });
 });
-server.listen(PORT,()=>console.log(`ECHO//SHARE CHAT_90 server running on port ${PORT}`));
+// Keep WebSocket connections healthy so stale connections are cleaned up.
+const heartbeat = setInterval(()=>{
+  for(const ws of wss.clients){
+    if(ws.isAlive===false){ ws.terminate(); continue; }
+    ws.isAlive=false;
+    try{ ws.ping(); }catch(_){ }
+  }
+},30000);
+
+wss.on('connection',(ws)=>{
+  ws.isAlive=true;
+  ws.on('pong',()=>{ ws.isAlive=true; });
+});
+
+server.on('close',()=>clearInterval(heartbeat));
+server.listen(PORT, '0.0.0.0', ()=>console.log(`ECHO//SHARE CHAT_90 server running on port ${PORT}`));

@@ -721,8 +721,15 @@ chatImageButton.addEventListener("click", sendImagePrompt);
    =========================== */
 let chatSocket = null;
 let chatConnected = false;
+let chatAuthenticated = false;
+let chatProfileSent = false;
 let chatServerMessages = [];
 let chatOnlineProfiles = [];
+let chatReconnectTimer = null;
+let chatReconnectDelay = 1000;
+let chatPendingPackets = [];
+
+const CHAT_SERVER_URL = "https://echoshare-0nsm.onrender.com";
 
 const CHAT_EFFECTS_50 = [
   ["red-pulse","Red Pulse"],["blood-glitch","Blood Glitch"],["crimson-flare","Crimson Flare"],
@@ -742,84 +749,288 @@ function fillSpecialEffects(){
 fillSpecialEffects();
 
 function chatWSUrl(){
-  const proto=location.protocol==='https:'?'wss':'ws';
-  return `${proto}://${location.host}/chat90`;
+  const base=new URL(CHAT_SERVER_URL);
+  const proto=base.protocol==='https:'?'wss:':'ws:';
+  return `${proto}//${base.host}/chat90`;
 }
+
+function setChatConnectionStatus(text, ok=false){
+  if(!chatTyping) return;
+  chatTyping.textContent=text||"";
+  chatTyping.classList.toggle("chat-connected",!!ok);
+}
+
+function queueChatPacket(packet){
+  chatPendingPackets.push(packet);
+  if(chatPendingPackets.length>50) chatPendingPackets.shift();
+}
+
+function flushChatPackets(){
+  if(!chatSocket || chatSocket.readyState!==WebSocket.OPEN || !chatAuthenticated || !chatProfileSent) return;
+  const pending=chatPendingPackets.splice(0);
+  pending.forEach(packet=>chatSocket.send(JSON.stringify(packet)));
+}
+
+function sendProfileToServer(){
+  const p=getChatProfile();
+  if(!p || !chatSocket || chatSocket.readyState!==WebSocket.OPEN || !chatAuthenticated) return false;
+  chatSocket.send(JSON.stringify({...p,type:'profile',tags:p.tags||[]}));
+  chatProfileSent=true;
+  flushChatPackets();
+  return true;
+}
+
+function scheduleChatReconnect(){
+  if(chatReconnectTimer || chatPage.hidden) return;
+  setChatConnectionStatus("CONNECTING TO CHAT_90...",false);
+  chatReconnectTimer=setTimeout(()=>{
+    chatReconnectTimer=null;
+    connectChatSocket();
+  },chatReconnectDelay);
+  chatReconnectDelay=Math.min(chatReconnectDelay*2,10000);
+}
+
 function connectChatSocket(){
+  if(chatPage.hidden) return;
   if(chatSocket && (chatSocket.readyState===WebSocket.OPEN || chatSocket.readyState===WebSocket.CONNECTING)) return;
-  try { chatSocket=new WebSocket(chatWSUrl()); } catch(e) { return; }
+
+  chatAuthenticated=false;
+  chatProfileSent=false;
+  setChatConnectionStatus("CONNECTING TO CHAT_90...",false);
+
+  try { chatSocket=new WebSocket(chatWSUrl()); }
+  catch(e){ scheduleChatReconnect(); return; }
+
   chatSocket.addEventListener('open',()=>{
     chatConnected=true;
+    chatReconnectDelay=1000;
+    setChatConnectionStatus("CONNECTED",true);
     chatSocket.send(JSON.stringify({type:'auth',password:window.chat90Password||''}));
-    const p=getChatProfile(); if(p) chatSocket.send(JSON.stringify({...p,type:'profile',tags:p.tags||[]}));
   });
-  chatSocket.addEventListener('close',()=>{chatConnected=false;});
+
+  chatSocket.addEventListener('close',()=>{
+    chatConnected=false;
+    chatAuthenticated=false;
+    chatProfileSent=false;
+    setChatConnectionStatus("CHAT_90 CONNECTION LOST — RECONNECTING...",false);
+    scheduleChatReconnect();
+  });
+
+  chatSocket.addEventListener('error',()=>{
+    chatConnected=false;
+    setChatConnectionStatus("CHAT_90 CONNECTION ERROR — RECONNECTING...",false);
+  });
+
   chatSocket.addEventListener('message',event=>{
-    let packet; try{packet=JSON.parse(event.data)}catch(_){return;}
+    let packet;
+    try{packet=JSON.parse(event.data)}catch(_){return;}
+
     if(packet.type==='hello'){
-      chatServerMessages=packet.history||[]; chatOnlineProfiles=packet.online||[]; renderGlobalChat();
-    } else if(packet.type==='authResult'){
-      if(!packet.ok) { chatConnected=false; return; }
-    } else if(packet.type==='message'){
+      chatServerMessages=packet.history||[];
+      chatOnlineProfiles=packet.online||[];
+      renderGlobalChat();
+      return;
+    }
+
+    if(packet.type==='authResult'){
+      if(!packet.ok){
+        chatAuthenticated=false;
+        chatConnected=false;
+        setChatConnectionStatus("CHAT_90 AUTHENTICATION FAILED",false);
+        return;
+      }
+      chatAuthenticated=true;
+      setChatConnectionStatus("CONNECTED",true);
+      sendProfileToServer();
+      return;
+    }
+
+    if(packet.type==='profileSaved'){
+      if(packet.profile){
+        saveChatProfile({...getChatProfile(),...packet.profile});
+        renderMe(getChatProfile()||{});
+      }
+      return;
+    }
+
+    if(packet.type==='message'){
       if(!chatServerMessages.some(x=>x.id===packet.message.id)) chatServerMessages.push(packet.message);
-      chatServerMessages=chatServerMessages.slice(-500); renderGlobalChat();
-    } else if(packet.type==='presence'){
-      chatOnlineProfiles=packet.online||[]; renderGlobalUsers();
-    } else if(packet.type==='deleted'){
-      chatServerMessages=chatServerMessages.filter(x=>x.id!==packet.id); renderGlobalChat();
-    } else if(packet.type==='profile') showViewedProfile(packet.profile);
-    else if(packet.type==='kicked'){ localStorage.removeItem('echoChatProfile'); returnToArchive(); alert(packet.message||'Removed from CHAT_90.'); }
+      chatServerMessages=chatServerMessages.slice(-500);
+      renderGlobalChat();
+      return;
+    }
+
+    if(packet.type==='presence'){
+      chatOnlineProfiles=packet.online||[];
+      renderGlobalUsers();
+      return;
+    }
+
+    if(packet.type==='deleted'){
+      chatServerMessages=chatServerMessages.filter(x=>x.id!==packet.id);
+      renderGlobalChat();
+      return;
+    }
+
+    if(packet.type==='profile'){
+      showViewedProfile(packet.profile);
+      return;
+    }
+
+    if(packet.type==='kicked'){
+      localStorage.removeItem('echoChatProfile');
+      if(chatSocket) chatSocket.close();
+      alert(packet.message||'Removed from CHAT_90.');
+      returnToArchive();
+      return;
+    }
+
+    if(packet.type==='error'){
+      setChatConnectionStatus(packet.message||"CHAT_90 ERROR",false);
+    }
   });
 }
-function wsSend(packet){ if(chatSocket&&chatSocket.readyState===WebSocket.OPEN) chatSocket.send(JSON.stringify(packet)); }
+
+function wsSend(packet){
+  if(!chatSocket || chatSocket.readyState!==WebSocket.OPEN || !chatAuthenticated || !chatProfileSent){
+    queueChatPacket(packet);
+    connectChatSocket();
+    return false;
+  }
+  chatSocket.send(JSON.stringify(packet));
+  return true;
+}
 
 function authenticateChat(){
   const password=chatPasswordInput.value;
-  if(password!==CHAT_NORMAL_PASSWORD && password!==CHAT_SPECIAL_PASSWORD){ chatAuthMessage.textContent='ACCESS DENIED — INVALID PASSWORD.'; chatPasswordInput.value=''; chatPasswordInput.focus(); return; }
-  window.chat90Password=password; chatAccessLevel=password===CHAT_SPECIAL_PASSWORD?'special':'normal';
+  if(password!==CHAT_NORMAL_PASSWORD && password!==CHAT_SPECIAL_PASSWORD){
+    chatAuthMessage.textContent='ACCESS DENIED — INVALID PASSWORD.';
+    chatPasswordInput.value='';
+    chatPasswordInput.focus();
+    return;
+  }
+  window.chat90Password=password;
+  chatAccessLevel=password===CHAT_SPECIAL_PASSWORD?'special':'normal';
+  chatSpecialOptions.hidden=chatAccessLevel!=='special';
+  fillSpecialEffects();
   const existing=getChatProfile();
-  chatSpecialOptions.hidden=chatAccessLevel!=='special'; fillSpecialEffects();
-  if(existing){ existing.access=chatAccessLevel; saveChatProfile(existing); openChat(); return; }
-  chatEditing=false; chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value=''; chatGlowInput.value='#ff2d2d'; chatBadgeInput.value=''; fillSpecialEffects(); showOnly(chatSetupPage); chatUsernameInput.focus();
+  if(existing){
+    existing.access=chatAccessLevel;
+    if(chatAccessLevel==='special'){
+      existing.role='SPECIAL / ADMIN';
+      existing.glow=existing.glow||'#ff2d2d';
+      existing.effect=existing.effect||'red-pulse';
+    } else {
+      existing.role='MEMBER';
+      existing.glow='#39ff88';
+      existing.badge='';
+      existing.effect='normal';
+    }
+    saveChatProfile(existing);
+    openChat();
+    return;
+  }
+  chatEditing=false;
+  chatUsernameInput.value='';
+  chatAvatarInput.value='';
+  chatBioInput.value='';
+  chatTagsInput.value='';
+  chatGlowInput.value='#ff2d2d';
+  chatBadgeInput.value='';
+  fillSpecialEffects();
+  showOnly(chatSetupPage);
+  chatUsernameInput.focus();
 }
+
 function enterChat(){
-  const username=chatUsernameInput.value.trim(); if(!username) return chatUsernameInput.focus();
-  const old=getChatProfile()||{};
-  const profile={username:username.slice(0,24),avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,bio:chatBioInput.value.trim().slice(0,160),tags:chatTagsInput.value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,12),access:chatAccessLevel,role:chatAccessLevel==='special'?'SPECIAL / ADMIN':'MEMBER',glow:chatAccessLevel==='special'?(chatGlowInput.value.trim()||'#ff2d2d'):'#39ff88',badge:chatAccessLevel==='special'?chatBadgeInput.value.trim():'',effect:chatAccessLevel==='special'?chatEffectInput.value:'normal'};
-  saveChatProfile(profile); chatEditing=false; openChat();
+  const username=chatUsernameInput.value.trim();
+  if(!username) return chatUsernameInput.focus();
+  const profile={
+    username:username.slice(0,24),
+    avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,
+    bio:chatBioInput.value.trim().slice(0,160),
+    tags:chatTagsInput.value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,12),
+    access:chatAccessLevel,
+    role:chatAccessLevel==='special'?'SPECIAL / ADMIN':'MEMBER',
+    glow:chatAccessLevel==='special'?(chatGlowInput.value.trim()||'#ff2d2d'):'#39ff88',
+    badge:chatAccessLevel==='special'?chatBadgeInput.value.trim():'',
+    effect:chatAccessLevel==='special'?chatEffectInput.value:'normal'
+  };
+  saveChatProfile(profile);
+  chatEditing=false;
+  openChat();
 }
+
 function openChat(){
-  const profile=getChatProfile(); if(!profile) return openChatAuth();
-  chatAccessLevel=profile.access==='special'?'special':'normal'; showOnly(chatPage); renderMe(profile); chatMessages.innerHTML=''; window.chat90Password=window.chat90Password|| (profile.access==='special'?CHAT_SPECIAL_PASSWORD:CHAT_NORMAL_PASSWORD); connectChatSocket();
-  if(chatConnected) wsSend({...profile,type:'profile',tags:profile.tags||[]}); chatMessageInput.focus();
+  const profile=getChatProfile();
+  if(!profile) return openChatAuth();
+  chatAccessLevel=profile.access==='special'?'special':'normal';
+  showOnly(chatPage);
+  renderMe(profile);
+  chatMessages.innerHTML='';
+  window.chat90Password=window.chat90Password|| (profile.access==='special'?CHAT_SPECIAL_PASSWORD:CHAT_NORMAL_PASSWORD);
+  setChatConnectionStatus("CONNECTING TO CHAT_90...",false);
+  connectChatSocket();
+  chatMessageInput.focus();
 }
+
 function renderGlobalUsers(){
-  const me=getChatProfile(); const users=chatOnlineProfiles.length?chatOnlineProfiles:(me?[me]:[]);
-  chatOnlineCount.textContent=users.length; chatOnlineCountSide.textContent=users.length; chatUsersList.innerHTML='';
-  users.forEach(user=>{const row=document.createElement('button'); row.type='button'; row.className='chat-user-row chat-user-clickable'; row.style.setProperty('--chat-glow',user.glow||'#ff3030'); row.innerHTML=`<span class="chat-user-dot"></span><img class="chat-user-avatar" src="${escapeText(user.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div class="chat-user-name" style="text-shadow:0 0 8px ${escapeText(user.glow||'#ff3030')}">${escapeText(user.username)} <span class="chat-user-role">${escapeText(user.role||'MEMBER')}</span></div>`; row.addEventListener('click',()=>showViewedProfile(user)); chatUsersList.appendChild(row);});
+  const me=getChatProfile();
+  const users=chatOnlineProfiles.length?chatOnlineProfiles:(me?[me]:[]);
+  chatOnlineCount.textContent=users.length;
+  chatOnlineCountSide.textContent=users.length;
+  chatUsersList.innerHTML='';
+  users.forEach(user=>{
+    const row=document.createElement('button');
+    row.type='button';
+    row.className='chat-user-row chat-user-clickable';
+    row.style.setProperty('--chat-glow',user.glow||'#ff3030');
+    row.innerHTML=`<span class="chat-user-dot"></span><img class="chat-user-avatar" src="${escapeText(user.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div class="chat-user-name" style="text-shadow:0 0 8px ${escapeText(user.glow||'#ff3030')}">${escapeText(user.username)} <span class="chat-user-role">${escapeText(user.role||'MEMBER')}</span></div>`;
+    row.addEventListener('click',()=>showViewedProfile(user));
+    chatUsersList.appendChild(row);
+  });
 }
+
 function renderGlobalChat(){
-  if(chatPage.hidden) return; renderGlobalUsers(); renderMe(getChatProfile()||{}); chatMessages.innerHTML=''; chatServerMessages.forEach(renderMessage); chatMessages.scrollTop=chatMessages.scrollHeight;
+  if(chatPage.hidden) return;
+  renderGlobalUsers();
+  renderMe(getChatProfile()||{});
+  chatMessages.innerHTML='';
+  chatServerMessages.forEach(renderMessage);
+  chatMessages.scrollTop=chatMessages.scrollHeight;
 }
+
 function renderMessage(message){
-  const article=document.createElement('article'); article.className=`chat-message ${message.bot?'bot':''} ${message.effect||''}`; article.style.setProperty('--chat-glow',message.glow||'#ff3030'); article.dataset.messageId=message.id||'';
+  const article=document.createElement('article');
+  article.className=`chat-message ${message.bot?'bot':''} ${message.effect||''}`;
+  article.style.setProperty('--chat-glow',message.glow||'#ff3030');
+  article.dataset.messageId=message.id||'';
   const badge=message.badge?`<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">`:'';
   const manage=chatAccessLevel==='special'&&!message.bot?`<div class="chat-message-actions"><button data-action="delete">DELETE</button><button data-action="kick">REMOVE USER</button></div>`:'';
   article.innerHTML=`<div class="chat-message-head"><button class="chat-message-identity" type="button"><img class="chat-message-avatar" src="${escapeText(message.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><span class="chat-message-name">${escapeText(message.username)}</span></button>${badge}<span class="chat-message-role">${escapeText(message.role||'MEMBER')}</span><span class="chat-message-time">${escapeText(new Date(message.time||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))}</span></div><div class="chat-message-body">${escapeText(message.text||'')}</div>${message.image?`<img class="chat-message-image" src="${escapeText(message.image)}" alt="Chat image" loading="lazy">`:''}${message.gif?`<img class="chat-message-image" src="${escapeText(message.gif)}" alt="GIF" loading="lazy">`:''}${manage}`;
-  article.querySelector('.chat-message-identity').addEventListener('click',()=>showViewedProfile(chatOnlineProfiles.find(p=>p.username===message.username)||{username:message.username,avatar:message.avatar,role:message.role,glow:message.glow,badge:message.badge,effect:message.effect,tags:[] ,bio:'',joined:''}));
+  article.querySelector('.chat-message-identity').addEventListener('click',()=>showViewedProfile(chatOnlineProfiles.find(p=>p.username===message.username)||{username:message.username,avatar:message.avatar,role:message.role,glow:message.glow,badge:message.badge,effect:message.effect,tags:[],bio:'',joined:''}));
   article.querySelector('[data-action="delete"]')?.addEventListener('click',()=>wsSend({type:'delete',id:message.id}));
   article.querySelector('[data-action="kick"]')?.addEventListener('click',()=>wsSend({type:'kick',username:message.username}));
   chatMessages.appendChild(article);
 }
-function sendChatMessage(text,extra={}){const p=getChatProfile(); if(!p) return; wsSend({type:'message',text:String(text||'').trim(),...extra});}
+
+function sendChatMessage(text,extra={}){
+  const p=getChatProfile();
+  const cleanText=String(text||'').trim();
+  if(!p || (!cleanText&&!extra.image&&!extra.gif)) return false;
+  return wsSend({type:'message',text:cleanText,...extra});
+}
 function deleteChatMessage(id){wsSend({type:'delete',id});}
 function kickCurrentUser(username){wsSend({type:'kick',username:username||getChatProfile()?.username});}
 function sendImagePrompt(){const url=prompt('Paste an image URL:'); if(url) sendChatMessage('',{image:url.trim()});}
 function sendGifPrompt(){const url=prompt('Paste a GIF URL:'); if(url) sendChatMessage('',{gif:url.trim()});}
+
 function showViewedProfile(profile){
-  if(!profile) return; const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-30).reverse();
+  if(!profile) return;
+  const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-30).reverse();
   chatViewedProfile.innerHTML=`<div class="viewed-profile-hero" style="--chat-glow:${escapeText(profile.glow||'#ff3030')}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div></div></div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.gif?'[GIF]':'[IMAGE]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
   chatProfileModal.hidden=false;
 }
+
 chatProfileClose.addEventListener('click',()=>chatProfileModal.hidden=true);
 chatProfileModal.addEventListener('click',e=>{if(e.target===chatProfileModal) chatProfileModal.hidden=true;});
