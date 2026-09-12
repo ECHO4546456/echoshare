@@ -194,13 +194,13 @@
             <p>Your identity is saved in this browser for this demo build.</p>
             <label>USERNAME<input id="chatUsernameInput" maxlength="24" placeholder="Your username"></label>
             <label>PROFILE IMAGE URL<input id="chatAvatarInput" placeholder="https://..."></label>
-            <label>BIO<input id="chatBioInput" maxlength="90" placeholder="A short bio"></label>
-            <label>TAGS <small>(comma separated)</small><input id="chatTagsInput" maxlength="160" placeholder="Artist, Gamer, Writer"></label>
+            <label>BIO<input id="chatBioInput" maxlength="160" placeholder="A short bio"></label>
+            <label>TAGS <input id="chatTagsInput" maxlength="180" placeholder="Artist, Gamer, Writer"></label>
             <div id="chatSpecialOptions" class="special-options" hidden>
                 <div class="special-title">SPECIAL ACCESS</div>
                 <label>GLOW COLOR<input id="chatGlowInput" type="text" value="#ff2d2d" placeholder="#ff2d2d"></label>
                 <label>BADGE IMAGE URL<input id="chatBadgeInput" placeholder="https://..."></label>
-                <label>MESSAGE EFFECT<select id="chatEffectInput"><option value="red-pulse">Red Pulse</option><option value="blood-glitch">Blood Glitch</option><option value="crimson-flare">Crimson Flare</option><option value="inferno">Inferno</option><option value="blood-moon">Blood Moon</option><option value="hellfire">Hellfire</option><option value="void-rift">Void Rift</option><option value="soul-burn">Soul Burn</option><option value="scarlet-storm">Scarlet Storm</option><option value="demon-aura">Demon Aura</option><option value="ruby-shatter">Ruby Shatter</option><option value="red-lightning">Red Lightning</option><option value="dark-matter">Dark Matter</option><option value="neon-blood">Neon Blood</option><option value="phantom-red">Phantom Red</option><option value="cursed-signal">Cursed Signal</option><option value="rage-core">Rage Core</option><option value="abyssal-wave">Abyssal Wave</option><option value="crimson-rain">Crimson Rain</option><option value="hell-scan">Hell Scan</option><option value="blood-drip">Blood Drip</option><option value="vampire-glow">Vampire Glow</option><option value="dragon-fire">Dragon Fire</option><option value="war-cry">War Cry</option><option value="fatal-error">Fatal Error</option><option value="glitch-burst">Glitch Burst</option><option value="hologram-red">Hologram Red</option><option value="laser-slice">Laser Slice</option><option value="shadow-flame">Shadow Flame</option><option value="black-sun">Black Sun</option><option value="red-echo">Red Echo</option><option value="soul-chain">Soul Chain</option><option value="dark-heart">Dark Heart</option><option value="crimson-orbit">Crimson Orbit</option><option value="pixel-blood">Pixel Blood</option><option value="nightmare">Nightmare</option><option value="toxic-crimson">Toxic Crimson</option><option value="arcane-red">Arcane Red</option><option value="chaos-ring">Chaos Ring</option><option value="red-comet">Red Comet</option><option value="executioner">Executioner</option><option value="sinister-wave">Sinister Wave</option><option value="scarlet-ghost">Scarlet Ghost</option><option value="demon-glitch">Demon Glitch</option><option value="void-blood">Void Blood</option><option value="hellstorm">Hellstorm</option><option value="omega-red">Omega Red</option><option value="red-singularity">Red Singularity</option><option value="cursed-crown">Cursed Crown</option><option value="apocalypse">Apocalypse</option></select></label>
+                <label>MESSAGE EFFECT<select id="chatEffectInput"><option value="red-pulse">Red Pulse</option><option value="blood-glitch">Blood Glitch</option><option value="crimson-flare">Crimson Flare</option></select></label>
             </div>
             <button id="chatEnterButton" type="button">ENTER CHAT_90</button>
             <button id="chatSetupBack" class="chat-small-button" type="button">← RETURN TO ARCHIVE</button>
@@ -211,15 +211,14 @@
     <section id="chatPage" class="chat-page" hidden>
         <div class="chat-topbar">
             <button id="chatBackButton" type="button">← ECHO//SHARE</button>
-            <div class="chat-brand"><span>CHAT_90</span><small>GLOBAL LIVE ARCHIVE CHANNEL</small></div>
-            <div class="chat-online"><span></span><b id="chatOnlineCount">1</b> ONLINE <em id="chatConnectionState">LOCAL LIVE</em></div>
+            <div class="chat-brand"><span>CHAT_90</span><small>LIVE ARCHIVE CHANNEL</small></div>
+            <div class="chat-online"><span></span><b id="chatOnlineCount">1</b> ONLINE</div>
         </div>
 
         <div class="chat-layout">
             <aside class="chat-users-panel">
                 <div class="chat-panel-title">ONLINE USERS</div>
                 <div id="chatUsersList" class="chat-users-list"></div>
-                <div class="chat-globe"><span>🌐</span><div><b>GLOBAL CHAT</b><small>Live presence & messages</small></div></div>
                 <div class="chat-user-count"><b id="chatOnlineCountSide">1</b> USERS CONNECTED</div>
             </aside>
 
@@ -238,19 +237,20 @@
             <aside class="chat-profile-panel">
                 <div class="chat-panel-title">YOUR IDENTITY</div>
                 <div id="chatMeCard" class="chat-me-card"></div>
-                <div id="chatViewedProfile" class="chat-viewed-profile" hidden></div>
                 <button id="chatEditProfile" class="chat-profile-button" type="button">EDIT PROFILE</button>
                 <button id="chatLogout" class="chat-profile-button danger" type="button">LEAVE CHAT</button>
             </aside>
         </div>
     </section>
 
-    <div id="chatProfileModal" class="chat-profile-modal" hidden aria-hidden="true">
+
+    <div id="chatProfileModal" class="chat-profile-modal" hidden>
         <div class="chat-profile-modal-card">
-            <button id="chatProfileModalClose" class="chat-modal-close" type="button">×</button>
-            <div id="chatProfileModalContent"></div>
+            <button id="chatProfileClose" class="chat-modal-close" type="button">×</button>
+            <div id="chatViewedProfile"></div>
         </div>
     </div>
+
 
     <footer class="site-footer">
         Made By: Hero until dawn / Frogmen
