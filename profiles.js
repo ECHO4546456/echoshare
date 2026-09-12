@@ -687,7 +687,7 @@ const ECHO_PROFILES = {
             "Doc//Senders",
             "ECHO RECORD"
         ],
-        articleTitle: "ABOUT THE UPDATE",
+        articleTitle: "About Villanueva",
 
         /*
             EDIT THIS ARTICLE YOURSELF.
