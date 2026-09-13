@@ -3000,3 +3000,130 @@ html.echo-reduce-motion *::after{
     .chat-page::before{display:none}
     .hero::before{inset:-15px -8px}
 }
+
+/* =========================================================
+   ECHO//SHARE SETTINGS FUNCTIONALITY + DEVICE-FRIENDLY UI
+   ========================================================= */
+body.settings-no-timestamps .chat-message-time{display:none!important}
+body.settings-no-autoplay .chat-message-media video{display:block}
+body.settings-no-vfx .chat-message::before,
+body.settings-no-vfx .chat-message::after,
+body.settings-no-vfx .chat-message.special-message::before,
+body.settings-no-vfx .chat-message.special-message::after{display:none!important;animation:none!important}
+body.settings-no-vfx .chat-message,
+body.settings-no-vfx .chat-message *{animation:none!important;text-shadow:none!important;filter:none!important}
+body.settings-no-enter-send #chatMessageInput{outline-color:rgba(255,255,255,.08)}
+
+/* Keep the entire app inside the viewport instead of creating oversized pages. */
+html,body{max-width:100%;overflow-x:hidden}
+img,video{max-width:100%}
+button,input,select,textarea{max-width:100%;box-sizing:border-box}
+
+@media (max-width:1100px){
+  .chat-page{width:min(100% - 20px,1200px);height:calc(100vh - 82px);min-height:500px}
+  .chat-layout{grid-template-columns:190px minmax(0,1fr)}
+  .chat-profile-panel{display:none}
+  .chat-users-panel{padding:13px}
+  .chat-main{min-width:0}
+  .site-settings-card{width:min(94vw,900px)}
+}
+
+@media (max-width:760px){
+  .topbar{padding:10px 12px;gap:8px}
+  .brand{min-width:0}
+  .brand-image{width:30px;height:30px}
+  .brand>span{font-size:13px}
+  .header-actions{gap:7px}
+  .site-settings-button{padding:8px 9px!important;font-size:8px!important}
+  .status{font-size:7px!important}
+
+  .home-page{width:calc(100% - 20px)!important}
+  .hero{padding:42px 0 30px!important}
+  .hero h1{font-size:clamp(38px,13vw,68px)!important;letter-spacing:-2px!important}
+  .hero-copy{font-size:11px!important;line-height:1.65!important}
+  .search-shell{width:100%!important}
+  .archive-preview{margin-top:10px}
+
+  .profile-page{width:calc(100% - 14px)!important;padding-bottom:30px!important}
+  .wiki-topbar{padding:10px!important;gap:8px!important;flex-wrap:wrap}
+  .wiki-path{font-size:7px!important;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .profile-hero{padding:22px 15px!important}
+  .profile-identity{min-width:0!important}
+  .profile-identity h1{font-size:clamp(25px,8vw,42px)!important;overflow-wrap:anywhere}
+  .wiki-article{padding:18px!important}
+
+  .chat-auth-page,.chat-setup-page,.chat-page{width:calc(100% - 12px)!important}
+  .chat-auth-page,.chat-setup-page{min-height:calc(100vh - 75px);padding:14px 0 35px}
+  .chat-auth-card,.chat-setup-card{width:100%;padding:24px 18px;border-radius:20px}
+  .chat-auth-card h1,.chat-setup-card h1{font-size:clamp(32px,11vw,52px);letter-spacing:-1px}
+  .chat-auth-card p,.chat-setup-card p{font-size:10px}
+
+  .chat-page{height:calc(100dvh - 70px)!important;min-height:0!important;padding:8px 0 20px!important}
+  .chat-topbar{min-height:54px;padding:9px 10px;border-radius:12px 12px 0 0;gap:7px}
+  .chat-brand span{font-size:17px}
+  .chat-brand small{font-size:6px;letter-spacing:1.2px}
+  .chat-top-actions{display:flex;align-items:center;gap:7px;min-width:0}
+  .chat-top-actions>button{display:block!important;font-size:7px!important;white-space:nowrap}
+  .chat-online{font-size:6px;white-space:nowrap}
+  .chat-layout{grid-template-columns:1fr!important;border-radius:0 0 13px 13px}
+  .chat-users-panel,.chat-profile-panel{display:none!important}
+  .chat-messages{padding:10px!important}
+  .chat-message{max-width:100%;padding:11px!important;border-radius:14px!important}
+  .chat-message-head{gap:5px!important;flex-wrap:wrap}
+  .chat-message-avatar{width:28px!important;height:28px!important}
+  .chat-message-name{font-size:10px!important;max-width:45vw;overflow-wrap:anywhere}
+  .chat-message-role{font-size:6px!important}
+  .chat-message-time{font-size:6px!important}
+  .chat-message-body{font-size:11px!important;line-height:1.55!important;overflow-wrap:anywhere}
+  .chat-message-tools{gap:4px!important;flex-wrap:wrap}
+  .chat-tool-button{font-size:6px!important;padding:6px 7px!important}
+  .chat-composer{gap:5px!important;padding:8px!important}
+  #chatMessageInput{min-width:0!important;font-size:12px!important;padding:11px!important}
+  .chat-composer button{min-width:38px!important;height:38px}
+  .chat-composer-hint{font-size:6px!important;padding:0 9px 6px!important}
+
+  .chat-social-card,.chat-me-card{padding:12px!important}
+  .chat-me-avatar{width:65px!important;height:65px!important}
+  .chat-me-name{font-size:16px!important}
+
+  .chat-profile-modal{padding:8px!important}
+  .chat-profile-modal-card{width:100%!important;max-height:94dvh!important;padding:17px!important;border-radius:15px!important}
+  .viewed-profile-hero{margin:-20px 8px 0!important;gap:10px!important;align-items:end!important}
+  .viewed-profile-hero>img{width:76px!important;height:76px!important;border-radius:20px!important}
+  .viewed-profile-hero h2{font-size:21px!important;overflow-wrap:anywhere}
+
+  .site-settings-modal{padding:8px!important}
+  .site-settings-card{width:100%!important;max-height:94dvh!important;padding:17px!important;border-radius:16px!important}
+  .site-settings-card h2{font-size:27px!important}
+  .settings-subtitle{font-size:8px!important;line-height:1.5}
+  .settings-grid{grid-template-columns:1fr!important;gap:8px!important}
+  .settings-section{padding:13px!important;border-radius:12px!important}
+  .settings-section label:not(.settings-toggle){font-size:7px!important}
+  .settings-toggle{font-size:8px!important;line-height:1.35}
+  .settings-action{font-size:7px!important;padding:10px 8px!important}
+}
+
+@media (max-width:430px){
+  .brand-image{display:none}
+  .brand>span{font-size:11px}
+  .site-settings-button{font-size:7px!important;padding:7px!important}
+  .status{display:none!important}
+  .chat-page{width:calc(100% - 8px)!important}
+  .chat-topbar{padding:8px!important}
+  .chat-brand span{font-size:15px}
+  .chat-top-actions>button{font-size:6px!important}
+  .chat-online{display:none}
+  .chat-messages{padding:7px!important}
+  .chat-message{padding:9px!important}
+  .chat-message-name{max-width:52vw}
+  .chat-composer{padding:6px!important}
+  .chat-composer button{min-width:34px!important;width:34px;height:34px;padding:0!important}
+  #chatMessageInput{padding:9px!important;font-size:11px!important}
+  .chat-composer-hint{display:none}
+}
+
+@media (pointer:coarse){
+  button,.chat-user-clickable,.chat-message-identity,.chat-tool-button,input[type=checkbox]{-webkit-tap-highlight-color:transparent}
+  button{min-height:36px}
+  .chat-tool-button{min-height:32px}
+}

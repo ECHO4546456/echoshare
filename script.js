@@ -36,7 +36,7 @@ function startBackgroundNoise() {
     if (!backgroundNoise || backgroundNoiseStarted) return;
 
     backgroundNoise.loop = true;
-    backgroundNoise.volume = 0.05;
+    backgroundNoise.volume = ((Number(window.echoShareGetSetting?.("master") ?? 100) / 100) * (Number(window.echoShareGetSetting?.("background") ?? 5) / 100));
 
     const playPromise = backgroundNoise.play();
     if (playPromise && typeof playPromise.then === "function") {
@@ -58,8 +58,15 @@ if (document.readyState === "loading") {
 // Retry after the first user interaction so Chrome/Edge/Safari can unlock audio.
 function unlockBackgroundNoise() {
     if (!backgroundNoise) return;
+    const on = window.echoShareGetSetting ? window.echoShareGetSetting("backgroundOn") !== false : true;
+    const master = Number(window.echoShareGetSetting?.("master") ?? 100) / 100;
+    const background = Number(window.echoShareGetSetting?.("background") ?? 5) / 100;
     backgroundNoise.loop = true;
-    backgroundNoise.volume = 0.05;
+    backgroundNoise.volume = Math.max(0, Math.min(1, master * background));
+    if (!on || backgroundNoise.volume <= 0) {
+        backgroundNoise.pause();
+        return;
+    }
     backgroundNoise.play().then(() => {
         backgroundNoiseStarted = true;
     }).catch(() => {});
@@ -433,7 +440,9 @@ function getChatProfile() {
 }
 
 function saveChatProfile(profile) {
-    localStorage.setItem("echoChatProfile", JSON.stringify(profile));
+    const remember = window.echoShareGetSetting ? window.echoShareGetSetting("remember") !== false : true;
+    if (remember) localStorage.setItem("echoChatProfile", JSON.stringify(profile));
+    else localStorage.removeItem("echoChatProfile");
 }
 
 function getChatMessages() {
@@ -796,7 +805,8 @@ chatSendButton.addEventListener("click", () => {
     chatMessageInput.focus();
 });
 chatMessageInput.addEventListener("keydown", event => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    const enterSends = window.echoShareGetSetting ? window.echoShareGetSetting("enterSend") !== false : true;
+    if (enterSends && event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
         chatSendButton.click();
     }
@@ -1052,7 +1062,8 @@ function authenticateChat(){
   chatAccessLevel=password===CHAT_MALFUNCTION_PASSWORD?'malfunction':password===CHAT_SPECIAL_PASSWORD?'special':'normal';
   chatSpecialOptions.hidden=!isElevatedAccess(); chatMalfunctionOptions.hidden=!isMalfunctionAccess(); if(malfunctionAnnoyButton)malfunctionAnnoyButton.hidden=!isMalfunctionAccess();
   fillSpecialEffects();
-  const existing=getChatProfile();
+  const rememberProfile = window.echoShareGetSetting ? window.echoShareGetSetting("remember") !== false : true;
+  const existing=rememberProfile ? getChatProfile() : null;
   if(existing){ existing.access=chatAccessLevel; existing.role=roleForAccess(chatAccessLevel); if(chatAccessLevel==='malfunction' && (!existing.effect||existing.effect==='normal')) existing.effect='you-and-i-forever'; existing.malfunctionTools ||= defaultMalfunctionTools(); saveChatProfile(existing); openChat(); return; }
   chatEditing=false; chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value=''; chatGlowInput.value='#ff2d2d'; chatBadgeInput.value=''; chatBannerInput.value=''; chatEffectInput.value=chatAccessLevel==='malfunction'?'you-and-i-forever':'red-pulse'; renderMalfunctionTools({malfunctionTools:defaultMalfunctionTools()}); showOnly(chatSetupPage); chatUsernameInput.focus();
 }
@@ -1105,7 +1116,7 @@ function renderMessage(message){
   const badge=message.badge?`<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">`:'';
   const manage=isElevatedAccess()&&!message.bot?`<div class="chat-message-actions"><button data-action="delete">DELETE</button><button data-action="kick">REMOVE USER</button></div>`:'';
   const reply=message.replyTo?`<div class="chat-reply-preview"><b>↪ ${escapeText(message.replyTo.username||'USER')}</b><span>${escapeText(message.replyTo.text||'[MEDIA]')}</span></div>`:'';
-  const media=message.media?`<div class="chat-message-media">${message.mediaType==='video'?`<video controls preload="metadata" src="${escapeText(message.media)}"></video>`:`<img src="${escapeText(message.media)}" alt="Shared media" loading="lazy">`}</div>`:'';
+  const media=message.media?`<div class="chat-message-media">${message.mediaType==='video'?`<video controls preload="metadata" ${window.echoShareGetSetting?.('autoplay')!==false?'autoplay':''} playsinline src="${escapeText(message.media)}"></video>`:`<img src="${escapeText(message.media)}" alt="Shared media" loading="lazy">`}</div>`:'';
   const legacyImage=message.image?`<img class="chat-message-image" src="${escapeText(message.image)}" alt="Chat image" loading="lazy">`:''; const legacyGif=message.gif?`<img class="chat-message-image" src="${escapeText(message.gif)}" alt="GIF" loading="lazy">`:'';
   const reactions=Array.isArray(message.reactions)?message.reactions:[]; const reactionThumb=reactions.length?`<span class="chat-reaction-count"><img src="${escapeText(reactions[reactions.length-1].url)}" alt=""> ${reactions.length}</span>`:''; const miniStar=message.effect==='star-mid'?'<span class="message-mini-star" aria-hidden="true">★</span>':message.effect==='you-and-i-forever'?'<span class="message-mini-eye" aria-hidden="true">◉</span>':'';
   article.innerHTML=`<div class="chat-message-head"><button class="chat-message-identity" type="button"><img class="chat-message-avatar" src="${escapeText(message.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><span class="chat-message-name">${escapeText(message.username)}</span></button>${badge}<span class="chat-message-role">${escapeText(message.role||'MEMBER')}</span><span class="chat-message-time">${escapeText(new Date(message.time||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))}</span></div>${reply}<div class="chat-message-body">${escapeText(message.text||'')}${miniStar}</div>${media}${legacyImage}${legacyGif}<div class="chat-message-tools"><button class="chat-tool-button" data-action="reply">↩ REPLY</button><button class="chat-tool-button" data-action="react">☆ GIF REACT</button>${reactionThumb}</div>${manage}`;
@@ -1275,36 +1286,80 @@ showViewedProfile = function(profile){
   try{settings={...defaults,...JSON.parse(localStorage.getItem('echoShareSettings')||'{}')}}catch(_){ }
   const bg=document.getElementById('backgroundNoise');
   const notif=document.getElementById('chatNotificationSound');
-  let audioUnlocked=true;
-  function save(){localStorage.setItem('echoShareSettings',JSON.stringify(settings));apply();}
+
   function apply(){
-    const master=(Number(settings.master)||0)/100;
-    if(bg){bg.volume=master*(Number(settings.background)||0)/100; if(!settings.backgroundOn){bg.pause()}else if(bg.paused){bg.play().catch(()=>{})}}
-    if(notif)notif.volume=master*(Number(settings.notification)||0)/100;
+    const master=Math.max(0,Math.min(100,Number(settings.master)||0))/100;
+    const background=Math.max(0,Math.min(100,Number(settings.background)||0))/100;
+    const notification=Math.max(0,Math.min(100,Number(settings.notification)||0))/100;
+    if(bg){
+      bg.loop=true;
+      bg.volume=master*background;
+      if(!settings.backgroundOn || bg.volume<=0){
+        bg.pause();
+      }else if(bg.paused){
+        bg.play().then(()=>{backgroundNoiseStarted=true}).catch(()=>{});
+      }
+    }
+    if(notif)notif.volume=master*notification;
     document.body.classList.toggle('settings-compact',!!settings.compact);
     document.body.classList.toggle('settings-no-motion',!!settings.reduceMotion||!settings.profileAnimations);
     document.body.classList.toggle('settings-no-vfx',!settings.animations);
     document.body.classList.toggle('settings-no-banners',!settings.banners);
+    document.body.classList.toggle('settings-no-timestamps',!settings.timestamps);
+    document.body.classList.toggle('settings-no-autoplay',!settings.autoplay);
+    document.body.classList.toggle('settings-no-enter-send',!settings.enterSend);
+    const toggle=document.getElementById('settingToggleBackground');
+    if(toggle)toggle.textContent=settings.backgroundOn?'🔊 BACKGROUND SOUND: ON':'🔇 BACKGROUND SOUND: OFF';
+    [
+      ['settingMasterVolume',settings.master],
+      ['settingBackgroundVolume',settings.background],
+      ['settingNotificationVolume',settings.notification]
+    ].forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.setAttribute('aria-valuenow',String(val));});
   }
-  function unlockAudio(){
-    audioUnlocked=true; apply();
-    if(bg&&settings.backgroundOn&&Number(settings.background)>0)bg.play().catch(()=>{});
-    document.removeEventListener('pointerdown',unlockAudio);document.removeEventListener('keydown',unlockAudio);
+  function save(){
+    localStorage.setItem('echoShareSettings',JSON.stringify(settings));
+    apply();
   }
-  document.addEventListener('pointerdown',unlockAudio,{passive:true});
-  document.addEventListener('keydown',unlockAudio,{passive:true});
   function syncUI(){
     const map={settingMasterVolume:'master',settingBackgroundVolume:'background',settingNotificationVolume:'notification',settingAnimations:'animations',settingTimestamps:'timestamps',settingAutoplayMedia:'autoplay',settingEnterSend:'enterSend',settingDesktopNotifications:'desktop',settingProfileAnimations:'profileAnimations',settingShowBanners:'banners',settingRememberProfile:'remember',settingCompact:'compact',settingReduceMotion:'reduceMotion'};
     Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;if(el.type==='range')el.value=settings[key];else el.checked=!!settings[key]});
+    apply();
   }
-  function open(){syncUI();modal.hidden=false;apply()}
-  openers.forEach(b=>b.addEventListener('click',open));close?.addEventListener('click',()=>modal.hidden=true);modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
+  function unlockAudio(){
+    apply();
+    if(bg&&settings.backgroundOn&&settings.background>0)bg.play().then(()=>{backgroundNoiseStarted=true}).catch(()=>{});
+  }
+  document.addEventListener('pointerdown',unlockAudio,{passive:true});
+  document.addEventListener('keydown',unlockAudio,{passive:true});
+  openers.forEach(b=>b.addEventListener('click',()=>{syncUI();modal.hidden=false;apply()}));
+  close?.addEventListener('click',()=>modal.hidden=true);
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
   const map={settingMasterVolume:'master',settingBackgroundVolume:'background',settingNotificationVolume:'notification',settingAnimations:'animations',settingTimestamps:'timestamps',settingAutoplayMedia:'autoplay',settingEnterSend:'enterSend',settingDesktopNotifications:'desktop',settingProfileAnimations:'profileAnimations',settingShowBanners:'banners',settingRememberProfile:'remember',settingCompact:'compact',settingReduceMotion:'reduceMotion'};
-  Object.entries(map).forEach(([id,key])=>document.getElementById(id)?.addEventListener(document.getElementById(id)?.type==='range'?'input':'change',e=>{settings[key]=e.target.type==='range'?Number(e.target.value):e.target.checked;save()}));
-  document.getElementById('settingToggleBackground')?.addEventListener('click',()=>{settings.backgroundOn=!settings.backgroundOn;save();syncUI()});
-  document.getElementById('settingTestNotification')?.addEventListener('click',()=>{unlockAudio();if(notif){notif.currentTime=0;notif.play().catch(()=>{})}});
-  document.getElementById('settingRequestNotifications')?.addEventListener('click',async()=>{if('Notification' in window){try{const p=await Notification.requestPermission();settings.desktop=p==='granted';save();syncUI()}catch(_){}}});
+  Object.entries(map).forEach(([id,key])=>{
+    const el=document.getElementById(id); if(!el)return;
+    const eventName=el.type==='range'?'input':'change';
+    el.addEventListener(eventName,e=>{
+      settings[key]=el.type==='range'?Math.max(0,Math.min(100,Number(e.target.value)||0)):e.target.checked;
+      save();
+      syncUI();
+      if(key==='remember' && settings.remember===false) localStorage.removeItem('echoChatProfile');
+    });
+  });
+  document.getElementById('settingToggleBackground')?.addEventListener('click',()=>{
+    settings.backgroundOn=!settings.backgroundOn;
+    save();
+    syncUI();
+  });
+  document.getElementById('settingTestNotification')?.addEventListener('click',()=>{
+    unlockAudio();
+    if(notif && Number(settings.master)>0 && Number(settings.notification)>0){notif.currentTime=0;notif.play().catch(()=>{})}
+  });
+  document.getElementById('settingRequestNotifications')?.addEventListener('click',async()=>{
+    if('Notification' in window){try{const p=await Notification.requestPermission();settings.desktop=p==='granted';save();syncUI()}catch(_){}}
+  });
   document.getElementById('settingReset')?.addEventListener('click',()=>{settings={...defaults};save();syncUI()});
-  window.echoShareSettings=settings; window.echoShareGetSetting=k=>settings[k];
-  apply();syncUI();
+  window.echoShareSettings=settings;
+  window.echoShareGetSetting=k=>settings[k];
+  apply();
+  syncUI();
 })();
