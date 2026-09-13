@@ -197,15 +197,24 @@
             <p>Your identity is saved in this browser for this demo build.</p>
             <label>USERNAME<input id="chatUsernameInput" maxlength="24" placeholder="Your username"></label>
             <label>PROFILE IMAGE URL<input id="chatAvatarInput" placeholder="https://..."></label>
+            <button id="chatAvatarUploadButton" class="chat-file-button" type="button">UPLOAD PROFILE IMAGE</button>
             <label>BIO<input id="chatBioInput" maxlength="160" placeholder="A short bio"></label>
             <label>TAGS <input id="chatTagsInput" maxlength="180" placeholder="Artist, Gamer, Writer"></label>
+            <label>BADGE IMAGE URL<input id="chatBadgeInput" placeholder="https://... or upload a badge"></label>
+            <button id="chatBadgeUploadButton" class="chat-file-button" type="button">UPLOAD BADGE</button>
+            <label>PROFILE BANNER<input id="chatBannerInput" placeholder="Optional banner image URL"></label>
+            <button id="chatBannerUploadButton" class="chat-file-button" type="button">UPLOAD BANNER</button>
             <div id="chatSpecialOptions" class="special-options" hidden>
                 <div class="special-title">SPECIAL ACCESS</div>
                 <label>GLOW COLOR<input id="chatGlowInput" type="text" value="#ff2d2d" placeholder="#ff2d2d"></label>
-                <label>BADGE IMAGE URL<input id="chatBadgeInput" placeholder="https://..."></label>
-                <label>PROFILE BANNER<input id="chatBannerInput" placeholder="Optional banner image URL"></label>
-                <button id="chatBannerUploadButton" class="chat-file-button" type="button">UPLOAD BANNER</button>
-                <label>MESSAGE EFFECT<select id="chatEffectInput"><option value="red-pulse">Red Pulse</option><option value="blood-glitch">Blood Glitch</option><option value="crimson-flare">Crimson Flare</option></select></label>
+                <label>MESSAGE EFFECT<select id="chatEffectInput"></select></label>
+            </div>
+            <div id="chatMalfunctionOptions" class="malfunction-options" hidden>
+                <div class="malfunction-title">MALFUNCTION // OVERDRIVE ACCESS</div>
+                <p>34 experimental controls. Changes save and broadcast instantly.</p>
+                <div id="malfunctionToolsGrid" class="malfunction-tools-grid"></div>
+                <button id="malfunctionMediaButton" class="malfunction-media-button" type="button">☣ MALFUNCTION MEDIA</button>
+                <input id="malfunctionMediaInput" type="file" accept="image/*,video/*" hidden>
             </div>
             <button id="chatEnterButton" type="button">ENTER CHAT_90</button>
             <button id="chatSetupBack" class="chat-small-button" type="button">← RETURN TO ARCHIVE</button>
@@ -239,6 +248,8 @@
                 </div>
                 <div class="chat-composer-hint">MEDIA opens your files so you can send an image, GIF, or video.</div>
                 <input id="chatMediaInput" type="file" accept="image/*,video/*,.gif" hidden>
+                <input id="chatAvatarFileInput" type="file" accept="image/*" hidden>
+                <input id="chatBadgeFileInput" type="file" accept="image/*" hidden>
                 <input id="chatBannerFileInput" type="file" accept="image/*" hidden>
                 <input id="chatReactionFileInput" type="file" accept="image/gif,.gif" hidden>
             </main>
@@ -317,17 +328,29 @@
         </div>
     </div>
 
+    <div id="malfunctionMediaOverlay" class="malfunction-media-overlay" hidden>
+        <div class="malfunction-media-card">
+            <div class="malfunction-media-kicker">MALFUNCTION // BROADCAST CONTROL</div>
+            <h2 id="malfunctionMediaTitle">MEDIA LOADED</h2>
+            <div id="malfunctionMediaPreview" class="malfunction-media-preview"></div>
+            <p>TEST plays it only for you. ANNOY ALL broadcasts it to everyone in CHAT_90 and blocks the chat until playback finishes.</p>
+            <div class="malfunction-media-actions">
+                <button id="malfunctionTestButton" type="button">TEST</button>
+                <button id="malfunctionAnnoyButton" type="button">ANNOY ALL</button>
+                <button id="malfunctionCancelButton" type="button">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="site-footer">
         Made By: Hero until dawn / Frogmen
     </footer>
 
+    <audio id="chatNotificationSound" preload="auto"><source src="audio/chat-notification.mp3" type="audio/mpeg"></audio>
+    <audio id="backgroundNoise" loop preload="auto"><source src="audio/background-noise.mp3" type="audio/mpeg"></audio>
+
     <script src="profiles.js"></script>
     <script src="script.js"></script>
-
-    <audio id="chatNotificationSound" preload="auto"><source src="audio/chat-notification.mp3" type="audio/mpeg"></audio>
-    <audio id="backgroundNoise" loop preload="auto">
-        <source src="audio/background-noise.mp3" type="audio/mpeg">
-    </audio>
 
 </body>
 </html>

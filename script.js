@@ -339,6 +339,10 @@ const chatProfileClose = document.getElementById("chatProfileClose");
 const chatSpecialOptions = document.getElementById("chatSpecialOptions");
 const chatGlowInput = document.getElementById("chatGlowInput");
 const chatBadgeInput = document.getElementById("chatBadgeInput");
+const chatAvatarUploadButton = document.getElementById("chatAvatarUploadButton");
+const chatBadgeUploadButton = document.getElementById("chatBadgeUploadButton");
+const chatAvatarFileInput = document.getElementById("chatAvatarFileInput");
+const chatBadgeFileInput = document.getElementById("chatBadgeFileInput");
 const chatEffectInput = document.getElementById("chatEffectInput");
 const chatBannerInput = document.getElementById("chatBannerInput");
 const chatBannerUploadButton = document.getElementById("chatBannerUploadButton");
@@ -346,6 +350,16 @@ const chatMediaButton = document.getElementById("chatMediaButton");
 const chatMediaInput = document.getElementById("chatMediaInput");
 const chatBannerFileInput = document.getElementById("chatBannerFileInput");
 const chatReactionFileInput = document.getElementById("chatReactionFileInput");
+const chatMalfunctionOptions = document.getElementById("chatMalfunctionOptions");
+const malfunctionToolsGrid = document.getElementById("malfunctionToolsGrid");
+const malfunctionMediaButton = document.getElementById("malfunctionMediaButton");
+const malfunctionMediaInput = document.getElementById("malfunctionMediaInput");
+const malfunctionMediaOverlay = document.getElementById("malfunctionMediaOverlay");
+const malfunctionMediaPreview = document.getElementById("malfunctionMediaPreview");
+const malfunctionMediaTitle = document.getElementById("malfunctionMediaTitle");
+const malfunctionTestButton = document.getElementById("malfunctionTestButton");
+const malfunctionAnnoyButton = document.getElementById("malfunctionAnnoyButton");
+const malfunctionCancelButton = document.getElementById("malfunctionCancelButton");
 const chatReplyBar = document.getElementById("chatReplyBar");
 const chatEnterButton = document.getElementById("chatEnterButton");
 const chatBackButton = document.getElementById("chatBackButton");
@@ -363,6 +377,7 @@ const chatImageButton = document.getElementById("chatImageButton");
 
 const CHAT_NORMAL_PASSWORD = "56789";
 const CHAT_SPECIAL_PASSWORD = "9!GAG";
+const CHAT_MALFUNCTION_PASSWORD = "Ink";
 const CHAT_DEFAULT_AVATAR = "https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png";
 
 let chatAccessLevel = "normal";
@@ -375,6 +390,31 @@ const CHAT_DEMO_USERS = [
     { username: "Shadow", avatar: CHAT_DEFAULT_AVATAR, role: "MEMBER", glow: "#8a63ff", badge: "", bio: "Watching the archive." },
     { username: "Writer///Tea", avatar: CHAT_DEFAULT_AVATAR, role: "WRITER", glow: "#39ff88", badge: "", bio: "Writing the records." }
 ];
+
+function isElevatedAccess(){ return chatAccessLevel === "special" || chatAccessLevel === "malfunction"; }
+function isMalfunctionAccess(){ return chatAccessLevel === "malfunction"; }
+function roleForAccess(access){ return access === "malfunction" ? "MALFUNCTION" : access === "special" ? "SPECIAL / ADMIN" : "MEMBER"; }
+
+const MALFUNCTION_TOOLS = [
+  ["chaos-glow","CHAOS GLOW"],["name-distort","NAME DISTORTION"],["eye-sigil","EYE SIGIL"],["screen-static","SCREEN STATIC"],
+  ["rgb-shift","RGB SHIFT"],["message-shake","MESSAGE SHAKE"],["neon-scan","NEON SCAN"],["dark-invert","DARK INVERT"],
+  ["orbit-ring","ORBIT RING"],["ghost-trail","GHOST TRAIL"],["chromatic-burst","CHROMATIC BURST"],["void-pulse","VOID PULSE"],
+  ["terminal-rain","TERMINAL RAIN"],["cursor-glitch","CURSOR GLITCH"],["redline","REDLINE"],["starfall","STARFALL"],
+  ["echo-clone","ECHO CLONE"],["heat-haze","HEAT HAZE"],["pixel-tear","PIXEL TEAR"],["bloom-surge","BLOOM SURGE"],
+  ["shadow-pulse","SHADOW PULSE"],["lens-flare","LENS FLARE"],["afterimage","AFTERIMAGE"],["color-cycle","COLOR CYCLE"],
+  ["edge-glow","EDGE GLOW"],["noise-overlay","NOISE OVERLAY"],["orbit-sparks","ORBIT SPARKS"],["blackout-flash","BLACKOUT FLASH"],
+  ["killfeed-mode","KILLFEED MODE"],["profile-distortion","PROFILE DISTORTION"],["banner-ripple","BANNER RIPPLE"],["message-warp","MESSAGE WARP"],
+  ["eye-blink","EYE BLINK"],["malfunction-core","MALFUNCTION CORE"]
+];
+function defaultMalfunctionTools(){ const o={}; MALFUNCTION_TOOLS.forEach(([k])=>o[k]=false); return o; }
+function renderMalfunctionTools(profile){
+  if(!malfunctionToolsGrid)return;
+  const active=profile?.malfunctionTools||{};
+  malfunctionToolsGrid.innerHTML=MALFUNCTION_TOOLS.map(([key,label])=>`<label class="malfunction-tool"><input type="checkbox" data-malfunction-tool="${key}" ${active[key]?'checked':''}><span>${label}</span></label>`).join('');
+  malfunctionToolsGrid.querySelectorAll('[data-malfunction-tool]').forEach(el=>el.addEventListener('change',()=>{
+    const p=getChatProfile()||{}; p.malfunctionTools=p.malfunctionTools||defaultMalfunctionTools(); p.malfunctionTools[el.dataset.malfunctionTool]=el.checked; saveChatProfile(p); scheduleProfileAutosave();
+  }));
+}
 
 function getChatProfile() {
     try {
@@ -431,26 +471,30 @@ function returnToArchive() {
 function authenticateChat() {
     const password = chatPasswordInput.value;
 
-    if (password !== CHAT_NORMAL_PASSWORD && password !== CHAT_SPECIAL_PASSWORD) {
+    if (password !== CHAT_NORMAL_PASSWORD && password !== CHAT_SPECIAL_PASSWORD && password !== CHAT_MALFUNCTION_PASSWORD) {
         chatAuthMessage.textContent = "ACCESS DENIED — INVALID PASSWORD.";
         chatPasswordInput.value = "";
         chatPasswordInput.focus();
         return;
     }
 
-    chatAccessLevel = password === CHAT_SPECIAL_PASSWORD ? "special" : "normal";
+    chatAccessLevel = password === CHAT_MALFUNCTION_PASSWORD ? "malfunction" : password === CHAT_SPECIAL_PASSWORD ? "special" : "normal";
     chatAuthMessage.textContent = "ACCESS GRANTED.";
 
     const existing = getChatProfile();
     if (existing) {
         existing.access = chatAccessLevel;
+        existing.role = roleForAccess(chatAccessLevel);
+        if(chatAccessLevel === "malfunction" && (!existing.effect || existing.effect === "normal")) existing.effect = "you-and-i-forever";
+        existing.malfunctionTools ||= defaultMalfunctionTools();
         saveChatProfile(existing);
         openChat();
         return;
     }
 
     chatEditing = false;
-    chatSpecialOptions.hidden = chatAccessLevel !== "special";
+    chatSpecialOptions.hidden = !isElevatedAccess();
+    chatMalfunctionOptions.hidden = !isMalfunctionAccess();
     chatUsernameInput.value = "";
     chatAvatarInput.value = "";
     chatBioInput.value = "";
@@ -458,7 +502,8 @@ function authenticateChat() {
     chatGlowInput.value = "#ff2d2d";
     chatBadgeInput.value = "";
     chatBannerInput.value = "";
-    chatEffectInput.value = "red-pulse";
+    chatEffectInput.value = chatAccessLevel === "malfunction" ? "you-and-i-forever" : "red-pulse";
+    renderMalfunctionTools({malfunctionTools:defaultMalfunctionTools()});
     showOnly(chatSetupPage);
     chatUsernameInput.focus();
 }
@@ -475,8 +520,10 @@ function openChatSetupForEdit() {
     chatGlowInput.value = profile.glow || "#ff2d2d";
     chatBadgeInput.value = profile.badge || "";
     chatBannerInput.value = profile.banner || "";
-    chatEffectInput.value = profile.effect || "red-pulse";
-    chatSpecialOptions.hidden = profile.access !== "special";
+    chatEffectInput.value = profile.effect || (profile.access === "malfunction" ? "you-and-i-forever" : "red-pulse");
+    chatSpecialOptions.hidden = !isElevatedAccess();
+    chatMalfunctionOptions.hidden = profile.access !== "malfunction";
+    renderMalfunctionTools(profile);
     showOnly(chatSetupPage);
     chatUsernameInput.focus();
 }
@@ -569,6 +616,8 @@ function renderUsers(profile) {
 function renderMe(profile){
   chatMeCard.style.setProperty("--chat-glow", profile.glow || "#39ff88");
   chatMeCard.dataset.effect=profile.effect||"normal";
+  chatMeCard.className='chat-me-card '+(profile.access==='malfunction'?'malfunction-profile ':'')+String(profile.effect||'normal');
+  (profile.malfunctionTools?Object.keys(profile.malfunctionTools).filter(k=>profile.malfunctionTools[k]):[]).forEach(k=>chatMeCard.classList.add('mf-'+k));
   const banner=profile.banner?`<div class="chat-me-banner" style="background-image:url("${escapeText(profile.banner)}")"></div>`:"";
   chatMeCard.innerHTML=`${banner}<img class="chat-me-avatar" src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div class="chat-me-name">${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}" alt="badge">`:""}</div><div class="chat-me-role">${escapeText(profile.role||"MEMBER")}</div><div class="chat-me-bio">${escapeText(profile.bio||"No bio added.")}</div>`;
 }
@@ -749,6 +798,10 @@ chatMediaInput?.addEventListener('change',()=>{const f=chatMediaInput.files?.[0]
 chatReactionFileInput?.addEventListener('change',()=>{const f=chatReactionFileInput.files?.[0];handleReactionFile(f);chatReactionFileInput.value='';});
 chatBannerUploadButton?.addEventListener('click',()=>chatBannerFileInput?.click());
 chatBannerFileInput?.addEventListener('change',()=>{const f=chatBannerFileInput.files?.[0];handleBannerFile(f);chatBannerFileInput.value='';});
+chatAvatarUploadButton?.addEventListener('click',()=>chatAvatarFileInput?.click());
+chatBadgeUploadButton?.addEventListener('click',()=>chatBadgeFileInput?.click());
+chatAvatarFileInput?.addEventListener('change',()=>{const f=chatAvatarFileInput.files?.[0];handleAvatarFile(f);chatAvatarFileInput.value='';});
+chatBadgeFileInput?.addEventListener('change',()=>{const f=chatBadgeFileInput.files?.[0];handleBadgeFile(f);chatBadgeFileInput.value='';});
 
 
 /* ===========================
@@ -766,7 +819,7 @@ let chatPendingPackets = [];
 let chatManualClose = false;
 
 const CHAT_EFFECTS_50 = [
-  ["red-pulse","Red Pulse"],["star-mid","STAR-MID • Starlight Aura"],["blood-glitch","Blood Glitch"],["crimson-flare","Crimson Flare"],
+  ["red-pulse","Red Pulse"],["star-mid","STAR-MID • Starlight Aura"],["you-and-i-forever","YOU AND I FOREVER • MALFUNCTION"],["blood-glitch","Blood Glitch"],["crimson-flare","Crimson Flare"],
   ["inferno","Inferno"],["blood-moon","Blood Moon"],["hellfire","Hellfire"],["void-rift","Void Rift"],["soul-burn","Soul Burn"],["demon-aura","Demon Aura"],["red-lightning","Red Lightning"],
   ["nightmare","Nightmare"],["omega-red","Omega Red"],["red-singularity","Red Singularity"],["cursed-crown","Cursed Crown"],["apocalypse","Apocalypse"],["scarlet-storm","Scarlet Storm"],["crimson-rain","Crimson Rain"],["blood-surge","Blood Surge"],["hell-gate","Hell Gate"],["abyssal-glow","Abyssal Glow"],
   ["dark-flame","Dark Flame"],["soul-shatter","Soul Shatter"],["phantom-red","Phantom Red"],["executioner","Executioner"],["war-drum","War Drum"],["berserker","Berserker"],["rage-core","Rage Core"],["devil-mark","Devil Mark"],["red-curse","Red Curse"],["grave-light","Grave Light"],
@@ -777,8 +830,9 @@ const CHAT_EFFECTS_50 = [
 function fillSpecialEffects(){
   if(!chatEffectInput) return;
   const current=chatEffectInput.value;
-  chatEffectInput.innerHTML=CHAT_EFFECTS_50.map(([v,n])=>`<option value="${v}">${n}</option>`).join("");
-  chatEffectInput.value=CHAT_EFFECTS_50.some(x=>x[0]===current)?current:"red-pulse";
+  const effects=CHAT_EFFECTS_50.filter(x=>x[0]!=="you-and-i-forever" || isMalfunctionAccess());
+  chatEffectInput.innerHTML=effects.map(([v,n])=>`<option value="${v}">${n}</option>`).join("");
+  chatEffectInput.value=effects.some(x=>x[0]===current)?current:(isMalfunctionAccess()?"you-and-i-forever":"red-pulse");
 }
 fillSpecialEffects();
 
@@ -815,7 +869,7 @@ function flushChatPackets(){
 function sendChatAuthAndProfile(){
   if(!chatIsSocketOpen()) return;
   chatAuthenticated=false;
-  const password=window.chat90Password || (getChatProfile()?.access === "special" ? CHAT_SPECIAL_PASSWORD : CHAT_NORMAL_PASSWORD);
+  const password=window.chat90Password || (getChatProfile()?.access === "malfunction" ? CHAT_MALFUNCTION_PASSWORD : getChatProfile()?.access === "special" ? CHAT_SPECIAL_PASSWORD : CHAT_NORMAL_PASSWORD);
   try { chatSocket.send(JSON.stringify({type:"auth",password})); } catch(_){ return; }
 }
 
@@ -881,7 +935,7 @@ function connectChatSocket(){
         return;
       }
       chatAuthenticated=true;
-      chatAccessLevel=packet.special?"special":"normal";
+      chatAccessLevel=packet.malfunction?"malfunction":packet.special?"special":"normal";
       sendChatProfileToServer();
       flushChatPackets();
       return;
@@ -916,6 +970,11 @@ function connectChatSocket(){
       if(packet.profile){const name=packet.profile.username;const oldName=packet.previousUsername;chatOnlineProfiles=chatOnlineProfiles.map(p=>(p.username===name||p.username===oldName)?{...p,...packet.profile}:p);chatServerMessages=chatServerMessages.map(m=>(m.username===name||m.username===oldName)?{...m,...packet.profile}:m);if(getChatProfile()?.username===name)saveChatProfile({...getChatProfile(),...packet.profile});renderGlobalChat(false);}return;
     }
     if(packet.type==="reaction"){const msg=chatServerMessages.find(m=>m.id===packet.messageId);if(msg)msg.reactions=packet.reactions||[];renderGlobalChat(false);return;}
+
+    if(packet.type==="malfunctionBroadcast"){
+      if(packet.media) playMalfunctionBroadcast({data:packet.media,type:packet.mediaType||'video',name:packet.name||'MALFUNCTION'},true);
+      return;
+    }
 
     if(packet.type==="deleted"){
       chatServerMessages=chatServerMessages.filter(x=>x.id!==packet.id);
@@ -980,51 +1039,29 @@ function wsSend(packet){
 
 function authenticateChat(){
   const password=chatPasswordInput.value;
-  if(password!==CHAT_NORMAL_PASSWORD && password!==CHAT_SPECIAL_PASSWORD){ chatAuthMessage.textContent='ACCESS DENIED — INVALID PASSWORD.'; chatPasswordInput.value=''; chatPasswordInput.focus(); return; }
+  if(password!==CHAT_NORMAL_PASSWORD && password!==CHAT_SPECIAL_PASSWORD && password!==CHAT_MALFUNCTION_PASSWORD){ chatAuthMessage.textContent='ACCESS DENIED — INVALID PASSWORD.'; chatPasswordInput.value=''; chatPasswordInput.focus(); return; }
   window.chat90Password=password;
-  chatAccessLevel=password===CHAT_SPECIAL_PASSWORD?'special':'normal';
-  chatSpecialOptions.hidden=chatAccessLevel!=='special';
+  chatAccessLevel=password===CHAT_MALFUNCTION_PASSWORD?'malfunction':password===CHAT_SPECIAL_PASSWORD?'special':'normal';
+  chatSpecialOptions.hidden=!isElevatedAccess(); chatMalfunctionOptions.hidden=!isMalfunctionAccess();
   fillSpecialEffects();
   const existing=getChatProfile();
-  if(existing){
-    existing.access=chatAccessLevel;
-    saveChatProfile(existing);
-    openChat();
-    return;
-  }
-  chatEditing=false;
-  chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value='';
-  chatGlowInput.value='#ff2d2d'; chatBadgeInput.value=''; fillSpecialEffects();
-  showOnly(chatSetupPage); chatUsernameInput.focus();
+  if(existing){ existing.access=chatAccessLevel; existing.role=roleForAccess(chatAccessLevel); if(chatAccessLevel==='malfunction' && (!existing.effect||existing.effect==='normal')) existing.effect='you-and-i-forever'; existing.malfunctionTools ||= defaultMalfunctionTools(); saveChatProfile(existing); openChat(); return; }
+  chatEditing=false; chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value=''; chatGlowInput.value='#ff2d2d'; chatBadgeInput.value=''; chatBannerInput.value=''; chatEffectInput.value=chatAccessLevel==='malfunction'?'you-and-i-forever':'red-pulse'; renderMalfunctionTools({malfunctionTools:defaultMalfunctionTools()}); showOnly(chatSetupPage); chatUsernameInput.focus();
 }
-
 function enterChat(){
-  const username=chatUsernameInput.value.trim();
-  if(!username) return chatUsernameInput.focus();
-  const profile={
-    username:username.slice(0,24),
-    avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,
-    bio:chatBioInput.value.trim().slice(0,160),
-    tags:chatTagsInput.value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,12),
-    access:chatAccessLevel,
-    role:chatAccessLevel==='special'?'SPECIAL / ADMIN':'MEMBER',
-    glow:chatAccessLevel==='special'?(chatGlowInput.value.trim()||'#ff2d2d'):'#39ff88',
-    badge:chatAccessLevel==='special'?chatBadgeInput.value.trim():'',
-    banner:chatAccessLevel==='special'?chatBannerInput.value.trim():'',
-    effect:chatAccessLevel==='special'?chatEffectInput.value:'normal'
-  };
+  const username=chatUsernameInput.value.trim(); if(!username) return chatUsernameInput.focus();
+  const profile={username:username.slice(0,24),avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,bio:chatBioInput.value.trim().slice(0,160),tags:chatTagsInput.value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,12),access:chatAccessLevel,role:roleForAccess(chatAccessLevel),glow:isElevatedAccess()?(chatGlowInput.value.trim()||'#ff2d2d'):'#39ff88',badge:chatBadgeInput.value.trim(),banner:chatBannerInput.value.trim(),effect:isElevatedAccess()?chatEffectInput.value:'normal',malfunctionTools:isMalfunctionAccess()?defaultMalfunctionTools():{}};
   saveChatProfile(profile); chatEditing=false; openChat();
 }
-
 function openChat(){
   const profile=getChatProfile();
   if(!profile) return openChatAuth();
   chatManualClose=false;
-  chatAccessLevel=profile.access==='special'?'special':'normal';
+  chatAccessLevel=profile.access==='malfunction'?'malfunction':profile.access==='special'?'special':'normal';
   showOnly(chatPage);
   renderMe(profile);
   chatMessages.innerHTML='';
-  window.chat90Password=window.chat90Password || (profile.access==='special'?CHAT_SPECIAL_PASSWORD:CHAT_NORMAL_PASSWORD);
+  window.chat90Password=window.chat90Password || (profile.access==='malfunction'?CHAT_MALFUNCTION_PASSWORD:profile.access==='special'?CHAT_SPECIAL_PASSWORD:CHAT_NORMAL_PASSWORD);
   connectChatSocket();
   chatMessageInput.focus();
 }
@@ -1054,14 +1091,15 @@ function renderGlobalChat(forceBottom=false){
 
 function renderMessage(message){
   const article=document.createElement('article');
-  const isSpecialMessage=String(message.role||'').toUpperCase().includes('SPECIAL')||(message.effect&&message.effect!=='normal');
-  article.className=`chat-message ${message.bot?'bot':''} ${isSpecialMessage?'special-message':''} ${message.effect||''}`; article.dataset.effect=message.effect||'normal'; article.style.setProperty('--chat-glow',message.glow||'#ff3030'); article.dataset.messageId=message.id||'';
+  const isSpecialMessage=String(message.role||'').toUpperCase().includes('SPECIAL')||String(message.role||'').toUpperCase().includes('MALFUNCTION')||(message.effect&&message.effect!=='normal');
+  const malfunctionClasses=message.malfunctionTools&&typeof message.malfunctionTools==='object'?Object.keys(message.malfunctionTools).filter(k=>message.malfunctionTools[k]).map(k=>'mf-'+k).join(' '):'';
+  article.className=`chat-message ${message.bot?'bot':''} ${isSpecialMessage?'special-message':''} ${message.effect||''} ${malfunctionClasses}`; article.dataset.effect=message.effect||'normal'; article.style.setProperty('--chat-glow',message.glow||'#ff3030'); article.dataset.messageId=message.id||'';
   const badge=message.badge?`<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">`:'';
-  const manage=chatAccessLevel==='special'&&!message.bot?`<div class="chat-message-actions"><button data-action="delete">DELETE</button><button data-action="kick">REMOVE USER</button></div>`:'';
+  const manage=isElevatedAccess()&&!message.bot?`<div class="chat-message-actions"><button data-action="delete">DELETE</button><button data-action="kick">REMOVE USER</button></div>`:'';
   const reply=message.replyTo?`<div class="chat-reply-preview"><b>↪ ${escapeText(message.replyTo.username||'USER')}</b><span>${escapeText(message.replyTo.text||'[MEDIA]')}</span></div>`:'';
   const media=message.media?`<div class="chat-message-media">${message.mediaType==='video'?`<video controls preload="metadata" src="${escapeText(message.media)}"></video>`:`<img src="${escapeText(message.media)}" alt="Shared media" loading="lazy">`}</div>`:'';
   const legacyImage=message.image?`<img class="chat-message-image" src="${escapeText(message.image)}" alt="Chat image" loading="lazy">`:''; const legacyGif=message.gif?`<img class="chat-message-image" src="${escapeText(message.gif)}" alt="GIF" loading="lazy">`:'';
-  const reactions=Array.isArray(message.reactions)?message.reactions:[]; const reactionThumb=reactions.length?`<span class="chat-reaction-count"><img src="${escapeText(reactions[reactions.length-1].url)}" alt=""> ${reactions.length}</span>`:''; const miniStar=message.effect==='star-mid'?'<span class="message-mini-star" aria-hidden="true">★</span>':'';
+  const reactions=Array.isArray(message.reactions)?message.reactions:[]; const reactionThumb=reactions.length?`<span class="chat-reaction-count"><img src="${escapeText(reactions[reactions.length-1].url)}" alt=""> ${reactions.length}</span>`:''; const miniStar=message.effect==='star-mid'?'<span class="message-mini-star" aria-hidden="true">★</span>':message.effect==='you-and-i-forever'?'<span class="message-mini-eye" aria-hidden="true">◉</span>':'';
   article.innerHTML=`<div class="chat-message-head"><button class="chat-message-identity" type="button"><img class="chat-message-avatar" src="${escapeText(message.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><span class="chat-message-name">${escapeText(message.username)}</span></button>${badge}<span class="chat-message-role">${escapeText(message.role||'MEMBER')}</span><span class="chat-message-time">${escapeText(new Date(message.time||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))}</span></div>${reply}<div class="chat-message-body">${escapeText(message.text||'')}${miniStar}</div>${media}${legacyImage}${legacyGif}<div class="chat-message-tools"><button class="chat-tool-button" data-action="reply">↩ REPLY</button><button class="chat-tool-button" data-action="react">☆ GIF REACT</button>${reactionThumb}</div>${manage}`;
   article.querySelector('.chat-message-identity').addEventListener('click',()=>showViewedProfile(chatOnlineProfiles.find(p=>p.username===message.username)||{username:message.username,avatar:message.avatar,role:message.role,glow:message.glow,badge:message.badge,banner:message.banner,effect:message.effect,tags:[],bio:'',joined:''})); article.querySelector('[data-action="reply"]')?.addEventListener('click',()=>startChatReply(message)); article.querySelector('[data-action="react"]')?.addEventListener('click',()=>openReactionPicker(message.id)); article.querySelector('[data-action="delete"]')?.addEventListener('click',()=>wsSend({type:'delete',id:message.id})); article.querySelector('[data-action="kick"]')?.addEventListener('click',()=>wsSend({type:'kick',username:message.username})); chatMessages.appendChild(article);
 }
@@ -1080,11 +1118,24 @@ function readFileAsDataURL(file,maxBytes){return new Promise((resolve,reject)=>{
 async function handleChatMediaFile(file){if(!file)return;try{const data=await readFileAsDataURL(file,8*1024*1024);const isVideo=file.type.startsWith('video/');const isGif=file.type==='image/gif'||file.name.toLowerCase().endsWith('.gif');sendChatMessage('',{media:data,mediaType:isVideo?'video':(isGif?'gif':'image')});}catch(e){alert(e.message==='File too large'?'MEDIA FILE IS TOO LARGE — 8 MB MAX.':'Could not read that file.');}}
 async function handleReactionFile(file){if(!file||!chatReactionTargetId)return;try{const data=await readFileAsDataURL(file,4*1024*1024);wsSend({type:'reaction',messageId:chatReactionTargetId,url:data});}catch(e){alert(e.message==='File too large'?'REACTION GIF IS TOO LARGE — 4 MB MAX.':'Could not read that GIF.');}chatReactionTargetId=null;}
 async function handleBannerFile(file){if(!file)return;try{const data=await readFileAsDataURL(file,3*1024*1024);chatBannerInput.value=data;saveProfileFromForm(true);}catch(e){alert(e.message==='File too large'?'BANNER IS TOO LARGE — 3 MB MAX.':'Could not read that banner.');}}
-function saveProfileFromForm(silent=false){const username=chatUsernameInput.value.trim();if(!username)return;const profile={username:username.slice(0,24),avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,bio:chatBioInput.value.trim().slice(0,160),tags:chatTagsInput.value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,12),access:chatAccessLevel,role:chatAccessLevel==='special'?'SPECIAL / ADMIN':'MEMBER',glow:chatAccessLevel==='special'?(chatGlowInput.value.trim()||'#ff2d2d'):'#39ff88',badge:chatAccessLevel==='special'?chatBadgeInput.value.trim():'',banner:chatAccessLevel==='special'?chatBannerInput.value.trim():'',effect:chatAccessLevel==='special'?chatEffectInput.value:'normal'};saveChatProfile(profile);window.chat90Password=window.chat90Password||(profile.access==='special'?CHAT_SPECIAL_PASSWORD:CHAT_NORMAL_PASSWORD);if(chatAuthenticated)wsSend({...profile,type:'profile',tags:profile.tags});if(!silent)openChat();}
+let malfunctionPendingMedia=null; let malfunctionOverlayTimer=null;
+async function handleMalfunctionMediaFile(file){if(!file||!isMalfunctionAccess())return;try{const data=await readFileAsDataURL(file,15*1024*1024);const type=file.type.startsWith('video/')?'video':'image';malfunctionPendingMedia={data,type,name:file.name};showMalfunctionMediaOverlay(false);}catch(e){alert(e.message==='File too large'?'MALFUNCTION MEDIA IS TOO LARGE — 15 MB MAX.':'Could not read that media.');}}
+function closeMalfunctionMedia(){clearTimeout(malfunctionOverlayTimer);malfunctionPendingMedia=null;if(malfunctionMediaOverlay){malfunctionMediaOverlay.hidden=true;malfunctionMediaPreview.innerHTML='';}}
+function showMalfunctionMediaOverlay(blockChat=true){if(!malfunctionPendingMedia||!malfunctionMediaOverlay)return;malfunctionMediaOverlay.hidden=false;malfunctionMediaTitle.textContent=malfunctionPendingMedia.type==='video'?'VIDEO LOADED':'IMAGE LOADED';malfunctionMediaPreview.innerHTML=malfunctionPendingMedia.type==='video'?`<video id="malfunctionPreviewVideo" controls autoplay playsinline src="${escapeText(malfunctionPendingMedia.data)}"></video>`:`<img src="${escapeText(malfunctionPendingMedia.data)}" alt="Malfunction media preview">`;malfunctionMediaOverlay.dataset.blockChat=blockChat?'1':'0';}
+function playMalfunctionBroadcast(media,remote=false){if(!media?.data||!malfunctionMediaOverlay)return;clearTimeout(malfunctionOverlayTimer);malfunctionPendingMedia={data:media.data,type:media.type||'video',name:media.name||'MALFUNCTION'};malfunctionMediaOverlay.hidden=false;malfunctionMediaOverlay.dataset.blockChat=remote?'1':'0';malfunctionMediaTitle.textContent=remote?'MALFUNCTION BROADCAST':'TEST PLAYBACK';malfunctionMediaPreview.innerHTML=malfunctionPendingMedia.type==='video'?`<video id="malfunctionPreviewVideo" autoplay controls playsinline src="${escapeText(malfunctionPendingMedia.data)}"></video>`:`<img src="${escapeText(malfunctionPendingMedia.data)}" alt="Malfunction broadcast">`;chatPage.classList.toggle('malfunction-playing',remote);const v=document.getElementById('malfunctionPreviewVideo');if(v){v.onended=()=>{chatPage.classList.remove('malfunction-playing');closeMalfunctionMedia();};v.onerror=()=>{chatPage.classList.remove('malfunction-playing');closeMalfunctionMedia();};}else{malfunctionOverlayTimer=setTimeout(()=>{chatPage.classList.remove('malfunction-playing');closeMalfunctionMedia();},5000);}}
+malfunctionMediaButton?.addEventListener('click',()=>malfunctionMediaInput?.click());
+malfunctionMediaInput?.addEventListener('change',()=>{const f=malfunctionMediaInput.files?.[0];handleMalfunctionMediaFile(f);malfunctionMediaInput.value='';});
+malfunctionCancelButton?.addEventListener('click',closeMalfunctionMedia);
+malfunctionTestButton?.addEventListener('click',()=>{if(malfunctionPendingMedia)playMalfunctionBroadcast(malfunctionPendingMedia,false);});
+malfunctionAnnoyButton?.addEventListener('click',()=>{if(malfunctionPendingMedia){wsSend({type:'malfunctionBroadcast',media:malfunctionPendingMedia.data,mediaType:malfunctionPendingMedia.type,name:malfunctionPendingMedia.name});playMalfunctionBroadcast(malfunctionPendingMedia,true);}});
+
+async function handleAvatarFile(file){if(!file)return;try{chatAvatarInput.value=await readFileAsDataURL(file,3*1024*1024);saveProfileFromForm(true);}catch(e){alert(e.message==='File too large'?'PROFILE IMAGE IS TOO LARGE — 3 MB MAX.':'Could not read that image.');}}
+async function handleBadgeFile(file){if(!file)return;try{chatBadgeInput.value=await readFileAsDataURL(file,2*1024*1024);saveProfileFromForm(true);}catch(e){alert(e.message==='File too large'?'BADGE IS TOO LARGE — 2 MB MAX.':'Could not read that image.');}}
+function saveProfileFromForm(silent=false){const username=chatUsernameInput.value.trim();if(!username)return;const old=getChatProfile()||{};const profile={username:username.slice(0,24),avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,bio:chatBioInput.value.trim().slice(0,160),tags:chatTagsInput.value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,12),access:chatAccessLevel,role:roleForAccess(chatAccessLevel),glow:isElevatedAccess()?(chatGlowInput.value.trim()||'#ff2d2d'):'#39ff88',badge:chatBadgeInput.value.trim(),banner:chatBannerInput.value.trim(),effect:isElevatedAccess()?chatEffectInput.value:'normal',malfunctionTools:isMalfunctionAccess()?(old.malfunctionTools||defaultMalfunctionTools()):{}};saveChatProfile(profile);window.chat90Password=profile.access==='malfunction'?CHAT_MALFUNCTION_PASSWORD:profile.access==='special'?CHAT_SPECIAL_PASSWORD:CHAT_NORMAL_PASSWORD;if(chatAuthenticated)wsSend({...profile,type:'profile',tags:profile.tags});if(!silent)openChat();}
 
 let chatProfileSaveTimer=null;
 function scheduleProfileAutosave(){
-  if(!chatEditing||chatAccessLevel!=='special') return;
+  if(!chatEditing||!isElevatedAccess()) return;
   clearTimeout(chatProfileSaveTimer);
   chatProfileSaveTimer=setTimeout(()=>saveProfileFromForm(true),450);
 }
@@ -1098,7 +1149,7 @@ function showViewedProfile(profile){
   if(!profile) return;
   const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-30).reverse();
   const banner=profile.banner?`<div class="viewed-profile-banner" style="background-image:url("${escapeText(profile.banner)}")"></div>`:"";
-  chatViewedProfile.innerHTML=`${banner}<div class="viewed-profile-hero" style="--chat-glow:${escapeText(profile.glow||'#ff3030')}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div></div></div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.gif?'[GIF]':'[IMAGE]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
+  chatViewedProfile.innerHTML=`${banner}<div class="viewed-profile-hero ${profile.access==='malfunction'?'malfunction-profile-hero':''}" style="--chat-glow:${escapeText(profile.glow||'#ff3030')}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div></div></div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.gif?'[GIF]':'[IMAGE]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
   chatProfileModal.hidden=false;
 }
 

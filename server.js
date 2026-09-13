@@ -9,6 +9,7 @@ const ROOT = __dirname;
 const DB = path.join(ROOT, 'chat90-data.json');
 const NORMAL_PASSWORD = process.env.CHAT90_PASSWORD || '56789';
 const SPECIAL_PASSWORD = process.env.CHAT90_SPECIAL_PASSWORD || '9!GAG';
+const MALFUNCTION_PASSWORD = process.env.CHAT90_MALFUNCTION_PASSWORD || 'Ink';
 
 let state = { profiles: {}, messages: [], banned: [], friends: {}, dms: {} };
 try { state = JSON.parse(fs.readFileSync(DB, 'utf8')); } catch (_) {}
@@ -25,7 +26,7 @@ function broadcast(packet, except) {
   for (const [ws] of clients) if (ws !== except && ws.readyState === WebSocket.OPEN) ws.send(data);
 }
 function publicProfile(p) {
-  return { username:p.username, avatar:p.avatar, bio:p.bio, role:p.role, glow:p.glow, badge:p.badge, banner:p.banner||'', effect:p.effect, tags:p.tags || [], joined:p.joined };
+  return { username:p.username, avatar:p.avatar, bio:p.bio, role:p.role, glow:p.glow, badge:p.badge, banner:p.banner||'', effect:p.effect, tags:p.tags || [], malfunctionTools:p.malfunctionTools||{}, access:p.access||'normal', joined:p.joined };
 }
 function onlineProfiles() {
   const seen = new Set(); const out=[];
@@ -68,22 +69,22 @@ wss.on('connection',(ws)=>{
     const s=sessions.get(sid); if(!s) return;
     if(m.type==='auth') {
       const pass=String(m.password||'');
-      if(pass!==NORMAL_PASSWORD && pass!==SPECIAL_PASSWORD) return send(ws,{type:'authResult',ok:false,message:'ACCESS DENIED — INVALID PASSWORD.'});
-      s.special=pass===SPECIAL_PASSWORD; return send(ws,{type:'authResult',ok:true,special:s.special});
+      if(pass!==NORMAL_PASSWORD && pass!==SPECIAL_PASSWORD && pass!==MALFUNCTION_PASSWORD) return send(ws,{type:'authResult',ok:false,message:'ACCESS DENIED — INVALID PASSWORD.'});
+      s.special=pass===SPECIAL_PASSWORD; s.malfunction=pass===MALFUNCTION_PASSWORD; return send(ws,{type:'authResult',ok:true,special:s.special,malfunction:s.malfunction});
     }
     if(m.type==='profile') {
-      if(!s.special && m.access==='special') return send(ws,{type:'error',message:'Special access cannot be self-assigned.'});
+      if(!s.special && !s.malfunction && (m.access==='special'||m.access==='malfunction')) return send(ws,{type:'error',message:'Elevated access cannot be self-assigned.'});
       const username=clean(m.username,24); if(!username) return;
       if(state.banned.includes(username.toLowerCase())) return send(ws,{type:'kicked',message:'This username is blocked from CHAT_90.'});
       const old=s.username;
-      const profile={username,avatar:clean(m.avatar,500)||'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',bio:clean(m.bio,160),tags:Array.isArray(m.tags)?m.tags.map(x=>clean(x,24)).filter(Boolean).slice(0,12):[],access:s.special?'special':'normal',role:s.special?'SPECIAL / ADMIN':'MEMBER',glow:s.special?clean(m.glow,30)||'#ff2d2d':'#39ff88',badge:s.special?clean(m.badge,500):'',banner:s.special?cleanMedia(m.banner,4200000):'',effect:s.special?clean(m.effect,50)||'red-pulse':'normal',joined:old && state.profiles[old] ? state.profiles[old].joined : new Date().toISOString()};
+      const profile={username,avatar:clean(m.avatar,500)||'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',bio:clean(m.bio,160),tags:Array.isArray(m.tags)?m.tags.map(x=>clean(x,24)).filter(Boolean).slice(0,12):[],access:s.malfunction?'malfunction':s.special?'special':'normal',role:s.malfunction?'MALFUNCTION':s.special?'SPECIAL / ADMIN':'MEMBER',glow:(s.special||s.malfunction)?clean(m.glow,30)||'#ff2d2d':'#39ff88',badge:clean(m.badge,500),banner:cleanMedia(m.banner,4200000),effect:(s.special||s.malfunction)?(s.malfunction?clean(m.effect,80)||'you-and-i-forever':(clean(m.effect,80)==='you-and-i-forever'?'red-pulse':clean(m.effect,80)||'red-pulse')):'normal',malfunctionTools:s.malfunction&&m.malfunctionTools&&typeof m.malfunctionTools==='object'?Object.fromEntries(Object.entries(m.malfunctionTools).slice(0,34).map(([k,v])=>[clean(k,40),!!v])):{},joined:old && state.profiles[old] ? state.profiles[old].joined : new Date().toISOString()};
       if(old && old!==username){
         delete state.profiles[old];
         for(const msg of state.messages) if(msg.username===old) msg.username=username;
       }
       state.profiles[username]=profile; s.username=username; save();
       // Profile changes propagate to every existing message immediately, so old messages update too.
-      for(const msg of state.messages){ if(msg.username===username){ Object.assign(msg,{avatar:profile.avatar,bio:profile.bio,role:profile.role,glow:profile.glow,badge:profile.badge,banner:profile.banner,effect:profile.effect}); } }
+      for(const msg of state.messages){ if(msg.username===username){ Object.assign(msg,{avatar:profile.avatar,bio:profile.bio,role:profile.role,glow:profile.glow,badge:profile.badge,banner:profile.banner,effect:profile.effect,malfunctionTools:profile.malfunctionTools||{}}); } }
       save();
       send(ws,{type:'profileSaved',profile:publicProfile(profile)});
       broadcast({type:'profileUpdated',profile:publicProfile(profile),previousUsername:old||null});
@@ -94,7 +95,7 @@ wss.on('connection',(ws)=>{
     if(m.type==='message') {
       if(!s.username || !state.profiles[s.username]) return;
       const p=state.profiles[s.username];
-      const msg={id:id(),time:new Date().toISOString(),username:p.username,avatar:p.avatar,role:p.role,glow:p.glow,badge:p.badge,banner:p.banner||'',effect:p.effect,text:clean(m.text,500),image:clean(m.image,800),gif:clean(m.gif,800),media:cleanMedia(m.media,11000000),mediaType:['image','gif','video'].includes(m.mediaType)?m.mediaType:'' ,replyTo:m.replyTo?{id:clean(m.replyTo.id,80),username:clean(m.replyTo.username,24),text:clean(m.replyTo.text,500)}:null,reactions:[]};
+      const msg={id:id(),time:new Date().toISOString(),username:p.username,avatar:p.avatar,role:p.role,glow:p.glow,badge:p.badge,banner:p.banner||'',effect:p.effect,malfunctionTools:p.malfunctionTools||{},text:clean(m.text,500),image:clean(m.image,800),gif:clean(m.gif,800),media:cleanMedia(m.media,11000000),mediaType:['image','gif','video'].includes(m.mediaType)?m.mediaType:'' ,replyTo:m.replyTo?{id:clean(m.replyTo.id,80),username:clean(m.replyTo.username,24),text:clean(m.replyTo.text,500)}:null,reactions:[]};
       if(!msg.text&&!msg.image&&!msg.gif&&!msg.media) return;
       state.messages.push(msg); state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); send(ws,{type:'message',message:msg}); return;
     }
@@ -109,14 +110,21 @@ wss.on('connection',(ws)=>{
       broadcast({type:'reaction',messageId:target.id,reactions:target.reactions}); send(ws,{type:'reaction',messageId:target.id,reactions:target.reactions}); return;
     }
     if(m.type==='delete') {
-      if(!s.special) return; state.messages=state.messages.filter(x=>x.id!==m.id); save(); broadcast({type:'deleted',id:m.id}); send(ws,{type:'deleted',id:m.id}); return;
+      if(!s.special && !s.malfunction) return; state.messages=state.messages.filter(x=>x.id!==m.id); save(); broadcast({type:'deleted',id:m.id}); send(ws,{type:'deleted',id:m.id}); return;
     }
     if(m.type==='kick') {
-      if(!s.special) return; const target=clean(m.username,24); state.banned.push(target.toLowerCase()); save();
+      if(!s.special && !s.malfunction) return; const target=clean(m.username,24); state.banned.push(target.toLowerCase()); save();
       for(const [id2,ss] of sessions) if(ss.username===target){ send(ss.ws,{type:'kicked',message:'You were removed from CHAT_90 by an administrator.'}); ss.ws.close(); }
       broadcast({type:'presence',online:onlineProfiles()}); return;
     }
 
+    if(m.type==='malfunctionBroadcast') {
+      if(!s.malfunction) return;
+      const media=cleanMedia(m.media,22000000); const mediaType=['image','video'].includes(m.mediaType)?m.mediaType:'';
+      if(!media || !mediaType) return;
+      broadcast({type:'malfunctionBroadcast',username:s.username,media,mediaType,name:clean(m.name,120),time:new Date().toISOString()});
+      return;
+    }
     if(m.type==='friendToggle') {
       if(!s.username) return;
       const target=clean(m.username,24);
