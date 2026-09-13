@@ -21,27 +21,45 @@ let loadingTimer = null;
 const backgroundNoise = document.getElementById("backgroundNoise");
 let backgroundNoiseStarted = false;
 
+// Start the background track as soon as the page is loaded.
+// Browsers may block unmuted autoplay until the visitor interacts;
+// once they click/tap/type, we immediately start it at the saved volume.
 function startBackgroundNoise() {
     if (!backgroundNoise || backgroundNoiseStarted) return;
 
-    backgroundNoise.volume = 0.05;
     backgroundNoise.loop = true;
+    backgroundNoise.volume = 0.05;
 
     const playPromise = backgroundNoise.play();
-
-    if (playPromise && typeof playPromise.catch === "function") {
+    if (playPromise && typeof playPromise.then === "function") {
         playPromise.then(() => {
             backgroundNoiseStarted = true;
-        }).catch(error => {
-            console.warn("Background noise could not play:", error);
+        }).catch(() => {
+            // Autoplay was blocked. The interaction listeners below will retry.
         });
-    } else {
-        backgroundNoiseStarted = true;
     }
 }
 
-document.addEventListener("pointerdown", startBackgroundNoise, { once: true });
-document.addEventListener("keydown", startBackgroundNoise, { once: true });
+// Try immediately — this works automatically when the browser permits autoplay.
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startBackgroundNoise, { once: true });
+} else {
+    startBackgroundNoise();
+}
+
+// Retry after the first user interaction so Chrome/Edge/Safari can unlock audio.
+function unlockBackgroundNoise() {
+    if (!backgroundNoise) return;
+    backgroundNoise.loop = true;
+    backgroundNoise.volume = 0.05;
+    backgroundNoise.play().then(() => {
+        backgroundNoiseStarted = true;
+    }).catch(() => {});
+}
+
+document.addEventListener("pointerdown", unlockBackgroundNoise, { passive: true });
+document.addEventListener("keydown", unlockBackgroundNoise, { passive: true });
+document.addEventListener("touchstart", unlockBackgroundNoise, { passive: true });
 
 /* ---------------------------
    ONE-TIME LOADING SOUND
@@ -1192,11 +1210,11 @@ showViewedProfile = function(profile){
   try{settings={...defaults,...JSON.parse(localStorage.getItem('echoShareSettings')||'{}')}}catch(_){ }
   const bg=document.getElementById('backgroundNoise');
   const notif=document.getElementById('chatNotificationSound');
-  let audioUnlocked=false;
+  let audioUnlocked=true;
   function save(){localStorage.setItem('echoShareSettings',JSON.stringify(settings));apply();}
   function apply(){
     const master=(Number(settings.master)||0)/100;
-    if(bg){bg.volume=master*(Number(settings.background)||0)/100; if(!settings.backgroundOn){bg.pause()}else if(audioUnlocked&&bg.paused){bg.play().catch(()=>{})}}
+    if(bg){bg.volume=master*(Number(settings.background)||0)/100; if(!settings.backgroundOn){bg.pause()}else if(bg.paused){bg.play().catch(()=>{})}}
     if(notif)notif.volume=master*(Number(settings.notification)||0)/100;
     document.body.classList.toggle('settings-compact',!!settings.compact);
     document.body.classList.toggle('settings-no-motion',!!settings.reduceMotion||!settings.profileAnimations);
