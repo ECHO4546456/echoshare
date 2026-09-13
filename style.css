@@ -518,7 +518,7 @@ button {
     border-radius: 30px;
     background:
         linear-gradient(90deg, rgba(2,8,5,0.97) 0%, rgba(3,10,7,0.82) 56%, rgba(2,7,5,0.96) 100%),
-        url("https://i.pinimg.com/736x/2f/85/41/2f854111c4615359a7e39fec07e5e9bb.jpg")
+        url("https://i.pinimg.com/736x/05/5e/de/055ede2a7f85f43c59fe135c4771204c.jpg")
         center / cover no-repeat;
     box-shadow: 0 25px 80px rgba(0,0,0,0.35);
 }
@@ -3126,4 +3126,66 @@ button,input,select,textarea{max-width:100%;box-sizing:border-box}
   button,.chat-user-clickable,.chat-message-identity,.chat-tool-button,input[type=checkbox]{-webkit-tap-highlight-color:transparent}
   button{min-height:36px}
   .chat-tool-button{min-height:32px}
+}
+
+/* =========================================================
+   CHAT_90 PROFILE BACKGROUNDS + ANGELIC PRAISE // INK ONLY
+   ========================================================= */
+.chat-field-hint{display:block;margin:-4px 0 9px;color:#668075;font-size:8px;line-height:1.5;letter-spacing:.4px}
+.chat-message{position:relative;overflow:hidden;isolation:isolate}
+.chat-message-background{position:absolute;inset:0;z-index:0;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:.24;filter:saturate(1.15) contrast(1.08);pointer-events:none}
+.chat-message-background::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.32),rgba(0,0,0,.72));pointer-events:none}
+.chat-message>.chat-message-head,.chat-message>.chat-message-body,.chat-message>.chat-message-media,.chat-message>.chat-message-image,.chat-message>.chat-message-tools,.chat-message>.chat-message-actions,.chat-message>.chat-reply-preview{position:relative;z-index:2}
+.chat-message-background~.chat-message-head{position:relative}
+
+/* Make the wiki readable instead of putting a heavy dark glass sheet over it. */
+.profile-page .side-card,
+.profile-page .wiki-article{
+  background:linear-gradient(145deg,rgba(12,28,21,.94),rgba(6,17,13,.92))!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  box-shadow:0 20px 60px rgba(0,0,0,.20),inset 0 0 32px rgba(57,255,136,.025)!important;
+}
+.profile-page .wiki-article::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.025),transparent 38%,rgba(84,234,255,.018));
+  z-index:0;
+}
+
+/* ANGELIC PRAISE is an Ink/MALFUNCTION-exclusive aura. */
+.chat-me-card.angelic-praise,
+.chat-message.angelic-praise,
+.viewed-profile-hero.angelic-profile-hero{overflow:visible!important}
+.angelic-profile-aura,.angelic-message-aura{position:absolute;pointer-events:none;z-index:1}
+.angelic-profile-aura::before,.angelic-profile-aura::after,
+.angelic-message-aura::before,.angelic-message-aura::after{
+  content:"🪽";position:absolute;font-size:64px;line-height:1;filter:drop-shadow(0 0 8px rgba(255,255,255,.9)) drop-shadow(0 0 20px rgba(170,220,255,.7));animation:angelWingFloat 2.8s ease-in-out infinite;opacity:.96;
+}
+.angelic-profile-aura::before,.angelic-message-aura::before{right:100%;top:48%;transform:translateY(-50%) scaleX(-1) rotate(-8deg)}
+.angelic-profile-aura::after,.angelic-message-aura::after{left:100%;top:48%;transform:translateY(-50%) rotate(-8deg);animation-delay:-1.4s}
+.chat-me-card.angelic-praise::after{content:"◯";position:absolute;left:50%;top:56px;transform:translateX(-50%);width:42px;height:42px;border:3px solid rgba(255,255,255,.92);border-radius:50%;color:transparent;background:transparent;box-shadow:0 0 10px #fff,0 0 28px rgba(150,220,255,.9),inset 0 0 12px rgba(255,255,255,.3);animation:angelHalo 2.2s ease-in-out infinite;z-index:4;pointer-events:none}
+.chat-message.angelic-praise::before{content:"✦  ANGELIC PRAISE  ✦";position:absolute;top:8px;left:50%;transform:translateX(-50%);color:#fff;letter-spacing:3px;font-size:7px;font-weight:900;text-shadow:0 0 8px #fff,0 0 18px #bfeaff;z-index:3;pointer-events:none}
+.chat-message.angelic-praise{border-color:rgba(220,245,255,.78)!important;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.18),transparent 35%),linear-gradient(135deg,rgba(120,180,220,.13),rgba(255,255,255,.035),rgba(130,190,255,.12))!important;box-shadow:0 0 25px rgba(210,240,255,.34),0 0 70px rgba(120,200,255,.18),inset 0 0 30px rgba(255,255,255,.08)!important;animation:angelCardPulse 2.8s ease-in-out infinite}
+.chat-message.angelic-praise .chat-message-name,.chat-me-card.angelic-praise .chat-me-name{color:#fff;text-shadow:0 0 8px #fff,0 0 20px #bde9ff,0 0 34px #fff;animation:angelNameGlow 1.8s ease-in-out infinite alternate}
+.chat-message.angelic-praise .chat-message-body{color:#f8fdff;text-shadow:0 0 8px rgba(255,255,255,.72)}
+.chat-me-card.angelic-praise .chat-me-role{color:#d8f3ff;text-shadow:0 0 10px rgba(170,225,255,.8)}
+.viewed-profile-hero.angelic-profile-hero::before,.viewed-profile-hero.angelic-profile-hero::after{content:"🪽";position:absolute;top:48%;font-size:72px;line-height:1;filter:drop-shadow(0 0 10px #fff) drop-shadow(0 0 22px rgba(150,220,255,.8));pointer-events:none;animation:angelWingFloat 2.8s ease-in-out infinite;z-index:-1}
+.viewed-profile-hero.angelic-profile-hero::before{right:calc(100% - 5px);transform:translateY(-50%) scaleX(-1)}
+.viewed-profile-hero.angelic-profile-hero::after{left:calc(100% - 5px);transform:translateY(-50%);animation-delay:-1.4s}
+@keyframes angelWingFloat{0%,100%{margin-top:-2px}50%{margin-top:5px;filter:drop-shadow(0 0 12px #fff) drop-shadow(0 0 30px rgba(170,230,255,.9))}}
+@keyframes angelHalo{0%,100%{box-shadow:0 0 8px #fff,0 0 22px rgba(150,220,255,.65)}50%{box-shadow:0 0 16px #fff,0 0 40px rgba(150,220,255,1)}}
+@keyframes angelCardPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.08)}}
+@keyframes angelNameGlow{to{text-shadow:0 0 12px #fff,0 0 28px #bde9ff,0 0 46px #fff}}
+
+@media(max-width:760px){
+  .chat-message-background{opacity:.20}
+  .angelic-profile-aura::before,.angelic-profile-aura::after,.angelic-message-aura::before,.angelic-message-aura::after{font-size:42px}
+  .chat-me-card.angelic-praise::after{top:48px;width:30px;height:30px;border-width:2px}
+  .viewed-profile-hero.angelic-profile-hero::before,.viewed-profile-hero.angelic-profile-hero::after{font-size:46px}
+}
+
+/* Angelic Praise geometry polish */
+.angelic-profile-aura,.angelic-message-aura{inset:0}
+.viewed-profile-hero.angelic-profile-hero .viewed-role::after{
+  content:"◯";display:inline-flex;align-items:center;justify-content:center;margin-left:12px;width:24px;height:24px;border:2px solid rgba(255,255,255,.95);border-radius:50%;color:transparent;vertical-align:middle;box-shadow:0 0 10px #fff,0 0 25px rgba(150,220,255,.9);animation:angelHalo 2.2s ease-in-out infinite;
 }
