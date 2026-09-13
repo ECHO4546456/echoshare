@@ -16,3 +16,8 @@ Codes:
 - Malfunction: Ink
 
 Replace the frontend and backend files in the same GitHub repository/branch used by Render. Do not upload the ZIP itself as a website file.
+
+
+## Embedded audio
+This build embeds the background-noise and chat-notification MP3 data directly into `script.js`.
+You do NOT need an `audio/` folder for those two sounds in this build. The HTML audio elements are populated by the script at runtime.
