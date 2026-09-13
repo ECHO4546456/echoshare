@@ -1,1 +1,0 @@
-Put your custom audio file here and name it background-noise.mp3. The website plays it at 5% volume after the first click/key press.
