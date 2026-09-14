@@ -858,10 +858,40 @@ const SEASON_EFFECT_MAP=Object.fromEntries(Object.values(SEASON_CODES).flat());
 function getUnlockedSeasonEffects(){try{return JSON.parse(localStorage.getItem('echoShareSeasonEffects')||'[]')}catch(_){return []}}
 function saveUnlockedSeasonEffects(v){localStorage.setItem('echoShareSeasonEffects',JSON.stringify([...new Set(v)]))}
 function initSeasonCodes(){
- const input=document.getElementById('seasonCodeInput'),btn=document.getElementById('seasonCodeRedeem'),status=document.getElementById('seasonCodeStatus'),list=document.getElementById('seasonUnlockedList'); if(!input||!btn)return;
- function draw(){const u=getUnlockedSeasonEffects();list.innerHTML=u.length?`<span class="season-unlocked-label">UNLOCKED:</span> ${u.map(k=>`<span class="season-chip">${escapeText(SEASON_EFFECT_MAP[k]||k)}</span>`).join('')}`:'<span class="season-unlocked-label">No seasonal effects unlocked yet.</span>'}
- function redeem(){const code=input.value.trim().toUpperCase(),effects=SEASON_CODES[code];if(!effects){status.textContent='CODE INVALID OR NOT AVAILABLE.';status.className='code-redeem-status bad';return}const unlocked=getUnlockedSeasonEffects(),added=effects.map(x=>x[0]).filter(x=>!unlocked.includes(x));if(!added.length){status.textContent='THIS CODE IS ALREADY REDEEMED IN THIS BROWSER.';status.className='code-redeem-status';return}saveUnlockedSeasonEffects([...unlocked,...added]);status.textContent=`CODE ACCEPTED — ${added.length} HALLOW NIGHT EFFECTS UNLOCKED.`;status.className='code-redeem-status good';input.value='';draw();fillSpecialEffects()}
- btn.addEventListener('click',redeem);input.addEventListener('keydown',e=>{if(e.key==='Enter')redeem()});draw();
+  const input=document.getElementById('seasonCodeInput'),btn=document.getElementById('seasonCodeRedeem'),status=document.getElementById('seasonCodeStatus'),list=document.getElementById('seasonUnlockedList');
+  if(!input||!btn)return;
+  function draw(){
+    const u=getUnlockedSeasonEffects();
+    list.innerHTML=u.length?`<span class="season-unlocked-label">UNLOCKED:</span> ${u.map(k=>`<span class="season-chip season-chip-${escapeText(k)}">✦ ${escapeText(SEASON_EFFECT_MAP[k]||k)}</span>`).join('')}`:'<span class="season-unlocked-label">NO SEASONAL EFFECTS UNLOCKED YET.</span>';
+  }
+  function redeem(){
+    const code=input.value.trim().toUpperCase();
+    const effects=SEASON_CODES[code];
+    status.className='code-redeem-status';
+    if(!effects){
+      status.textContent='✕ CODE REJECTED — UNKNOWN SEASONAL SIGNAL.';
+      status.classList.add('bad');
+      return;
+    }
+    const unlocked=getUnlockedSeasonEffects();
+    const added=effects.map(x=>x[0]).filter(x=>!unlocked.includes(x));
+    if(!added.length){
+      status.textContent='⚠ THIS CODE IS ALREADY REDEEMED IN THIS BROWSER.';
+      status.classList.add('already');
+      return;
+    }
+    saveUnlockedSeasonEffects([...unlocked,...added]);
+    status.innerHTML=`<b>✓ SIGNAL ACCEPTED</b><span>${added.length} HALLOW NIGHT VFX DEPLOYED.</span>`;
+    status.classList.add('good');
+    input.value='';
+    draw();
+    fillSpecialEffects();
+    const panel=document.querySelector('.code-redeem-panel');
+    if(panel){panel.classList.remove('season-code-burst');void panel.offsetWidth;panel.classList.add('season-code-burst');setTimeout(()=>panel.classList.remove('season-code-burst'),1400);}
+  }
+  btn.addEventListener('click',redeem);
+  input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();redeem();}});
+  draw();
 }
 
 function fillSpecialEffects(){
@@ -1075,16 +1105,63 @@ function wsSend(packet){
 }
 
 function authenticateChat(){
-  const password=chatPasswordInput.value;
-  if(password!==CHAT_NORMAL_PASSWORD && password!==CHAT_SPECIAL_PASSWORD && password!==CHAT_MALFUNCTION_PASSWORD){ chatAuthMessage.textContent='ACCESS DENIED — INVALID PASSWORD.'; chatPasswordInput.value=''; chatPasswordInput.focus(); return; }
+  const password=String(chatPasswordInput.value||'').trim();
+  const valid=password===CHAT_NORMAL_PASSWORD||password===CHAT_SPECIAL_PASSWORD||password===CHAT_MALFUNCTION_PASSWORD;
+  if(!valid){
+    chatAuthMessage.textContent='ACCESS DENIED — INVALID CHAT_90 CODE.';
+    chatAuthMessage.className='chat-auth-message bad';
+    chatPasswordInput.value=''; chatPasswordInput.focus(); return;
+  }
+
+  // A password switch is a fresh CHAT_90 session. This prevents an old WebSocket
+  // or old browser profile from carrying the previous access tier into the new one.
+  chatManualClose=true;
+  try{ chatSocket?.close(); }catch(_){}
+  chatSocket=null; chatConnected=false; chatAuthenticated=false; chatPendingPackets=[];
+  chatManualClose=false;
+
   window.chat90Password=password;
   chatAccessLevel=password===CHAT_MALFUNCTION_PASSWORD?'malfunction':password===CHAT_SPECIAL_PASSWORD?'special':'normal';
-  chatSpecialOptions.hidden=!isElevatedAccess(); chatMalfunctionOptions.hidden=!isMalfunctionAccess(); if(malfunctionAnnoyButton)malfunctionAnnoyButton.hidden=!isMalfunctionAccess();
+  chatAuthMessage.textContent='ACCESS GRANTED — LOADING CHAT_90...';
+  chatAuthMessage.className='chat-auth-message good';
+  chatSpecialOptions.hidden=!isElevatedAccess();
+  chatMalfunctionOptions.hidden=!isMalfunctionAccess();
+  if(malfunctionAnnoyButton) malfunctionAnnoyButton.hidden=!isMalfunctionAccess();
   fillSpecialEffects();
-  const rememberProfile = window.echoShareGetSetting ? window.echoShareGetSetting("remember") !== false : true;
-  const existing=rememberProfile ? getChatProfile() : null;
-  if(existing){ existing.access=chatAccessLevel; existing.role=roleForAccess(chatAccessLevel); if(chatAccessLevel==='malfunction' && (!existing.effect||existing.effect==='normal')) existing.effect='you-and-i-forever'; existing.malfunctionTools ||= defaultMalfunctionTools(); saveChatProfile(existing); openChat(); return; }
-  chatEditing=false; chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value=''; chatGlowInput.value='#ff2d2d'; chatBadgeInput.value=''; chatBannerInput.value=''; chatBackgroundInput.value=''; chatEffectInput.value=chatAccessLevel==='malfunction'?'you-and-i-forever':'red-pulse'; renderMalfunctionTools({malfunctionTools:defaultMalfunctionTools()}); showOnly(chatSetupPage); chatUsernameInput.focus();
+
+  const rememberProfile=window.echoShareGetSetting?window.echoShareGetSetting('remember')!==false:true;
+  const existing=rememberProfile?getChatProfile():null;
+  if(existing){
+    existing.access=chatAccessLevel;
+    existing.role=roleForAccess(chatAccessLevel);
+    if(chatAccessLevel==='normal'){
+      existing.glow='#39ff88';
+      existing.effect='normal';
+      existing.malfunctionTools={};
+    }else if(chatAccessLevel==='special'){
+      existing.glow=existing.glow||'#ff2d2d';
+      if(existing.effect==='you-and-i-forever'||existing.effect==='angelic-praise') existing.effect='red-pulse';
+      existing.malfunctionTools={};
+    }else{
+      existing.glow=existing.glow||'#ff2d2d';
+      if(!existing.effect||existing.effect==='normal') existing.effect='you-and-i-forever';
+      existing.malfunctionTools=existing.malfunctionTools||defaultMalfunctionTools();
+    }
+    saveChatProfile(existing);
+    showOnly(chatPage);
+    renderMe(existing);
+    chatMessages.innerHTML='';
+    connectChatSocket();
+    return;
+  }
+
+  chatEditing=false;
+  chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value='';
+  chatGlowInput.value='#ff2d2d'; chatBadgeInput.value=''; chatBannerInput.value=''; chatBackgroundInput.value='';
+  chatEffectInput.value=chatAccessLevel==='malfunction'?'you-and-i-forever':'red-pulse';
+  renderMalfunctionTools({malfunctionTools:defaultMalfunctionTools()});
+  showOnly(chatSetupPage);
+  chatUsernameInput.focus();
 }
 function enterChat(){
   const username=chatUsernameInput.value.trim(); if(!username) return chatUsernameInput.focus();
