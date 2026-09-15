@@ -10,13 +10,11 @@ const DB = path.join(ROOT, 'chat90-data.json');
 const NORMAL_PASSWORD = process.env.CHAT90_PASSWORD || '56789';
 const SPECIAL_PASSWORD = process.env.CHAT90_SPECIAL_PASSWORD || '9!GAG';
 const MALFUNCTION_PASSWORD = process.env.CHAT90_MALFUNCTION_PASSWORD || 'Ink';
+const SEASON_EFFECTS = new Set(['halloween-pumpkin','halloween-fog','halloween-candy','halloween-jack','halloween-ghosts','halloween-witchfire','halloween-static','halloween-reaper','halloween-harvest']);
 
-let state = { profiles: {}, messages: [], banned: [], friends: {}, friendRequests: {}, dms: {} };
+let state = { profiles: {}, messages: [], banned: [], friends: {}, dms: {} };
 try { state = JSON.parse(fs.readFileSync(DB, 'utf8')); } catch (_) {}
-state.profiles ||= {}; state.messages ||= []; state.banned ||= []; state.friends ||= {}; state.friendRequests ||= {}; state.dms ||= {};
-// Normalize legacy friend data so old saves remain usable.
-for (const [u, list] of Object.entries(state.friends)) { if (!Array.isArray(list)) state.friends[u]=[]; }
-for (const [u, list] of Object.entries(state.friendRequests)) { if (!Array.isArray(list)) state.friendRequests[u]=[]; }
+state.profiles ||= {}; state.messages ||= []; state.banned ||= []; state.friends ||= {}; state.dms ||= {}; state.meta ||= {messagesSincePrune:0}; state.meta.messagesSincePrune ||= 0;
 const clients = new Map();
 const sessions = new Map();
 
@@ -24,21 +22,20 @@ function save() { fs.writeFileSync(DB, JSON.stringify(state, null, 2)); }
 function id() { return crypto.randomUUID(); }
 function clean(s, n) { return String(s ?? '').trim().slice(0, n); }
 function cleanMedia(s, max) { const v=String(s??'').trim(); return v.length<=max?v:''; }
-const SEASONAL_EFFECTS = new Set(['halloween-pumpkin','halloween-fog','halloween-candy','halloween-jack','halloween-ghosts','halloween-witchfire','halloween-static','halloween-reaper','halloween-harvest']);
-function allowedEffectForSession(s, requested){ const e=clean(requested,80); if(SEASONAL_EFFECTS.has(e)) return e; if(s.malfunction) return e==='angelic-praise'?'angelic-praise':e||'you-and-i-forever'; if(s.special) return ['you-and-i-forever','angelic-praise'].includes(e)?'red-pulse':e||'red-pulse'; return 'normal'; }
 function broadcast(packet, except) {
   const data = JSON.stringify(packet);
   for (const [ws] of clients) if (ws !== except && ws.readyState === WebSocket.OPEN) ws.send(data);
 }
 function publicProfile(p) {
-  return { username:p.username, profileKey:p.profileKey||'', avatar:p.avatar, bio:p.bio, role:p.role, glow:p.glow, badge:p.badge, banner:p.banner||'', chatBackground:p.chatBackground||'', effect:p.effect, tags:p.tags || [], malfunctionTools:p.malfunctionTools||{}, access:p.access||'normal', joined:p.joined };
+  return { username:p.username, avatar:p.avatar, bio:p.bio, role:p.role, glow:p.glow, badge:p.badge, banner:p.banner||'', chatBackground:p.chatBackground||'', effect:p.effect, tags:p.tags || [], malfunctionTools:p.malfunctionTools||{}, access:p.access||'normal', joined:p.joined };
 }
 function onlineProfiles() {
   const seen = new Set(); const out=[];
-  for (const s of sessions.values()) if (!seen.has(s.profileKey||s.username) && state.profiles[s.profileKey]) { seen.add(s.profileKey||s.username); out.push(publicProfile(state.profiles[s.profileKey])); }
+  for (const s of sessions.values()) if (!seen.has(s.username) && state.profiles[s.username]) { seen.add(s.username); out.push(publicProfile(state.profiles[s.username])); }
   return out;
 }
 function send(ws, packet) { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(packet)); }
+function trimHistoryEveryTwelve(){ state.meta.messagesSincePrune=(state.meta.messagesSincePrune||0)+1; if(state.meta.messagesSincePrune>=12){ state.messages.splice(0,9); state.meta.messagesSincePrune=0; } }
 
 const server = http.createServer((req,res)=>{
   const requestPath = decodeURIComponent(req.url.split('?')[0]);
@@ -67,7 +64,7 @@ const pingTimer = setInterval(()=>{
 }, 30000);
 pingTimer.unref();
 wss.on('connection',(ws)=>{
-  const sid=id(); sessions.set(sid,{ws,username:null,special:false,malfunction:false,authenticated:false}); clients.set(ws,sid);
+  const sid=id(); sessions.set(sid,{ws,username:null,special:false}); clients.set(ws,sid);
   send(ws,{type:'hello',sessionId:sid,history:state.messages.slice(-250),online:onlineProfiles()});
   ws.on('message',(raw)=>{
     let m; try { m=JSON.parse(raw); } catch (_) { return; }
@@ -75,22 +72,21 @@ wss.on('connection',(ws)=>{
     if(m.type==='auth') {
       const pass=String(m.password||'');
       if(pass!==NORMAL_PASSWORD && pass!==SPECIAL_PASSWORD && pass!==MALFUNCTION_PASSWORD) return send(ws,{type:'authResult',ok:false,message:'ACCESS DENIED — INVALID PASSWORD.'});
-      s.special=pass===SPECIAL_PASSWORD; s.malfunction=pass===MALFUNCTION_PASSWORD; s.authenticated=true; return send(ws,{type:'authResult',ok:true,special:s.special,malfunction:s.malfunction});
+      s.special=pass===SPECIAL_PASSWORD; s.malfunction=pass===MALFUNCTION_PASSWORD; return send(ws,{type:'authResult',ok:true,special:s.special,malfunction:s.malfunction});
     }
     if(m.type==='profile') {
-      if(!s.authenticated) return send(ws,{type:'error',message:'CHAT_90 authentication required.'});
       if(!s.special && !s.malfunction && (m.access==='special'||m.access==='malfunction')) return send(ws,{type:'error',message:'Elevated access cannot be self-assigned.'});
       const username=clean(m.username,24); if(!username) return;
       if(state.banned.includes(username.toLowerCase())) return send(ws,{type:'kicked',message:'This username is blocked from CHAT_90.'});
       const old=s.username;
-      const oldKey=s.profileKey;
-      const access=s.malfunction?'malfunction':s.special?'special':'normal';
-      const profileKey=`${access}::${username}`;
-      const profile={username,profileKey,avatar:clean(m.avatar,4200000)||'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',bio:clean(m.bio,160),tags:Array.isArray(m.tags)?m.tags.map(x=>clean(x,24)).filter(Boolean).slice(0,12):[],access,role:s.malfunction?'MALFUNCTION':s.special?'SPECIAL / ADMIN':'MEMBER',glow:(s.special||s.malfunction)?clean(m.glow,30)||'#ff2d2d':'#39ff88',badge:clean(m.badge,4200000),banner:cleanMedia(m.banner,4200000),chatBackground:cleanMedia(m.chatBackground,4200000),effect:allowedEffectForSession(s,m.effect),malfunctionTools:s.malfunction&&m.malfunctionTools&&typeof m.malfunctionTools==='object'?Object.fromEntries(Object.entries(m.malfunctionTools).slice(0,34).map(([k,v])=>[clean(k,40),!!v])):{},joined:oldKey && state.profiles[oldKey] ? state.profiles[oldKey].joined : new Date().toISOString()};
-      if(oldKey && oldKey!==profileKey && oldKey.split('::')[0]===access) delete state.profiles[oldKey];
-      state.profiles[profileKey]=profile; s.username=username; s.profileKey=profileKey; save();
+      const profile={username,avatar:clean(m.avatar,500)||'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',bio:clean(m.bio,160),tags:Array.isArray(m.tags)?m.tags.map(x=>clean(x,24)).filter(Boolean).slice(0,12):[],access:s.malfunction?'malfunction':s.special?'special':'normal',role:s.malfunction?'MALFUNCTION':s.special?'SPECIAL / ADMIN':'MEMBER',glow:(s.special||s.malfunction)?clean(m.glow,30)||'#ff2d2d':'#39ff88',badge:clean(m.badge,500),banner:cleanMedia(m.banner,8000000),chatBackground:cleanMedia(m.chatBackground,8000000),effect:(s.malfunction?(clean(m.effect,80)==='angelic-praise'?'angelic-praise':clean(m.effect,80)||'you-and-i-forever'):(s.special?(['star-mid','red-pulse','blood-glitch','crimson-flare','void-rift','nightmare',...SEASON_EFFECTS].includes(clean(m.effect,80))?clean(m.effect,80):'red-pulse'):(SEASON_EFFECTS.has(clean(m.effect,80))?clean(m.effect,80):'normal'))),malfunctionTools:s.malfunction&&m.malfunctionTools&&typeof m.malfunctionTools==='object'?Object.fromEntries(Object.entries(m.malfunctionTools).slice(0,34).map(([k,v])=>[clean(k,40),!!v])):{},joined:old && state.profiles[old] ? state.profiles[old].joined : new Date().toISOString()};
+      if(old && old!==username){
+        delete state.profiles[old];
+        for(const msg of state.messages) if(msg.username===old) msg.username=username;
+      }
+      state.profiles[username]=profile; s.username=username; save();
       // Profile changes propagate to every existing message immediately, so old messages update too.
-      for(const msg of state.messages){ if(msg.profileKey===profileKey){ Object.assign(msg,{avatar:profile.avatar,bio:profile.bio,role:profile.role,glow:profile.glow,badge:profile.badge,banner:profile.banner,chatBackground:profile.chatBackground,effect:profile.effect,malfunctionTools:profile.malfunctionTools||{}}); } }
+      for(const msg of state.messages){ if(msg.username===username){ Object.assign(msg,{avatar:profile.avatar,bio:profile.bio,role:profile.role,glow:profile.glow,badge:profile.badge,banner:profile.banner,chatBackground:profile.chatBackground,effect:profile.effect,malfunctionTools:profile.malfunctionTools||{}}); } }
       save();
       send(ws,{type:'profileSaved',profile:publicProfile(profile)});
       broadcast({type:'profileUpdated',profile:publicProfile(profile),previousUsername:old||null});
@@ -98,26 +94,16 @@ wss.on('connection',(ws)=>{
       broadcast({type:'presence',online:onlineProfiles()});
       return;
     }
+    if(m.type==='typing') { if(!s.username) return; broadcast({type:'typing',username:s.username,active:!!m.active}, ws); return; }
     if(m.type==='message') {
-      if(!s.authenticated || !s.username || !s.profileKey || !state.profiles[s.profileKey]) return;
-      const p=state.profiles[s.profileKey];
-      const msg={id:id(),time:new Date().toISOString(),profileKey:p.profileKey||s.profileKey,access:p.access||'normal',username:p.username,avatar:p.avatar,role:p.role,glow:p.glow,badge:p.badge,banner:p.banner||'',chatBackground:p.chatBackground||'',effect:p.effect,malfunctionTools:p.malfunctionTools||{},text:clean(m.text,500),image:clean(m.image,800),gif:clean(m.gif,800),media:cleanMedia(m.media,11000000),mediaType:['image','gif','video'].includes(m.mediaType)?m.mediaType:'' ,replyTo:m.replyTo?{id:clean(m.replyTo.id,80),username:clean(m.replyTo.username,24),text:clean(m.replyTo.text,500)}:null,reactions:[]};
+      if(!s.username || !state.profiles[s.username]) return;
+      const p=state.profiles[s.username];
+      const msg={id:id(),time:new Date().toISOString(),username:p.username,avatar:p.avatar,role:p.role,glow:p.glow,badge:p.badge,banner:p.banner||'',chatBackground:p.chatBackground||'',effect:p.effect,malfunctionTools:p.malfunctionTools||{},text:clean(m.text,500),image:clean(m.image,800),gif:clean(m.gif,800),media:cleanMedia(m.media,11000000),mediaType:['image','gif','video'].includes(m.mediaType)?m.mediaType:'' ,replyTo:m.replyTo?{id:clean(m.replyTo.id,80),username:clean(m.replyTo.username,24),text:clean(m.replyTo.text,500)}:null,reactions:[]};
       if(!msg.text&&!msg.image&&!msg.gif&&!msg.media) return;
-      state.messages.push(msg);
-      let prunedIds=[];
-      const userMessageCount=state.messages.filter(x=>!x.bot).length;
-      if(userMessageCount>0 && userMessageCount%12===0){
-        const removeCount=Math.min(9,state.messages.length);
-        prunedIds=state.messages.slice(0,removeCount).map(x=>x.id).filter(Boolean);
-        state.messages=state.messages.slice(removeCount);
-        const archiveBot={id:id(),time:new Date().toISOString(),bot:true,username:'ECHO BOT',avatar:'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',role:'SYSTEM',glow:'#9b9b9b',text:'ARCHIVE CLEANUP // 9 older messages were moved out of the live room.'};
-        state.messages.push(archiveBot);
-        broadcast({type:'historyPruned',ids:prunedIds,history:state.messages.slice(-250),notice:archiveBot});
-      }
-      state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); send(ws,{type:'message',message:msg}); return;
+      state.messages.push(msg); trimHistoryEveryTwelve(); state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); send(ws,{type:'message',message:msg}); return;
     }
     if(m.type==='reaction') {
-      if(!s.authenticated || !s.username || !state.profiles[s.profileKey]) return;
+      if(!s.username || !state.profiles[s.username]) return;
       const target=state.messages.find(x=>x.id===clean(m.messageId,80));
       if(!target || !m.url) return;
       const url=cleanMedia(m.url,5600000); if(!url.startsWith('data:image/gif') && !url.startsWith('data:image/')) return;
@@ -143,68 +129,28 @@ wss.on('connection',(ws)=>{
       return;
     }
     if(m.type==='friendToggle') {
-      if(!s.authenticated || !s.username) return;
-      const me=s.username, target=clean(m.username,24);
-      if(!Object.values(state.profiles).some(p=>p.username===target) || target===me) return;
-      state.friends[me] ||= []; state.friends[target] ||= [];
-      state.friendRequests[me] ||= []; state.friendRequests[target] ||= [];
-      const myFriends=state.friends[me], theirFriends=state.friends[target];
-      const myIncoming=state.friendRequests[me], theirIncoming=state.friendRequests[target];
-      if(myFriends.includes(target)) {
-        state.friends[me]=myFriends.filter(x=>x!==target);
-        state.friends[target]=theirFriends.filter(x=>x!==me);
-        state.friendRequests[me]=myIncoming.filter(x=>x!==target);
-        state.friendRequests[target]=theirIncoming.filter(x=>x!==me);
-        save();
-        const outgoing=[]; for(const [who,list] of Object.entries(state.friendRequests)) if(Array.isArray(list)&&list.includes(me)) outgoing.push(who); send(ws,{type:'friends',friends:state.friends[me],incoming:state.friendRequests[me],outgoing,cards:state.friends[me].map(n=>Object.values(state.profiles).find(p=>p.username===n)).filter(Boolean).map(publicProfile)});
-        const targetSession=[...sessions.values()].find(x=>x.username===target);
-        if(targetSession) send(targetSession.ws,{type:'friendNotice',username:me,status:'removed',friends:state.friends[target],incoming:state.friendRequests[target]});
-        return;
-      }
-      // If the other user already requested me, accept immediately.
-      if(myIncoming.includes(target)) {
-        state.friendRequests[me]=myIncoming.filter(x=>x!==target);
-        state.friendRequests[target]=theirIncoming.filter(x=>x!==me);
-        if(!myFriends.includes(target)) myFriends.push(target);
-        if(!theirFriends.includes(me)) theirFriends.push(me);
-        save();
-        const outgoingMe=[]; for(const [who,list] of Object.entries(state.friendRequests)) if(Array.isArray(list)&&list.includes(me)) outgoingMe.push(who); const payloadMe={type:'friends',friends:state.friends[me],incoming:state.friendRequests[me],outgoing:outgoingMe,cards:state.friends[me].map(n=>Object.values(state.profiles).find(p=>p.username===n)).filter(Boolean).map(publicProfile)};
-        send(ws,payloadMe);
-        const targetSession=[...sessions.values()].find(x=>x.username===target);
-        if(targetSession) send(targetSession.ws,{type:'friendNotice',username:me,status:'accepted',friends:state.friends[target],incoming:state.friendRequests[target]});
-        return;
-      }
-      // If I already sent a request, clicking again cancels it.
-      if(theirIncoming.includes(me)) {
-        state.friendRequests[target]=theirIncoming.filter(x=>x!==me);
-        save();
-        send(ws,{type:'friends',friends:myFriends,incoming:myIncoming,outgoing:state.friendRequests[target]});
-        const targetSession=[...sessions.values()].find(x=>x.username===target);
-        if(targetSession) send(targetSession.ws,{type:'friendNotice',username:me,status:'cancelled',friends:state.friends[target],incoming:state.friendRequests[target]});
-        return;
-      }
-      // New outgoing request lives on the target until they accept.
-      state.friendRequests[target].push(me);
+      if(!s.username) return;
+      const target=clean(m.username,24);
+      if(!state.profiles[target] || target===s.username) return;
+      state.friends[s.username] ||= [];
+      const list=state.friends[s.username];
+      const idx=list.indexOf(target);
+      if(idx>=0) list.splice(idx,1); else list.push(target);
       save();
-      send(ws,{type:'friends',friends:myFriends,incoming:myIncoming,outgoing:state.friendRequests[target]});
+      send(ws,{type:'friends',friends:list});
       const targetSession=[...sessions.values()].find(x=>x.username===target);
-      if(targetSession) send(targetSession.ws,{type:'friendNotice',username:me,status:'request',friends:state.friends[target],incoming:state.friendRequests[target]});
+      if(targetSession) send(targetSession.ws,{type:'friendNotice',username:s.username,added:idx<0});
       return;
     }
     if(m.type==='getFriends') {
-      if(!s.authenticated || !s.username) return;
-      const incoming=state.friendRequests[s.username]||[];
-      const outgoing=[];
-      for(const [target, list] of Object.entries(state.friendRequests)) if(Array.isArray(list)&&list.includes(s.username)) outgoing.push(target);
-      const friends=state.friends[s.username]||[];
-      const cards=friends.map(n=>Object.values(state.profiles).find(p=>p.username===n)).filter(Boolean).map(publicProfile);
-      send(ws,{type:'friends',friends,incoming,outgoing,cards});
+      if(!s.username) return;
+      send(ws,{type:'friends',friends:state.friends[s.username]||[]});
       return;
     }
     if(m.type==='dmSend') {
-      if(!s.authenticated || !s.username) return;
+      if(!s.username) return;
       const target=clean(m.to,24), text=clean(m.text,500);
-      if(!target || !text || !Object.values(state.profiles).some(p=>p.username===target)) return;
+      if(!target || !text || !state.profiles[target]) return;
       const key=[s.username,target].sort().join('|||');
       state.dms[key] ||= [];
       const dm={id:id(),time:new Date().toISOString(),from:s.username,to:target,text};
@@ -216,15 +162,14 @@ wss.on('connection',(ws)=>{
       return;
     }
     if(m.type==='dmHistory') {
-      if(!s.authenticated || !s.username) return;
+      if(!s.username) return;
       const target=clean(m.with,24);
       const key=[s.username,target].sort().join('|||');
       send(ws,{type:'dmHistory',with:target,messages:state.dms[key]||[]});
       return;
     }
     if(m.type==='requestProfile') {
-      if(!s.authenticated) return;
-      const target=clean(m.username,24); const p=state.profiles[s.profileKey] && state.profiles[s.profileKey].username===target ? state.profiles[s.profileKey] : Object.values(state.profiles).find(x=>x.username===target); if(p) send(ws,{type:'profile',profile:publicProfile(p)}); return;
+      const p=state.profiles[clean(m.username,24)]; if(p) send(ws,{type:'profile',profile:publicProfile(p)}); return;
     }
   });
   ws.on('close',()=>{ const s=sessions.get(sid); sessions.delete(sid); clients.delete(ws); if(s&&s.username){ const msg={id:id(),time:new Date().toISOString(),bot:true,username:'ECHO BOT',avatar:'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',role:'SYSTEM',glow:'#9b9b9b',text:`${s.username} has left Chat_90.`}; state.messages.push(msg); state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); } broadcast({type:'presence',online:onlineProfiles()}); });

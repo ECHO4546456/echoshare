@@ -18,7 +18,7 @@
         <a class="brand" href="#" aria-label="ECHO SHARE home">
             <img
                 class="brand-image"
-                src="https://media.discordapp.net/attachments/1535460677525700659/1547955289188208770/wX72xcAAAAGSURBVAMAsSzfGDc3vJMAAAAASUVORK5CYII.png?ex=6aa9ea74&is=6aa898f4&hm=f005813cb25f6bd1e5a4bd4f58ba07e7134ec670f5d4869a39d46ab582877df8&=&format=webp&quality=lossless"
+                src="https://media.discordapp.net/attachments/1535460677525700659/1547955289188208770/wX72xcAAAAGSURBVAMAsSzfGDc3vJMAAAAASUVORK5CYII.png?ex=6aa7f034&is=6aa69eb4&hm=b5c5e9196a8e49c2937647b2fd31d23e5bbc42354094df573b339ab19ee7ab46&=&format=webp&quality=lossless"
                 alt="ECHO"
             >
             <span>ECHO<span class="brand-slashes">//</span>SHARE</span>
@@ -92,10 +92,6 @@
             <div class="code-redeem-row"><input id="seasonCodeInput" maxlength="40" autocomplete="off" placeholder="ENTER SEASON CODE"><button id="seasonCodeRedeem" type="button">REDEEM</button></div>
             <div id="seasonCodeStatus" class="code-redeem-status" aria-live="polite"></div>
             <div id="seasonUnlockedList" class="season-unlocked-list"></div>
-        </section>
-        <section id="echoFriendsShowcase" class="echo-friends-showcase" hidden aria-label="ECHO SHARE friends">
-            <div class="section-label"><span>FRIEND NETWORK</span><span id="echoFriendsCount">0 / 0</span></div>
-            <div id="echoFriendsGrid" class="echo-friends-grid"></div>
         </section>
     </main>
 
@@ -218,12 +214,14 @@
             <label>PROFILE BANNER<input id="chatBannerInput" placeholder="Optional banner image URL or image ID"></label>
             <button id="chatBannerUploadButton" class="chat-file-button" type="button">UPLOAD BANNER</button>
             <label>CHAT CARD BACKGROUND<input id="chatBackgroundInput" placeholder="Image URL or Roblox image ID"></label>
+            <button id="chatBackgroundUploadButton" class="chat-file-button" type="button">UPLOAD MESSAGE BACKGROUND</button>
+            <input id="chatBackgroundFileInput" type="file" accept="image/*" hidden>
             <small class="chat-field-hint">This image appears behind your messages in CHAT_90.</small>
-            <label class="effect-select-label">MESSAGE EFFECT<select id="chatEffectInput"></select></label>
-            <small id="chatEffectHint" class="chat-field-hint">Redeem a HALLOW NIGHT code to unlock seasonal effects for members.</small>
+            <label class="season-effect-field">HALLOW NIGHT EFFECT<select id="chatSeasonEffectInput"><option value="">NO SEASONAL EFFECT</option></select></label>
             <div id="chatSpecialOptions" class="special-options" hidden>
                 <div class="special-title">SPECIAL ACCESS</div>
                 <label>GLOW COLOR<input id="chatGlowInput" type="text" value="#ff2d2d" placeholder="#ff2d2d"></label>
+                <label>MESSAGE EFFECT<select id="chatEffectInput"></select></label>
             </div>
             <div id="chatMalfunctionOptions" class="malfunction-options" hidden>
                 <div class="malfunction-title">MALFUNCTION // OVERDRIVE ACCESS</div>
@@ -257,19 +255,12 @@
                 <div id="chatMessages" class="chat-messages"></div>
                 <div id="chatTyping" class="chat-typing"></div>
                 <div id="chatReplyBar" class="chat-reply-bar" hidden></div>
-                <div class="chat-composer-wrap">
-                    <div class="chat-composer-options" aria-label="Chat options">
-                        <button id="chatMediaButton" class="chat-option" type="button" title="Send image, GIF, or video">＋ MEDIA</button>
-                        <button id="chatGifButton" class="chat-option" type="button" title="Send a GIF">GIF</button>
-                        <button id="chatReplyOption" class="chat-option" type="button" title="Clear the current reply">↩ REPLY</button>
-                    </div>
-                    <div class="chat-composer">
-                        <div class="chat-input-orb" aria-hidden="true"></div>
-                        <input id="chatMessageInput" maxlength="500" autocomplete="off" placeholder="Transmit a message...">
-                        <button id="chatSendButton" class="chat-send" type="button" aria-label="Send message">➤</button>
-                    </div>
+                <div class="chat-composer">
+                    <button id="chatMediaButton" type="button" title="Send image, GIF, or video">MEDIA</button>
+                    <input id="chatMessageInput" maxlength="500" autocomplete="off" placeholder="Type a message...">
+                    <button id="chatSendButton" class="chat-send" type="button">➤</button>
                 </div>
-                <div class="chat-composer-hint">ENTER TO SEND · MEDIA FOR IMAGE / GIF / VIDEO · VIDEO NEVER AUTOPLAYS</div>
+                <div class="chat-composer-hint">MEDIA opens your files so you can send an image, GIF, or video.</div>
                 <input id="chatMediaInput" type="file" accept="image/*,video/*,.gif" hidden>
                 <input id="chatAvatarFileInput" type="file" accept="image/*" hidden>
                 <input id="chatBadgeFileInput" type="file" accept="image/*" hidden>
@@ -329,7 +320,7 @@
                     <h3>💬 CHAT_90</h3>
                     <label class="settings-toggle"><input id="settingAnimations" type="checkbox" checked> ENABLE MESSAGE VFX</label>
                     <label class="settings-toggle"><input id="settingTimestamps" type="checkbox" checked> SHOW TIMESTAMPS</label>
-                    <label class="settings-toggle"><input id="settingAutoplayMedia" type="checkbox" checked> AUTOPLAY VIDEO MEDIA</label>
+                    <label class="settings-toggle"><input id="settingAutoplayMedia" type="checkbox"> AUTOPLAY VIDEO MEDIA</label>
                     <label class="settings-toggle"><input id="settingEnterSend" type="checkbox" checked> ENTER SENDS MESSAGE</label>
                     <label class="settings-toggle"><input id="settingDesktopNotifications" type="checkbox"> DESKTOP NOTIFICATIONS</label>
                     <button id="settingRequestNotifications" class="settings-action" type="button">ALLOW DESKTOP NOTIFICATIONS</button>
