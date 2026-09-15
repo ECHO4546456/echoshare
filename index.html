@@ -219,7 +219,7 @@
             <div id="chatSpecialOptions" class="special-options" hidden>
                 <div class="special-title">SPECIAL ACCESS</div>
                 <label>GLOW COLOR<input id="chatGlowInput" type="text" value="#ff2d2d" placeholder="#ff2d2d"></label>
-                <label>MESSAGE EFFECT<select id="chatEffectInput"></select></label>
+                <div class="special-effect-note">Your selected effect is controlled by the MESSAGE EFFECT selector above.</div>
             </div>
             <div id="chatMalfunctionOptions" class="malfunction-options" hidden>
                 <div class="malfunction-title">MALFUNCTION // OVERDRIVE ACCESS</div>
@@ -228,6 +228,9 @@
                 <button id="malfunctionMediaButton" class="malfunction-media-button" type="button">☣ MALFUNCTION MEDIA</button>
                 <input id="malfunctionMediaInput" type="file" accept="image/*,video/*" hidden>
             </div>
+            <input id="chatAvatarFileInput" type="file" accept="image/*" hidden>
+            <input id="chatBadgeFileInput" type="file" accept="image/*" hidden>
+            <input id="chatBannerFileInput" type="file" accept="image/*" hidden>
             <button id="chatEnterButton" type="button">ENTER CHAT_90</button>
             <button id="chatSetupBack" class="chat-small-button" type="button">← RETURN TO ARCHIVE</button>
         </div>
@@ -260,9 +263,6 @@
                 </div>
                 <div class="chat-composer-hint">MEDIA opens your files so you can send an image, GIF, or video.</div>
                 <input id="chatMediaInput" type="file" accept="image/*,video/*,.gif" hidden>
-                <input id="chatAvatarFileInput" type="file" accept="image/*" hidden>
-                <input id="chatBadgeFileInput" type="file" accept="image/*" hidden>
-                <input id="chatBannerFileInput" type="file" accept="image/*" hidden>
                 <input id="chatReactionFileInput" type="file" accept="image/gif,.gif" hidden>
             </main>
 

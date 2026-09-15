@@ -23,3 +23,13 @@ The frontend connects to the existing CHAT_90 endpoint in `script.js`.
 
 ## Note about Roblox image IDs
 The profile banner and chat-card fields accept normal image URLs and Roblox numeric asset IDs through Roblox's thumbnail endpoint. If a Roblox asset has no publicly available thumbnail, the browser cannot display it; uploading the image file is the reliable option.
+
+
+## CHAT_90 stability v2
+- Separate remembered identities for Normal, Special/Admin, and Malfunction codes.
+- Seasonal redeemed effects work for Members and are synchronized through the server profile.
+- One canonical message-effect selector (duplicate selector removed).
+- Profile uploads are compressed client-side before browser storage to avoid localStorage overflow.
+- New messages use smooth entrance + typewriter rendering; history is rendered without replaying the typewriter.
+- Videos are manual-play only.
+- Server prunes 9 oldest messages after each 12-message cycle.

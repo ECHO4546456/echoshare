@@ -1614,3 +1614,457 @@ initSeasonCodes();
     return originalRenderGlobalChat(forceBottom);
   };
 })();
+
+
+/* ======================================================================
+   CHAT_90 STABILITY PATCH v2
+   - one effect selector
+   - one saved profile per access code
+   - reliable profile uploads
+   - seasonal effects for members
+   - smooth message entrance/typewriter
+   - manual video playback
+   ====================================================================== */
+(function CHAT90_STABILITY_V2(){
+  const ACCESS_KEYS = {
+    normal: 'echoChatProfile::normal',
+    special: 'echoChatProfile::special',
+    malfunction: 'echoChatProfile::malfunction'
+  };
+  const LAST_ACCESS_KEY = 'echoChatLastAccess';
+  const seasonalIds = new Set(Object.keys(SEASON_EFFECT_MAP || {}));
+
+  const accessForPassword = pass =>
+    pass === CHAT_MALFUNCTION_PASSWORD ? 'malfunction' :
+    pass === CHAT_SPECIAL_PASSWORD ? 'special' :
+    pass === CHAT_NORMAL_PASSWORD ? 'normal' : null;
+
+  const roleFor = a => a === 'malfunction' ? 'MALFUNCTION' :
+                       a === 'special' ? 'SPECIAL / ADMIN' : 'MEMBER';
+
+  const safeAccess = () => ACCESS_KEYS[chatAccessLevel] ? chatAccessLevel : 'normal';
+
+  getChatProfile = function(){
+    try{
+      return JSON.parse(localStorage.getItem(ACCESS_KEYS[safeAccess()]) || 'null');
+    }catch(_){ return null; }
+  };
+
+  saveChatProfile = function(profile){
+    if(!profile) return;
+    const remember = window.echoShareGetSetting ? window.echoShareGetSetting('remember') !== false : true;
+    const key = ACCESS_KEYS[safeAccess()];
+    if(remember) {
+      try { localStorage.setItem(key, JSON.stringify(profile)); }
+      catch(_){
+        /* If a browser rejects a large upload, keep the text profile instead of breaking login. */
+        const fallback = {...profile, avatar:'', badge:'', banner:''};
+        try { localStorage.setItem(key, JSON.stringify(fallback)); } catch(__){}
+      }
+    } else {
+      localStorage.removeItem(key);
+    }
+  };
+
+  function resetSocketState(){
+    chatManualClose = true;
+    try { chatSocket?.close(); } catch(_){}
+    chatSocket = null;
+    chatAuthenticated = false;
+    chatConnected = false;
+    chatServerMessages = [];
+    chatOnlineProfiles = [];
+    chatPendingPackets = [];
+    chatReplyTarget = null;
+    try { clearChatReply?.(); } catch(_){}
+    chatManualClose = false;
+  }
+
+  function updateAccessUI(){
+    chatSpecialOptions.hidden = !isElevatedAccess();
+    chatMalfunctionOptions.hidden = !isMalfunctionAccess();
+    if(malfunctionAnnoyButton) malfunctionAnnoyButton.hidden = !isMalfunctionAccess();
+    fillSpecialEffects();
+  }
+
+  fillSpecialEffects = function(){
+    if(!chatEffectInput) return;
+    const unlocked = getUnlockedSeasonEffects()
+      .filter(id => seasonalIds.has(id))
+      .map(id => [id, SEASON_EFFECT_MAP[id]]);
+
+    const base = [
+      ['red-pulse','RED PULSE'],
+      ['star-mid','STAR-MID • STARLIGHT'],
+      ['blood-glitch','BLOOD GLITCH'],
+      ['crimson-flare','CRIMSON FLARE'],
+      ['inferno','INFERNO'],
+      ['void-rift','VOID RIFT']
+    ];
+
+    if(isMalfunctionAccess()){
+      base.push(['angelic-praise','ANGELIC PRAISE • INK']);
+      base.push(['you-and-i-forever','YOU AND I FOREVER • INK']);
+    }
+
+    const list = [...base, ...unlocked.filter(([id]) => !base.some(x=>x[0]===id))];
+    const current = chatEffectInput.value;
+    chatEffectInput.innerHTML = list.map(([id,name]) =>
+      `<option value="${escapeText(id)}">${escapeText(name)}</option>`).join('');
+    if(list.some(x=>x[0]===current)) chatEffectInput.value=current;
+    else if(isMalfunctionAccess()) chatEffectInput.value='you-and-i-forever';
+    else if(list.length) chatEffectInput.value=list[0][0];
+  };
+
+  function normaliseProfile(raw){
+    const access = safeAccess();
+    const seasonal = seasonalIds.has(raw.effect) && getUnlockedSeasonEffects().includes(raw.effect);
+    let effect = seasonal ? raw.effect : (raw.effect || 'normal');
+
+    if(access === 'normal') {
+      if(!seasonal) effect = 'normal';
+    } else if(access === 'special') {
+      if(['angelic-praise','you-and-i-forever'].includes(effect)) effect='red-pulse';
+    } else if(!effect || effect==='normal') {
+      effect='you-and-i-forever';
+    }
+
+    return {
+      username:String(raw.username||'').trim().slice(0,24),
+      avatar:raw.avatar || CHAT_DEFAULT_AVATAR,
+      bio:String(raw.bio||'').slice(0,160),
+      tags:Array.isArray(raw.tags)?raw.tags.map(x=>String(x).trim()).filter(Boolean).slice(0,12):[],
+      access,
+      role:roleFor(access),
+      glow:access==='normal'?'#39ff88':(raw.glow||'#ff3030'),
+      badge:access==='normal'?'':(raw.badge||''),
+      banner:raw.banner||'',
+      chatBackground:raw.chatBackground||'',
+      effect,
+      malfunctionTools:access==='malfunction'?(raw.malfunctionTools||defaultMalfunctionTools()):{}
+    };
+  }
+
+  saveProfileFromForm = function(silent=false){
+    const username=chatUsernameInput?.value.trim();
+    if(!username) return false;
+
+    const chosen=chatEffectInput?.value || 'normal';
+    const unlocked=getUnlockedSeasonEffects();
+    const allowedSeason=seasonalIds.has(chosen) && unlocked.includes(chosen);
+
+    let effect='normal';
+    if(allowedSeason) effect=chosen;
+    else if(isMalfunctionAccess()) effect=chosen || 'you-and-i-forever';
+    else if(isElevatedAccess()) effect=chosen || 'red-pulse';
+
+    const old=getChatProfile()||{};
+    const profile=normaliseProfile({
+      username,
+      avatar:chatAvatarInput?.value.trim() || old.avatar || CHAT_DEFAULT_AVATAR,
+      bio:chatBioInput?.value || '',
+      tags:(chatTagsInput?.value||'').split(','),
+      glow:chatGlowInput?.value.trim() || old.glow || '#ff3030',
+      badge:chatBadgeInput?.value.trim() || old.badge || '',
+      banner:normalizeChatImageInput(chatBannerInput?.value.trim() || old.banner || ''),
+      chatBackground:normalizeChatImageInput(chatBackgroundInput?.value.trim() || old.chatBackground || ''),
+      effect,
+      malfunctionTools:old.malfunctionTools
+    });
+
+    saveChatProfile(profile);
+    localStorage.setItem(LAST_ACCESS_KEY, safeAccess());
+    window.chat90Password =
+      safeAccess()==='malfunction' ? CHAT_MALFUNCTION_PASSWORD :
+      safeAccess()==='special' ? CHAT_SPECIAL_PASSWORD : CHAT_NORMAL_PASSWORD;
+
+    if(chatAuthenticated) wsSend({...profile,type:'profile',tags:profile.tags});
+    if(!silent) openChat();
+    return true;
+  };
+
+  /* Keep the three identities completely separate. */
+  authenticateChat = function(){
+    const password=String(chatPasswordInput?.value||'').trim();
+    const access=accessForPassword(password);
+
+    if(!access){
+      chatAuthMessage.textContent='ACCESS DENIED — INVALID CHAT_90 CODE.';
+      chatAuthMessage.className='chat-auth-message bad';
+      if(chatPasswordInput){chatPasswordInput.value='';chatPasswordInput.focus();}
+      return;
+    }
+
+    resetSocketState();
+    chatAccessLevel=access;
+    window.chat90Password=password;
+    localStorage.setItem(LAST_ACCESS_KEY,access);
+    updateAccessUI();
+
+    const existing=getChatProfile();
+    if(existing){
+      const profile=normaliseProfile(existing);
+      saveChatProfile(profile);
+      chatEditing=false;
+      showOnly(chatPage);
+      renderMe(profile);
+      chatMessages.innerHTML='';
+      connectChatSocket();
+      requestAnimationFrame(()=>chatMessageInput?.focus());
+      return;
+    }
+
+    chatEditing=false;
+    chatUsernameInput.value='';
+    chatAvatarInput.value='';
+    chatBioInput.value='';
+    chatTagsInput.value='';
+    chatGlowInput.value=access==='normal'?'#39ff88':'#ff3030';
+    chatBadgeInput.value='';
+    chatBannerInput.value='';
+    chatBackgroundInput.value='';
+    fillSpecialEffects();
+    chatEffectInput.value=access==='malfunction'?'you-and-i-forever':(access==='special'?'red-pulse':(getUnlockedSeasonEffects()[0]||'normal'));
+    renderMalfunctionTools({malfunctionTools:defaultMalfunctionTools()});
+    showOnly(chatSetupPage);
+    requestAnimationFrame(()=>chatUsernameInput?.focus());
+  };
+
+  enterChat = function(){
+    if(!chatUsernameInput?.value.trim()) return chatUsernameInput?.focus();
+    saveProfileFromForm(true);
+    chatEditing=false;
+    openChat();
+  };
+
+  openChat = function(){
+    let access=localStorage.getItem(LAST_ACCESS_KEY);
+    if(!ACCESS_KEYS[access]) access='normal';
+    chatAccessLevel=access;
+    const profile=getChatProfile();
+
+    if(!profile){
+      openChatAuth();
+      return;
+    }
+
+    window.chat90Password =
+      access==='malfunction' ? CHAT_MALFUNCTION_PASSWORD :
+      access==='special' ? CHAT_SPECIAL_PASSWORD : CHAT_NORMAL_PASSWORD;
+
+    chatManualClose=false;
+    showOnly(chatPage);
+    renderMe(profile);
+    chatMessages.innerHTML='';
+    connectChatSocket();
+    requestAnimationFrame(()=>chatMessageInput?.focus());
+  };
+
+  /* Uploads: replace every previous click/change listener with one clean pair. */
+  function replaceUpload(button,input,handler){
+    if(!button||!input) return;
+    const newButton=button.cloneNode(true);
+    button.replaceWith(newButton);
+    const newInput=input.cloneNode(true);
+    input.replaceWith(newInput);
+
+    newButton.addEventListener('click',e=>{
+      e.preventDefault();
+      newInput.value='';
+      newInput.click();
+    });
+
+    newInput.addEventListener('change',async()=>{
+      const file=newInput.files?.[0];
+      newInput.value='';
+      if(!file) return;
+      try { await handler(file); }
+      catch(e) { alert(e?.message || 'Could not load that image.'); }
+    });
+  }
+
+  async function compactImage(file,maxW,maxH,maxBytes){
+    if(file.size<=maxBytes && /image\/(webp|jpeg|png)/i.test(file.type)) {
+      return readFileAsDataURL(file,maxBytes);
+    }
+    return new Promise((resolve,reject)=>{
+      const url=URL.createObjectURL(file);
+      const img=new Image();
+      img.onload=()=>{
+        URL.revokeObjectURL(url);
+        const scale=Math.min(1,maxW/img.width,maxH/img.height);
+        const w=Math.max(1,Math.round(img.width*scale));
+        const h=Math.max(1,Math.round(img.height*scale));
+        const c=document.createElement('canvas');
+        c.width=w;c.height=h;
+        const ctx=c.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        const data=c.toDataURL('image/webp',.78);
+        if(data.length>maxBytes*1.4) {
+          resolve(c.toDataURL('image/jpeg',.72));
+        } else resolve(data);
+      };
+      img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Could not decode that image.'));};
+      img.src=url;
+    });
+  }
+
+  replaceUpload(chatAvatarUploadButton,chatAvatarFileInput,async file=>{
+    chatAvatarInput.value=await compactImage(file,900,900,700000);
+    saveProfileFromForm(true);
+    renderMe(getChatProfile()||{});
+  });
+
+  replaceUpload(chatBadgeUploadButton,chatBadgeFileInput,async file=>{
+    chatBadgeInput.value=await compactImage(file,700,700,500000);
+    saveProfileFromForm(true);
+    renderMe(getChatProfile()||{});
+  });
+
+  replaceUpload(chatBannerUploadButton,chatBannerFileInput,async file=>{
+    chatBannerInput.value=await compactImage(file,1500,600,900000);
+    saveProfileFromForm(true);
+    renderMe(getChatProfile()||{});
+  });
+
+  /* A final renderer with a stable effect class and smooth entrance. */
+  renderMessage = function(message){
+    if(!chatMessages||!message)return;
+
+    const effect=String(message.effect||'normal').replace(/[^a-z0-9_-]/gi,'');
+    const known=effect==='normal'||effect==='star-mid'||effect==='red-pulse'||
+      effect==='blood-glitch'||effect==='crimson-flare'||effect==='inferno'||
+      effect==='void-rift'||effect==='angelic-praise'||effect==='you-and-i-forever'||
+      seasonalIds.has(effect);
+
+    const fx=known?effect:'normal';
+    const article=document.createElement('article');
+    article.className=`chat-message ${message.bot?'bot':''} fx-message fx-${fx}`;
+    if(fx!=='normal') article.classList.add(fx);
+    article.dataset.effect=fx;
+    article.dataset.messageId=message.id||'';
+    article.style.setProperty('--chat-glow',message.glow||'#39ff88');
+
+    if(message.chatBackground){
+      article.classList.add('has-chat-background');
+      article.style.setProperty('--chat-card-bg',`url(${JSON.stringify(normalizeChatImageInput(message.chatBackground))})`);
+    }
+
+    const badge=message.badge?`<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">`:'';
+    const avatar=escapeText(message.avatar||CHAT_DEFAULT_AVATAR);
+    const username=escapeText(message.username||'UNKNOWN');
+    const role=escapeText(message.role||'MEMBER');
+    const text=String(message.text||'');
+    const reply=message.replyTo?`<div class="chat-reply-preview"><b>↪ ${escapeText(message.replyTo.username||'USER')}</b><span>${escapeText(message.replyTo.text||'[MEDIA]')}</span></div>`:'';
+
+    let media='';
+    if(message.media){
+      if(message.mediaType==='video'){
+        media=`<div class="chat-message-media"><video controls preload="metadata" playsinline src="${escapeText(message.media)}"></video></div>`;
+      }else{
+        media=`<div class="chat-message-media"><img src="${escapeText(message.media)}" alt="Shared media" loading="lazy"></div>`;
+      }
+    }
+
+    const reactions=Array.isArray(message.reactions)?message.reactions:[];
+    const reactionThumb=reactions.length?
+      `<span class="chat-reaction-count"><img src="${escapeText(reactions[reactions.length-1].url)}" alt=""><b>${reactions.length}</b></span>`:'';
+
+    const mini=fx==='star-mid'?'<span class="message-mini-star">★</span>':
+               fx==='you-and-i-forever'?'<span class="message-mini-eye">◉</span>':'';
+
+    const angelic=fx==='angelic-praise' && String(message.role||'').toUpperCase().includes('MALFUNCTION');
+
+    article.innerHTML=`
+      ${message.chatBackground?'<div class="chat-message-background" aria-hidden="true"></div>':''}
+      ${angelic?'<div class="angelic-message-aura" aria-hidden="true"></div>':''}
+      <div class="chat-profile-rail">
+        <button class="chat-message-identity" type="button">
+          <span class="chat-avatar-orbit"><img class="chat-message-avatar" src="${avatar}" alt=""></span>
+          <span class="chat-message-name">${username}</span>
+        </button>
+        ${badge}
+        <span class="chat-message-role">${role}</span>
+        <span class="chat-message-time">${escapeText(new Date(message.time||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))}</span>
+      </div>
+      <div class="chat-message-content">
+        ${reply}
+        <div class="chat-message-body" data-text="${escapeText(text)}"></div>
+        ${media}
+        <div class="chat-message-tools">
+          <button class="chat-tool-button" data-action="reply">↩ REPLY</button>
+          <button class="chat-tool-button" data-action="react">☆ REACT</button>
+          ${reactionThumb}
+        </div>
+      </div>
+    `;
+
+    chatMessages.appendChild(article);
+
+    article.querySelector('.chat-message-identity')?.addEventListener('click',()=>{
+      const p=chatOnlineProfiles.find(x=>x.username===message.username)||{
+        username:message.username,avatar:message.avatar,role:message.role,glow:message.glow,
+        badge:message.badge,banner:message.banner,chatBackground:message.chatBackground,
+        effect:message.effect,tags:message.tags||[],bio:message.bio||'',joined:message.joined||''
+      };
+      showViewedProfile(p);
+    });
+    article.querySelector('[data-action="reply"]')?.addEventListener('click',()=>startChatReply(message));
+    article.querySelector('[data-action="react"]')?.addEventListener('click',()=>openReactionPicker(message.id));
+
+    const body=article.querySelector('.chat-message-body');
+    const typed=window.CHAT90_TYPED_MESSAGES||(window.CHAT90_TYPED_MESSAGES=new Set());
+    const shouldType=!typed.has(message.id) && text.length>0;
+
+    article.classList.add('message-enter');
+    requestAnimationFrame(()=>article.classList.add('message-enter-active'));
+
+    if(!text){
+      body.innerHTML=mini;
+      return;
+    }
+
+    if(!shouldType){
+      body.textContent=text;
+      body.insertAdjacentHTML('beforeend',mini);
+      return;
+    }
+
+    typed.add(message.id);
+    body.classList.add('is-typing');
+    let i=0;
+    const tick=()=>{
+      if(!document.body.contains(body))return;
+      i=Math.min(text.length,i+1);
+      body.textContent=text.slice(0,i);
+      if(i<text.length){
+        setTimeout(tick,text.length>180?7:12);
+      }else{
+        body.classList.remove('is-typing');
+        body.insertAdjacentHTML('beforeend',mini);
+      }
+    };
+    tick();
+  };
+
+  /* Prevent old full redraws from making the send animation jump. */
+  const originalGlobalChat=renderGlobalChat;
+  renderGlobalChat=function(forceBottom=false){
+    const nearBottom=chatMessages && (chatMessages.scrollHeight-chatMessages.scrollTop-chatMessages.clientHeight<110);
+    originalGlobalChat(forceBottom);
+    if((forceBottom||nearBottom)&&chatMessages){
+      requestAnimationFrame(()=>chatMessages.scrollTo({top:chatMessages.scrollHeight,behavior:'smooth'}));
+    }
+  };
+
+  /* On reload, resume the last identity exactly like the old CHAT_90 flow. */
+  if(localStorage.getItem(LAST_ACCESS_KEY)){
+    setTimeout(()=>{
+      try{
+        chatAccessLevel=localStorage.getItem(LAST_ACCESS_KEY);
+        if(!ACCESS_KEYS[chatAccessLevel]) chatAccessLevel='normal';
+        fillSpecialEffects();
+      }catch(_){}
+    },0);
+  }
+})();
