@@ -675,8 +675,9 @@ function renderChat() {
 
 function renderMessage(message) {
     const article = document.createElement("article");
-    article.className = `chat-message ${message.bot ? "bot" : ""} ${message.effect || ""}`;
+    article.className = `chat-message ${message.bot ? "bot" : ""} ${message.effect || ""} ${message.chatBackground ? "has-chat-background" : ""}`;
     article.style.setProperty("--chat-glow", message.glow || "#ff3030");
+    if(message.chatBackground) article.style.setProperty("--chat-card-bg", `url("${String(normalizeChatImageInput(message.chatBackground)).replaceAll('\"','')}")`);
     article.dataset.messageId = message.id || "";
 
     const canManage = !message.bot && chatAccessLevel === "special";
@@ -684,7 +685,7 @@ function renderMessage(message) {
     const badgePart = message.badge ? `<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">` : "";
     const actions = canManage ? `<div class="chat-message-actions"><button data-action="delete">DELETE</button><button data-action="kick">REMOVE USER</button></div>` : "";
 
-    article.innerHTML = `
+    article.innerHTML = `${message.chatBackground ? '<div class="chat-message-background" aria-hidden="true"></div>' : ''}${message.effect === 'angelic-praise' ? '<div class="angelic-message-aura" aria-hidden="true"></div>' : ''}
         <div class="chat-message-head">
             <img class="chat-message-avatar" src="${escapeText(message.avatar || CHAT_DEFAULT_AVATAR)}" alt="">
             <span class="chat-message-name">${escapeText(message.username)}</span>
@@ -848,10 +849,25 @@ const CHAT_EFFECTS_50 = [
   ["red-aurora","Red Aurora"],["cursed-static","Cursed Static"],["dragon-blood","Dragon Blood"],["demon-heart","Demon Heart"],["fatal-error","Fatal Error"],["scarlet-void","Scarlet Void"],["apex-blood","Apex Blood"],["king-of-hell","King of Hell"],["last-breath","Last Breath"],["endless-night","Endless Night"]
 ];
 
+const SEASON_CODES = {
+  "SSML-RULES": [["halloween-pumpkin","PUMPKIN CURSE"],["halloween-fog","GRAVEYARD FOG"],["halloween-candy","CANDY GORE"]],
+  "SSML-HALLOW-NIGHTS": [["halloween-jack","JACK-O-LANTERN"],["halloween-ghosts","GHOST PARADE"],["halloween-witchfire","WITCHFIRE"]],
+  "SSML-NO-COMPANY": [["halloween-static","HAUNTED STATIC"],["halloween-reaper","REAPER BELL"],["halloween-harvest","BLOOD HARVEST"]]
+};
+const SEASON_EFFECT_MAP=Object.fromEntries(Object.values(SEASON_CODES).flat());
+function getUnlockedSeasonEffects(){try{return JSON.parse(localStorage.getItem('echoShareSeasonEffects')||'[]')}catch(_){return []}}
+function saveUnlockedSeasonEffects(v){localStorage.setItem('echoShareSeasonEffects',JSON.stringify([...new Set(v)]))}
+function initSeasonCodes(){
+ const input=document.getElementById('seasonCodeInput'),btn=document.getElementById('seasonCodeRedeem'),status=document.getElementById('seasonCodeStatus'),list=document.getElementById('seasonUnlockedList'); if(!input||!btn)return;
+ function draw(){const u=getUnlockedSeasonEffects();list.innerHTML=u.length?`<span class="season-unlocked-label">UNLOCKED:</span> ${u.map(k=>`<span class="season-chip">${escapeText(SEASON_EFFECT_MAP[k]||k)}</span>`).join('')}`:'<span class="season-unlocked-label">No seasonal effects unlocked yet.</span>'}
+ function redeem(){const code=input.value.trim().toUpperCase(),effects=SEASON_CODES[code];if(!effects){status.textContent='CODE INVALID OR NOT AVAILABLE.';status.className='code-redeem-status bad';return}const unlocked=getUnlockedSeasonEffects(),added=effects.map(x=>x[0]).filter(x=>!unlocked.includes(x));if(!added.length){status.textContent='THIS CODE IS ALREADY REDEEMED IN THIS BROWSER.';status.className='code-redeem-status';return}saveUnlockedSeasonEffects([...unlocked,...added]);status.textContent=`CODE ACCEPTED — ${added.length} HALLOW NIGHT EFFECTS UNLOCKED.`;status.className='code-redeem-status good';input.value='';draw();fillSpecialEffects()}
+ btn.addEventListener('click',redeem);input.addEventListener('keydown',e=>{if(e.key==='Enter')redeem()});draw();
+}
+
 function fillSpecialEffects(){
   if(!chatEffectInput) return;
   const current=chatEffectInput.value;
-  const effects=CHAT_EFFECTS_50.filter(x=>x[0]!=="you-and-i-forever" || isMalfunctionAccess());
+  const unlocked=getUnlockedSeasonEffects(); const effects=CHAT_EFFECTS_50.filter(x=>x[0]!=="you-and-i-forever" || isMalfunctionAccess()).concat(unlocked.map(k=>[k,SEASON_EFFECT_MAP[k]||k]).filter(x=>!CHAT_EFFECTS_50.some(e=>e[0]===x[0])));
   chatEffectInput.innerHTML=effects.map(([v,n])=>`<option value="${v}">${n}</option>`).join("");
   chatEffectInput.value=effects.some(x=>x[0]===current)?current:(isMalfunctionAccess()?"you-and-i-forever":"red-pulse");
 }
@@ -1178,7 +1194,7 @@ function showViewedProfile(profile){
   if(!profile) return;
   const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-30).reverse();
   const banner=profile.banner?`<div class="viewed-profile-banner" style="background-image:url("${escapeText(profile.banner)}")"></div>`:"";
-  chatViewedProfile.innerHTML=`${banner}<div class="viewed-profile-hero ${profile.access==='malfunction'?'malfunction-profile-hero':''}" style="--chat-glow:${escapeText(profile.glow||'#ff3030')}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div></div></div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.gif?'[GIF]':'[IMAGE]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
+  chatViewedProfile.innerHTML=`${banner}<div class="viewed-profile-hero ${profile.access==='malfunction'?'malfunction-profile-hero ':''}${profile.effect==='angelic-praise'&&profile.access==='malfunction'?'angelic-profile-hero':''}" style="--chat-glow:${escapeText(profile.glow||'#ff3030')}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div></div></div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.gif?'[GIF]':'[IMAGE]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
   chatProfileModal.hidden=false;
 }
 
@@ -1372,3 +1388,5 @@ showViewedProfile = function(profile){
   apply();
   syncUI();
 })();
+
+initSeasonCodes();

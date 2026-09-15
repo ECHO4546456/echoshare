@@ -518,7 +518,7 @@ button {
     border-radius: 30px;
     background:
         linear-gradient(90deg, rgba(2,8,5,0.97) 0%, rgba(3,10,7,0.82) 56%, rgba(2,7,5,0.96) 100%),
-        url("https://i.pinimg.com/736x/2f/85/41/2f854111c4615359a7e39fec07e5e9bb.jpg")
+        url("https://i.pinimg.com/originals/b5/6f/20/b56f203db195308c00c86d47d746728d.gif")
         center / cover no-repeat;
     box-shadow: 0 25px 80px rgba(0,0,0,0.35);
 }
@@ -1987,7 +1987,7 @@ body {
     flex-direction: column;
     background:
         linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.65)),
-        url("https://i.pinimg.com/originals/b5/6f/20/b56f203db195308c00c86d47d746728d.gif") center / cover fixed;
+        url("https://64.media.tumblr.com/d2e03b7fadc982e132a2054d7ebd0f00/c98fca04521d6d60-00/s400x600/92ea9fbd6e2158790c18f59c1130491cfb5535df.gif") center / cover fixed;
 }
 
 .chat-messages {
@@ -3188,4 +3188,120 @@ button,input,select,textarea{max-width:100%;box-sizing:border-box}
 .angelic-profile-aura,.angelic-message-aura{inset:0}
 .viewed-profile-hero.angelic-profile-hero .viewed-role::after{
   content:"◯";display:inline-flex;align-items:center;justify-content:center;margin-left:12px;width:24px;height:24px;border:2px solid rgba(255,255,255,.95);border-radius:50%;color:transparent;vertical-align:middle;box-shadow:0 0 10px #fff,0 0 25px rgba(150,220,255,.9);animation:angelHalo 2.2s ease-in-out infinite;
+}
+
+/* ===========================
+   CHAT_90 FINAL POLISH — REAL CARD BACKGROUNDS + SEASONAL REDEEM UI
+   =========================== */
+body.settings-no-banners .chat-me-banner{display:none!important}
+.chat-me-banner{display:block;position:relative;z-index:1;height:118px!important;margin:0 -12px 18px!important;background-color:#070c0a!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;opacity:1!important;visibility:visible!important;border-bottom:1px solid color-mix(in srgb,var(--chat-glow,#39ff88) 40%,transparent)!important;box-shadow:inset 0 -55px 60px rgba(0,0,0,.35),0 0 24px color-mix(in srgb,var(--chat-glow,#39ff88) 10%,transparent)!important}
+.chat-me-card{isolation:isolate}
+.chat-message.has-chat-background{background-image:linear-gradient(90deg,rgba(3,6,5,.86),rgba(3,6,5,.48) 48%,rgba(3,6,5,.82)),var(--chat-card-bg)!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
+.chat-message.has-chat-background .chat-message-background{display:none!important}
+.chat-message.has-chat-background .chat-message-head{background:linear-gradient(90deg,rgba(0,0,0,.22),transparent);border-radius:9px;padding:6px 7px}
+.chat-message.has-chat-background .chat-message-body{position:relative;text-shadow:0 2px 8px rgba(0,0,0,.85),0 0 10px color-mix(in srgb,var(--chat-glow,#39ff88) 16%,transparent)}
+.chat-message.has-chat-background .chat-message-tools{position:relative}
+
+.code-redeem-panel{width:min(880px,calc(100% - 28px));margin:34px auto 70px;padding:24px;border:1px solid rgba(84,234,255,.16);border-radius:22px;background:linear-gradient(145deg,rgba(7,18,16,.92),rgba(4,10,10,.88));box-shadow:0 25px 70px rgba(0,0,0,.28),inset 0 0 40px rgba(84,234,255,.025);position:relative;overflow:hidden}
+.code-redeem-panel::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 20%,rgba(84,234,255,.045),transparent 55%);transform:translateX(-100%);animation:redeemSweep 7s linear infinite}
+.code-redeem-kicker{position:relative;color:#7cecff;font-size:9px;font-weight:900;letter-spacing:.22em;margin-bottom:7px}.code-redeem-panel h2{position:relative;margin:0 0 7px;font-size:clamp(18px,3vw,27px);letter-spacing:.04em}.code-redeem-panel p{position:relative;color:#9daaa6;font-size:12px;line-height:1.6;max-width:650px}.code-redeem-row{position:relative;display:flex;gap:9px;margin-top:15px}.code-redeem-row input{flex:1;min-width:0;border:1px solid rgba(84,234,255,.18);border-radius:12px;padding:13px 14px;background:rgba(0,0,0,.35);color:white;outline:none;box-shadow:inset 0 0 20px rgba(84,234,255,.025)}.code-redeem-row input:focus{border-color:rgba(84,234,255,.55);box-shadow:0 0 20px rgba(84,234,255,.09)}.code-redeem-row button{border:1px solid rgba(57,255,136,.35);border-radius:12px;padding:0 20px;background:linear-gradient(135deg,rgba(57,255,136,.13),rgba(84,234,255,.08));color:#dfffe9;font-weight:900;letter-spacing:.12em;cursor:pointer;transition:.2s}.code-redeem-row button:hover{transform:translateY(-2px);box-shadow:0 0 25px rgba(57,255,136,.14);border-color:rgba(57,255,136,.7)}.code-redeem-status{position:relative;min-height:18px;margin-top:11px;color:#8d9b96;font-size:10px;font-weight:800;letter-spacing:.05em}.code-redeem-status.good{color:#67ffad;text-shadow:0 0 10px rgba(57,255,136,.35)}.code-redeem-status.bad{color:#ff6666}.season-unlocked-list{position:relative;display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:8px}.season-unlocked-label{font-size:9px;color:#71817b;letter-spacing:.1em}.season-chip{padding:6px 9px;border-radius:999px;border:1px solid rgba(84,234,255,.18);background:rgba(84,234,255,.05);color:#b9efff;font-size:8px;font-weight:900;letter-spacing:.06em;box-shadow:0 0 12px rgba(84,234,255,.04)}
+@keyframes redeemSweep{to{transform:translateX(100%)}}
+@media(max-width:560px){.code-redeem-panel{padding:18px;margin-top:22px}.code-redeem-row{flex-direction:column}.code-redeem-row button{min-height:44px}.chat-me-banner{height:90px!important}}
+
+/* =========================================================
+   ECHO//SHARE — LOBBY BACKGROUND RESTORE + QUALITY PASS
+   Keeps the existing design and adds a stronger visual layer.
+   ========================================================= */
+html, body { min-height:100%; }
+body {
+  position: relative;
+  background-color:#020604 !important;
+  background-image:
+    linear-gradient(rgba(2,6,4,.30), rgba(2,6,4,.48)),
+    radial-gradient(circle at 50% 0%, rgba(57,255,136,.13), transparent 38%),
+    url("https://i.pinimg.com/originals/b5/6f/20/b56f203db195308c00c86d47d746728d.gif"),
+    url("https://64.media.tumblr.com/d2e03b7fadc982e132a2054d7ebd0f00/c98fca04521d6d60-00/s400x600/92ea9fbd6e2158790c18f59c1130491cfb5535df.gif");
+  background-size:cover, cover, cover, cover;
+  background-position:center, center, center, center;
+  background-attachment:fixed, fixed, fixed, fixed;
+  background-repeat:no-repeat;
+}
+body::before {
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(2,6,4,.26), transparent 28%, transparent 72%, rgba(2,6,4,.26)),
+    linear-gradient(180deg, rgba(2,6,4,.10), transparent 34%, rgba(2,6,4,.32));
+}
+body::after {
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.22;
+  background-image:
+    linear-gradient(rgba(104,255,163,.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(104,255,163,.055) 1px, transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(to bottom, black 0%, rgba(0,0,0,.65) 58%, transparent 100%);
+}
+
+/* Let the background breathe through the lobby while retaining panel readability. */
+.home-page { position:relative; isolation:isolate; }
+.home-page::before {
+  content:"";
+  position:absolute;
+  inset:0 -10vw;
+  z-index:-1;
+  pointer-events:none;
+  background:radial-gradient(ellipse at 50% 20%, rgba(57,255,136,.075), transparent 58%);
+}
+.hero { position:relative; }
+.hero::before {
+  content:"";
+  position:absolute;
+  left:50%; top:18%;
+  width:min(760px,90vw); height:300px;
+  transform:translateX(-50%);
+  z-index:-1;
+  pointer-events:none;
+  background:radial-gradient(ellipse, rgba(57,255,136,.10), transparent 68%);
+  filter:blur(22px);
+}
+
+/* Higher-quality glass without making the lobby opaque. */
+.search-shell,
+.featured-card,
+.code-redeem-panel {
+  backdrop-filter:blur(10px) saturate(1.15);
+  -webkit-backdrop-filter:blur(10px) saturate(1.15);
+}
+.search-shell { background:linear-gradient(135deg, rgba(2,8,5,.72), rgba(2,8,5,.54)); }
+.featured-card { background:linear-gradient(120deg, rgba(8,20,14,.78), rgba(3,10,7,.52)); }
+.code-redeem-panel { background:linear-gradient(145deg, rgba(7,18,16,.78), rgba(4,10,10,.68)); }
+
+/* Crisp animated scan highlight across the lobby panels. */
+.featured-card::after,
+.search-shell::after,
+.code-redeem-panel::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,.045) 45%, transparent 55%);
+  transform:translateX(-120%);
+  animation:echoLobbySweep 9s linear infinite;
+}
+.search-shell::after { border-radius:18px; }
+@keyframes echoLobbySweep { to { transform:translateX(120%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .featured-card::after,
+  .search-shell::after,
+  .code-redeem-panel::after { animation:none; }
 }
