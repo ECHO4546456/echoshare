@@ -1,1 +1,0 @@
-export default {name:"Velvet_Order",people:41000,active:6200,color:"#8fd8ff",backgroundURI:"",hoverText:"A club in ECHO//WORLD.",wiki:"Velvet_Order is a club in ECHO//WORLD.",x:980,y:430,tags:["Independent","Network"]};

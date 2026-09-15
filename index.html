@@ -1,101 +1,367 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ECHO//WORLD</title>
-  <meta name="description" content="ECHO//WORLD — an interactive club world map." />
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECHO//SHARE</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="warning" class="warning-screen">
-    <div class="warning-grid"></div>
-    <div class="warning-card">
-      <div class="eyebrow">ECHO//WORLD · ACCESS GATE</div>
-      <h1>HOLD UP<br><span>BEFORE YOU START</span></h1>
-      <p>Enter the family name you're in. Your world view will lock onto that family's location.</p>
-      <div class="input-wrap">
-        <span>FAMILY://</span>
-        <input id="familyInput" autocomplete="off" spellcheck="false" placeholder="Type your family name…" />
-      </div>
-      <button id="enterBtn">ENTER WORLD <span>↗</span></button>
-      <div id="warningError" class="warning-error"></div>
-      <div class="hint">Demo family: <b>Hon's_Family</b></div>
-    </div>
-  </div>
 
-  <main id="app" class="app hidden">
-    <header class="topbar glass">
-      <div class="brand">
-        <div class="brand-mark">E</div>
-        <div>
-          <div class="brand-title">ECHO<span>//</span>WORLD <b id="titleBadge">LIVE</b></div>
-          <div class="brand-sub">CONNECTED CLUB NETWORK · <span id="clubCount">3,000</span> LOCATIONS</div>
+    <!-- Replace these two placeholder URLs in style.css / profiles.js with your own image addresses. -->
+
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="grid-overlay"></div>
+
+    <header class="topbar">
+        <a class="brand" href="#" aria-label="ECHO SHARE home">
+            <img
+                class="brand-image"
+                src="https://media.discordapp.net/attachments/1535460677525700659/1547955289188208770/wX72xcAAAAGSURBVAMAsSzfGDc3vJMAAAAASUVORK5CYII.png?ex=6aaa9334&is=6aa941b4&hm=7997eccc46c0e68662db4fbaa51ecdda1fe74631a436b5eed9b4f88242fb9eaf&=&format=webp&quality=lossless"
+                alt="ECHO"
+            >
+            <span>ECHO<span class="brand-slashes">//</span>SHARE</span>
+        </a>
+
+        <div class="header-actions">
+            <button id="siteSettingsButton" class="site-settings-button" type="button">⚙ SETTINGS</button>
+            <div class="status">
+                <span class="status-dot"></span>
+                ARCHIVE ONLINE
+            </div>
         </div>
-      </div>
-      <div class="top-stats">
-        <div><span>NETWORK</span><strong>ONLINE</strong></div>
-        <div><span>CLUBS</span><strong id="statClubs">3,000</strong></div>
-        <div><span>PEOPLE</span><strong id="statPeople">38.4M</strong></div>
-      </div>
-      <button id="resetBtn" class="icon-btn" title="Recenter">◎</button>
     </header>
 
-    <section id="mapStage" class="map-stage">
-      <div id="mapBackground" class="map-background"></div>
-      <canvas id="mapCanvas"></canvas>
-      <div class="map-vignette"></div>
-      <div id="hoverCard" class="hover-card"></div>
+    <main class="home-page" id="homePage">
+        <section class="hero">
+            <div class="eyebrow">KNOWLEDGE ARCHIVE // 01</div>
 
-      <div class="hud left-hud glass">
-        <div class="hud-title"><span class="pulse"></span> WORLD FEED</div>
-        <div class="hud-line">DRAG TO MOVE</div>
-        <div class="hud-line">SCROLL TO ZOOM</div>
-        <div class="hud-line">HOVER A CLUB TO SCAN</div>
-        <div class="hud-line">CLICK TO OPEN WIKI</div>
-      </div>
+            <h1>
+                <span>ECHO</span><b>//</b><span>SHARE</span>
+            </h1>
 
-      <div class="hud right-hud glass">
-        <div class="hud-title">YOUR VECTOR</div>
-        <div class="vector-value" id="vectorDistance">12 KM</div>
-        <div class="vector-caption">FROM SELECTED CLUB</div>
-        <div class="vector-rule"></div>
-        <div class="coords" id="coords">X 0000 · Y 0000</div>
-      </div>
+            <p class="hero-copy">
+                Search the archive. Discover profiles, records, stories,
+                and documents preserved inside the ECHO//SHARE network.
+            </p>
 
-      <div class="zoom-control glass">
-        <button id="zoomIn">+</button>
-        <button id="zoomReset">•</button>
-        <button id="zoomOut">−</button>
-      </div>
+            <div class="search-shell">
+                <div class="search-icon">⌕</div>
+                <input
+                    id="profileSearch"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Search a profile... e.g. UPDATE"
+                    aria-label="Search profiles"
+                >
+                <button id="searchButton" type="button">SEARCH</button>
+            </div>
 
-      <div class="bottom-dock glass">
-        <div class="dock-label">
-          <span class="pulse"></span>
-          <span>DISCOVERED</span>
+            <div class="search-hint">
+                Try <button class="example-search" data-profile="UPDATE">UPDATE</button>
+            </div>
+
+            <div id="searchMessage" class="search-message" aria-live="polite"></div>
+        </section>
+
+        <section class="archive-preview">
+            <div class="section-label">
+                <span>FEATURED RECORD</span>
+                <span>01 / 01</span>
+            </div>
+
+            <button class="featured-card UPDATE-card" data-profile="UPDATE">
+                <div class="featured-glow"></div>
+                <div class="featured-image-wrap">
+                    <img src="https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png" alt="UPDATE">
+                </div>
+                <div class="featured-info">
+                    <span class="record-tag">PROFILE RECORD</span>
+                    <h2>First Date of ECHO//SHARE</h2>
+                    <p>READ BEFORE YOU ADVENTURE.</p>
+                </div>
+                <span class="featured-arrow">↗</span>
+            </button>
+        </section>
+
+        <section class="code-redeem-panel" aria-label="Halloween code redemption">
+            <div class="code-redeem-kicker">ECHO//SHARE // SEASONAL ACCESS</div>
+            <h2>🎃 HALLOW NIGHT CODE REDEEM</h2>
+            <p>Redeem seasonal codes in this browser to unlock exclusive CHAT_90 message effects.</p>
+            <div class="code-redeem-row"><input id="seasonCodeInput" maxlength="40" autocomplete="off" placeholder="ENTER SEASON CODE"><button id="seasonCodeRedeem" type="button">REDEEM</button></div>
+            <div id="seasonCodeStatus" class="code-redeem-status" aria-live="polite"></div>
+            <div id="seasonUnlockedList" class="season-unlocked-list"></div>
+        </section>
+    </main>
+
+    <!-- Loading screen -->
+    <div id="loadingScreen" class="loading-screen" aria-hidden="true">
+        <div class="loader-card">
+            <div class="loader-ring"></div>
+            <div class="loader-kicker">ECHO//SHARE</div>
+            <h2 id="loadingTitle">ACCESSING RECORD</h2>
+            <div class="loader-line">
+                <span id="loadingBar"></span>
+            </div>
+            <div id="loadingText" class="loader-text">Searching archive...</div>
         </div>
-        <div id="clubPreview" class="club-preview"></div>
-        <div class="dock-search">
-          <span>⌕</span>
-          <input id="searchInput" placeholder="Search clubs…" />
-        </div>
-      </div>
-
-      <aside id="profilePanel" class="profile-panel glass">
-        <button id="closePanel" class="close-btn">×</button>
-        <div id="profileContent"></div>
-      </aside>
-    </section>
-
-    <div class="uri-bar glass">
-      <label>WORLD BACKGROUND URI <input id="worldBgInput" placeholder="Paste image URL…" /></label>
-      <label>SELECTED CLUB IMAGE URI <input id="clubBgInput" placeholder="Paste image URL to apply…" /></label>
-      <button id="applyUris">APPLY</button>
     </div>
 
-    <div id="toast" class="toast"></div>
-  </main>
+    <!-- Profile/wiki page -->
+    <main id="profilePage" class="profile-page" hidden>
+        <div class="wiki-topbar">
+            <button id="backButton" class="back-button" type="button">← BACK TO ARCHIVE</button>
+            <span class="wiki-path">ECHO//SHARE / RECORD / <b id="profilePath">UNKNOWN</b></span>
+        </div>
 
-  <script type="module" src="app.js"></script>
+        <section class="profile-hero">
+            <div class="profile-hero-bg"></div>
+
+            <div class="profile-identity">
+                <div class="profile-avatar-frame">
+                    <img id="profileImage" src="" alt="">
+                </div>
+
+                <div class="profile-title-area">
+                    <span class="record-tag">VERIFIED ARCHIVE RECORD</span>
+                    <h1 id="profileName">UPDATE</h1>
+                    <p id="profileTagline"></p>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat">
+                    <span class="stat-number" id="profileReaders">2M</span>
+                    <span class="stat-label">READERS</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="profileSupport">6B</span>
+                    <span class="stat-label">SUPPORT</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="profileStatus">ACTIVE</span>
+                    <span class="stat-label">STATUS</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="profile-layout">
+            <aside class="profile-sidebar">
+                <div class="side-card">
+                    <div class="side-title">RECORD DATA</div>
+
+                    <div class="data-row">
+                        <span>BIRTH DATE</span>
+                        <strong id="profileBirthDate"></strong>
+                    </div>
+
+                    <div class="data-row">
+                        <span>JOINED</span>
+                        <strong id="profileJoined"></strong>
+                    </div>
+
+                    <div class="data-row">
+                        <span>RECORD ID</span>
+                        <strong id="profileId"></strong>
+                    </div>
+                </div>
+
+                <div class="side-card">
+                    <div class="side-title">TAGS</div>
+                    <div id="profileTags" class="tags"></div>
+                </div>
+            </aside>
+
+            <article class="wiki-article">
+                <div class="article-heading">
+                    <span class="record-tag">DOCUMENTATION</span>
+                    <h2 id="articleTitle">About UPDATE</h2>
+                </div>
+
+                <div id="articleContent" class="article-content"></div>
+            </article>
+        </section>
+    </main>
+
+    <!-- CHAT_90 AUTHENTICATION -->
+    <section id="chatAuthPage" class="chat-auth-page" hidden>
+        <div class="chat-auth-card">
+            <div class="chat-auth-kicker">ECHO//SHARE // RESTRICTED NETWORK</div>
+            <div class="chat-auth-icon">◈</div>
+            <h1>CHAT_90</h1>
+            <p>THIS AREA REQUIRES ACCESS.</p>
+            <div id="chatAuthMessage" class="chat-auth-message"></div>
+            <input id="chatPasswordInput" type="password" autocomplete="off" placeholder="ENTER ACCESS PASSWORD">
+            <button id="chatPasswordButton" type="button">AUTHENTICATE</button>
+            <button id="chatAuthBack" class="chat-small-button" type="button">← RETURN TO ARCHIVE</button>
+        </div>
+    </section>
+
+    <!-- CHAT_90 IDENTITY SETUP -->
+    <section id="chatSetupPage" class="chat-setup-page" hidden>
+        <div class="chat-setup-card">
+            <div class="chat-auth-kicker">CHAT_90 // IDENTITY</div>
+            <h1>CREATE YOUR CHAT IDENTITY</h1>
+            <p>Your identity is saved in this browser for this demo build.</p>
+            <label>USERNAME<input id="chatUsernameInput" maxlength="24" placeholder="Your username"></label>
+            <label>PROFILE IMAGE URL<input id="chatAvatarInput" placeholder="https://..."></label>
+            <button id="chatAvatarUploadButton" class="chat-file-button" type="button">UPLOAD PROFILE IMAGE</button>
+            <label>BIO<input id="chatBioInput" maxlength="160" placeholder="A short bio"></label>
+            <label>TAGS <input id="chatTagsInput" maxlength="180" placeholder="Artist, Gamer, Writer"></label>
+            <label>BADGE IMAGE URL<input id="chatBadgeInput" placeholder="https://... or upload a badge"></label>
+            <button id="chatBadgeUploadButton" class="chat-file-button" type="button">UPLOAD BADGE</button>
+            <label>PROFILE BANNER<input id="chatBannerInput" placeholder="Optional banner image URL or image ID"></label>
+            <button id="chatBannerUploadButton" class="chat-file-button" type="button">UPLOAD BANNER</button>
+            <label>CHAT CARD BACKGROUND<input id="chatBackgroundInput" placeholder="Image URL or Roblox image ID"></label>
+            <small class="chat-field-hint">This image appears behind your messages in CHAT_90.</small>
+            <div id="chatSpecialOptions" class="special-options" hidden>
+                <div class="special-title">SPECIAL ACCESS</div>
+                <label>GLOW COLOR<input id="chatGlowInput" type="text" value="#ff2d2d" placeholder="#ff2d2d"></label>
+                <label>MESSAGE EFFECT<select id="chatEffectInput"></select></label>
+            </div>
+            <div id="chatMalfunctionOptions" class="malfunction-options" hidden>
+                <div class="malfunction-title">MALFUNCTION // OVERDRIVE ACCESS</div>
+                <p>34 experimental controls. Changes save and broadcast instantly.</p>
+                <div id="malfunctionToolsGrid" class="malfunction-tools-grid"></div>
+                <button id="malfunctionMediaButton" class="malfunction-media-button" type="button">☣ MALFUNCTION MEDIA</button>
+                <input id="malfunctionMediaInput" type="file" accept="image/*,video/*" hidden>
+            </div>
+            <button id="chatEnterButton" type="button">ENTER CHAT_90</button>
+            <button id="chatSetupBack" class="chat-small-button" type="button">← RETURN TO ARCHIVE</button>
+        </div>
+    </section>
+
+    <!-- CHAT_90 -->
+    <section id="chatPage" class="chat-page" hidden>
+        <div class="chat-topbar">
+            <button id="chatBackButton" type="button">← ECHO//SHARE</button>
+            <div class="chat-brand"><span>CHAT_90</span><small>LIVE ARCHIVE CHANNEL</small></div>
+            <div class="chat-top-actions"><button id="chatSettingsButton" type="button">⚙ SETTINGS</button><div class="chat-online"><span></span><b id="chatOnlineCount">1</b> ONLINE</div></div>
+        </div>
+
+        <div class="chat-layout">
+            <aside class="chat-users-panel">
+                <div class="chat-social-tabs"><button id="chatFriendsButton" type="button">FRIENDS</button><button id="chatDMButton" type="button">DMs</button></div>
+                <div class="chat-panel-title">ONLINE USERS</div>
+                <div id="chatUsersList" class="chat-users-list"></div>
+                <div class="chat-user-count"><b id="chatOnlineCountSide">1</b> USERS CONNECTED</div>
+            </aside>
+
+            <main class="chat-main">
+                <div id="chatMessages" class="chat-messages"></div>
+                <div id="chatTyping" class="chat-typing"></div>
+                <div id="chatReplyBar" class="chat-reply-bar" hidden></div>
+                <div class="chat-composer">
+                    <button id="chatMediaButton" type="button" title="Send image, GIF, or video">MEDIA</button>
+                    <input id="chatMessageInput" maxlength="500" autocomplete="off" placeholder="Type a message...">
+                    <button id="chatSendButton" class="chat-send" type="button">➤</button>
+                </div>
+                <div class="chat-composer-hint">MEDIA opens your files so you can send an image, GIF, or video.</div>
+                <input id="chatMediaInput" type="file" accept="image/*,video/*,.gif" hidden>
+                <input id="chatAvatarFileInput" type="file" accept="image/*" hidden>
+                <input id="chatBadgeFileInput" type="file" accept="image/*" hidden>
+                <input id="chatBannerFileInput" type="file" accept="image/*" hidden>
+                <input id="chatReactionFileInput" type="file" accept="image/gif,.gif" hidden>
+            </main>
+
+            <aside class="chat-profile-panel">
+                <div class="chat-social-card" id="chatSocialCard" hidden>
+                    <div class="chat-panel-title">SOCIAL</div>
+                    <div id="chatSocialList" class="chat-social-list"></div>
+                </div>
+                <div class="chat-panel-title">YOUR IDENTITY</div>
+                <div id="chatMeCard" class="chat-me-card"></div>
+                <button id="chatEditProfile" class="chat-profile-button" type="button">EDIT PROFILE</button>
+                <button id="chatLogout" class="chat-profile-button danger" type="button">LEAVE CHAT</button>
+            </aside>
+        </div>
+    </section>
+
+
+    <div id="chatNotificationStack" class="chat-notification-stack" aria-live="polite"></div>
+
+    <div id="chatDMModal" class="chat-dm-modal" hidden>
+        <div class="chat-dm-card">
+            <button id="chatDMClose" class="chat-modal-close" type="button">×</button>
+            <div class="chat-dm-head"><span>DIRECT SIGNAL</span><b id="chatDMTitle">DM</b></div>
+            <div id="chatDMMessages" class="chat-dm-messages"></div>
+            <div class="chat-dm-composer"><input id="chatDMInput" maxlength="500" placeholder="Send a private message..."><button id="chatDMSend" type="button">➤</button></div>
+        </div>
+    </div>
+
+    <div id="chatProfileModal" class="chat-profile-modal" hidden>
+        <div class="chat-profile-modal-card">
+            <button id="chatProfileClose" class="chat-modal-close" type="button">×</button>
+            <div id="chatViewedProfile"></div>
+        </div>
+    </div>
+
+
+    <div id="siteSettingsModal" class="site-settings-modal" hidden>
+        <div class="site-settings-card">
+            <button id="siteSettingsClose" class="chat-modal-close" type="button">×</button>
+            <div class="settings-kicker">ECHO//SHARE // CONTROL CENTER</div>
+            <h2>SETTINGS</h2>
+            <p class="settings-subtitle">Tune the archive, CHAT_90, profiles and sound without changing the site's visual identity.</p>
+            <div class="settings-grid">
+                <section class="settings-section">
+                    <h3>🔊 AUDIO</h3>
+                    <label>MASTER VOLUME <input id="settingMasterVolume" type="range" min="0" max="100" value="100"></label>
+                    <label>BACKGROUND VOLUME <input id="settingBackgroundVolume" type="range" min="0" max="100" value="5"></label>
+                    <label>NOTIFICATION VOLUME <input id="settingNotificationVolume" type="range" min="0" max="100" value="70"></label>
+                    <button id="settingTestNotification" class="settings-action" type="button">TEST NOTIFICATION SOUND</button>
+                    <button id="settingToggleBackground" class="settings-action" type="button">TOGGLE BACKGROUND SOUND</button>
+                </section>
+                <section class="settings-section">
+                    <h3>💬 CHAT_90</h3>
+                    <label class="settings-toggle"><input id="settingAnimations" type="checkbox" checked> ENABLE MESSAGE VFX</label>
+                    <label class="settings-toggle"><input id="settingTimestamps" type="checkbox" checked> SHOW TIMESTAMPS</label>
+                    <label class="settings-toggle"><input id="settingAutoplayMedia" type="checkbox" checked> AUTOPLAY VIDEO MEDIA</label>
+                    <label class="settings-toggle"><input id="settingEnterSend" type="checkbox" checked> ENTER SENDS MESSAGE</label>
+                    <label class="settings-toggle"><input id="settingDesktopNotifications" type="checkbox"> DESKTOP NOTIFICATIONS</label>
+                    <button id="settingRequestNotifications" class="settings-action" type="button">ALLOW DESKTOP NOTIFICATIONS</button>
+                </section>
+                <section class="settings-section">
+                    <h3>👤 PROFILES</h3>
+                    <label class="settings-toggle"><input id="settingProfileAnimations" type="checkbox" checked> PROFILE GLOW ANIMATIONS</label>
+                    <label class="settings-toggle"><input id="settingShowBanners" type="checkbox" checked> SHOW PROFILE BANNERS</label>
+                    <label class="settings-toggle"><input id="settingRememberProfile" type="checkbox" checked> REMEMBER LOCAL PROFILE</label>
+                </section>
+                <section class="settings-section">
+                    <h3>🖥 INTERFACE</h3>
+                    <label class="settings-toggle"><input id="settingCompact" type="checkbox"> COMPACT CHAT</label>
+                    <label class="settings-toggle"><input id="settingReduceMotion" type="checkbox"> REDUCE MOTION</label>
+                    <button id="settingReset" class="settings-action danger" type="button">RESET SETTINGS</button>
+                </section>
+            </div>
+            <div class="settings-save-note">✓ Settings save instantly on this device.</div>
+        </div>
+    </div>
+
+    <div id="malfunctionMediaOverlay" class="malfunction-media-overlay" hidden>
+        <div class="malfunction-media-card">
+            <div class="malfunction-media-kicker">MALFUNCTION // BROADCAST CONTROL</div>
+            <h2 id="malfunctionMediaTitle">MEDIA LOADED</h2>
+            <div id="malfunctionMediaPreview" class="malfunction-media-preview"></div>
+            <p>TEST plays it only for you. ANNOY ALL broadcasts it to everyone in CHAT_90 and blocks the chat until playback finishes.</p>
+            <div class="malfunction-media-actions">
+                <button id="malfunctionTestButton" type="button">TEST</button>
+                <button id="malfunctionAnnoyButton" type="button" hidden>ANNOY ALL</button>
+                <button id="malfunctionCancelButton" type="button">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        Made By: Hero until dawn / Frogmen
+    </footer>
+
+    <audio id="chatNotificationSound" preload="auto"></audio>
+    <audio id="backgroundNoise" loop preload="auto"></audio>
+
+    <script src="profiles.js"></script>
+    <script src="script.js"></script>
+
 </body>
 </html>

@@ -1,1 +1,0 @@
-export default {name:"Crimson_Family",people:22000,active:2800,color:"#5bc5ff",backgroundURI:"",hoverText:"A club in ECHO//WORLD.",wiki:"Crimson_Family is a club in ECHO//WORLD.",x:-1450,y:40,tags:["Independent","Network"]};

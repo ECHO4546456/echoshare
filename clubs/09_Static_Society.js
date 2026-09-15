@@ -1,1 +1,0 @@
-export default {name:"Static_Society",people:17000,active:2100,color:"#35baff",backgroundURI:"",hoverText:"A club in ECHO//WORLD.",wiki:"Static_Society is a club in ECHO//WORLD.",x:1440,y:30,tags:["Independent","Network"]};
