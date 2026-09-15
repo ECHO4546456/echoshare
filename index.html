@@ -18,7 +18,7 @@
         <a class="brand" href="#" aria-label="ECHO SHARE home">
             <img
                 class="brand-image"
-                src="https://media.discordapp.net/attachments/1535460677525700659/1547955289188208770/wX72xcAAAAGSURBVAMAsSzfGDc3vJMAAAAASUVORK5CYII.png?ex=6aa9ea74&is=6aa898f4&hm=f005813cb25f6bd1e5a4bd4f58ba07e7134ec670f5d4869a39d46ab582877df8&=&format=webp&quality=lossless"
+                src=""
                 alt="ECHO"
             >
             <span>ECHO<span class="brand-slashes">//</span>SHARE</span>
@@ -83,15 +83,6 @@
                 </div>
                 <span class="featured-arrow">↗</span>
             </button>
-        </section>
-
-        <section class="code-redeem-panel" aria-label="Halloween code redemption">
-            <div class="code-redeem-kicker">ECHO//SHARE // SEASONAL ACCESS</div>
-            <h2>🎃 HALLOW NIGHT CODE REDEEM</h2>
-            <p>Redeem seasonal codes in this browser to unlock exclusive CHAT_90 message effects.</p>
-            <div class="code-redeem-row"><input id="seasonCodeInput" maxlength="40" autocomplete="off" placeholder="ENTER SEASON CODE"><button id="seasonCodeRedeem" type="button">REDEEM</button></div>
-            <div id="seasonCodeStatus" class="code-redeem-status" aria-live="polite"></div>
-            <div id="seasonUnlockedList" class="season-unlocked-list"></div>
         </section>
     </main>
 
@@ -211,15 +202,12 @@
             <label>TAGS <input id="chatTagsInput" maxlength="180" placeholder="Artist, Gamer, Writer"></label>
             <label>BADGE IMAGE URL<input id="chatBadgeInput" placeholder="https://... or upload a badge"></label>
             <button id="chatBadgeUploadButton" class="chat-file-button" type="button">UPLOAD BADGE</button>
-            <label>PROFILE BANNER<input id="chatBannerInput" placeholder="Optional banner image URL or image ID"></label>
+            <label>PROFILE BANNER<input id="chatBannerInput" placeholder="Optional banner image URL"></label>
             <button id="chatBannerUploadButton" class="chat-file-button" type="button">UPLOAD BANNER</button>
-            <label>CHAT CARD BACKGROUND<input id="chatBackgroundInput" placeholder="Image URL or Roblox image ID"></label>
-            <small class="chat-field-hint">This image appears behind your messages in CHAT_90.</small>
-            <label id="chatEffectWrap" class="chat-effect-wrap">MESSAGE EFFECT<select id="chatEffectInput"></select><small class="chat-field-hint">Members can use redeemed Halloween effects. Elevated accounts also get their approved effects.</small></label>
             <div id="chatSpecialOptions" class="special-options" hidden>
                 <div class="special-title">SPECIAL ACCESS</div>
                 <label>GLOW COLOR<input id="chatGlowInput" type="text" value="#ff2d2d" placeholder="#ff2d2d"></label>
-                <div class="special-effect-note">Your selected effect is controlled by the MESSAGE EFFECT selector above.</div>
+                <label>MESSAGE EFFECT<select id="chatEffectInput"></select></label>
             </div>
             <div id="chatMalfunctionOptions" class="malfunction-options" hidden>
                 <div class="malfunction-title">MALFUNCTION // OVERDRIVE ACCESS</div>
@@ -228,9 +216,6 @@
                 <button id="malfunctionMediaButton" class="malfunction-media-button" type="button">☣ MALFUNCTION MEDIA</button>
                 <input id="malfunctionMediaInput" type="file" accept="image/*,video/*" hidden>
             </div>
-            <input id="chatAvatarFileInput" type="file" accept="image/*" hidden>
-            <input id="chatBadgeFileInput" type="file" accept="image/*" hidden>
-            <input id="chatBannerFileInput" type="file" accept="image/*" hidden>
             <button id="chatEnterButton" type="button">ENTER CHAT_90</button>
             <button id="chatSetupBack" class="chat-small-button" type="button">← RETURN TO ARCHIVE</button>
         </div>
@@ -263,6 +248,9 @@
                 </div>
                 <div class="chat-composer-hint">MEDIA opens your files so you can send an image, GIF, or video.</div>
                 <input id="chatMediaInput" type="file" accept="image/*,video/*,.gif" hidden>
+                <input id="chatAvatarFileInput" type="file" accept="image/*" hidden>
+                <input id="chatBadgeFileInput" type="file" accept="image/*" hidden>
+                <input id="chatBannerFileInput" type="file" accept="image/*" hidden>
                 <input id="chatReactionFileInput" type="file" accept="image/gif,.gif" hidden>
             </main>
 
@@ -318,7 +306,7 @@
                     <h3>💬 CHAT_90</h3>
                     <label class="settings-toggle"><input id="settingAnimations" type="checkbox" checked> ENABLE MESSAGE VFX</label>
                     <label class="settings-toggle"><input id="settingTimestamps" type="checkbox" checked> SHOW TIMESTAMPS</label>
-                    <label class="settings-toggle"><input id="settingAutoplayMedia" type="checkbox"> AUTO-LOAD VIDEO MEDIA</label>
+                    <label class="settings-toggle"><input id="settingAutoplayMedia" type="checkbox" checked> AUTOPLAY VIDEO MEDIA</label>
                     <label class="settings-toggle"><input id="settingEnterSend" type="checkbox" checked> ENTER SENDS MESSAGE</label>
                     <label class="settings-toggle"><input id="settingDesktopNotifications" type="checkbox"> DESKTOP NOTIFICATIONS</label>
                     <button id="settingRequestNotifications" class="settings-action" type="button">ALLOW DESKTOP NOTIFICATIONS</button>

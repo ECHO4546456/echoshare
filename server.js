@@ -10,11 +10,10 @@ const DB = path.join(ROOT, 'chat90-data.json');
 const NORMAL_PASSWORD = process.env.CHAT90_PASSWORD || '56789';
 const SPECIAL_PASSWORD = process.env.CHAT90_SPECIAL_PASSWORD || '9!GAG';
 const MALFUNCTION_PASSWORD = process.env.CHAT90_MALFUNCTION_PASSWORD || 'Ink';
-const SEASONAL_EFFECTS = new Set(['halloween-pumpkin','halloween-fog','halloween-candy','halloween-jack','halloween-ghosts','halloween-witchfire','halloween-static','halloween-reaper','halloween-harvest']);
 
-let state = { profiles: {}, messages: [], banned: [], friends: {}, dms: {}, chatMessageCounter: 0 };
+let state = { profiles: {}, messages: [], banned: [], friends: {}, dms: {} };
 try { state = JSON.parse(fs.readFileSync(DB, 'utf8')); } catch (_) {}
-state.profiles ||= {}; state.messages ||= []; state.banned ||= []; state.friends ||= {}; state.dms ||= {}; state.chatMessageCounter ||= 0;
+state.profiles ||= {}; state.messages ||= []; state.banned ||= []; state.friends ||= {}; state.dms ||= {};
 const clients = new Map();
 const sessions = new Map();
 
@@ -26,15 +25,8 @@ function broadcast(packet, except) {
   const data = JSON.stringify(packet);
   for (const [ws] of clients) if (ws !== except && ws.readyState === WebSocket.OPEN) ws.send(data);
 }
-function normalizeEffect(effect, access) {
-  const e=clean(effect,80);
-  if(access==='malfunction') return e || 'you-and-i-forever';
-  if(access==='special') return (e==='angelic-praise'||e==='you-and-i-forever') ? 'red-pulse' : (e || 'red-pulse');
-  return SEASONAL_EFFECTS.has(e) ? e : 'normal';
-}
-
 function publicProfile(p) {
-  return { username:p.username, avatar:p.avatar, bio:p.bio, role:p.role, glow:p.glow, badge:p.badge, banner:p.banner||'', chatBackground:p.chatBackground||'', effect:p.effect, tags:p.tags || [], malfunctionTools:p.malfunctionTools||{}, access:p.access||'normal', joined:p.joined };
+  return { username:p.username, avatar:p.avatar, bio:p.bio, role:p.role, glow:p.glow, badge:p.badge, banner:p.banner||'', effect:p.effect, tags:p.tags || [], malfunctionTools:p.malfunctionTools||{}, access:p.access||'normal', joined:p.joined };
 }
 function onlineProfiles() {
   const seen = new Set(); const out=[];
@@ -85,14 +77,14 @@ wss.on('connection',(ws)=>{
       const username=clean(m.username,24); if(!username) return;
       if(state.banned.includes(username.toLowerCase())) return send(ws,{type:'kicked',message:'This username is blocked from CHAT_90.'});
       const old=s.username;
-      const profile={username,avatar:clean(m.avatar,500)||'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',bio:clean(m.bio,160),tags:Array.isArray(m.tags)?m.tags.map(x=>clean(x,24)).filter(Boolean).slice(0,12):[],access:s.malfunction?'malfunction':s.special?'special':'normal',role:s.malfunction?'MALFUNCTION':s.special?'SPECIAL / ADMIN':'MEMBER',glow:(s.special||s.malfunction)?clean(m.glow,30)||'#ff2d2d':'#39ff88',badge:clean(m.badge,500),banner:cleanMedia(m.banner,4200000),chatBackground:cleanMedia(m.chatBackground,4200000),effect:normalizeEffect(m.effect,s.malfunction?'malfunction':s.special?'special':'normal'),malfunctionTools:s.malfunction&&m.malfunctionTools&&typeof m.malfunctionTools==='object'?Object.fromEntries(Object.entries(m.malfunctionTools).slice(0,34).map(([k,v])=>[clean(k,40),!!v])):{},joined:old && state.profiles[old] ? state.profiles[old].joined : new Date().toISOString()};
+      const profile={username,avatar:clean(m.avatar,500)||'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',bio:clean(m.bio,160),tags:Array.isArray(m.tags)?m.tags.map(x=>clean(x,24)).filter(Boolean).slice(0,12):[],access:s.malfunction?'malfunction':s.special?'special':'normal',role:s.malfunction?'MALFUNCTION':s.special?'SPECIAL / ADMIN':'MEMBER',glow:(s.special||s.malfunction)?clean(m.glow,30)||'#ff2d2d':'#39ff88',badge:clean(m.badge,500),banner:cleanMedia(m.banner,4200000),effect:(s.special||s.malfunction)?(s.malfunction?clean(m.effect,80)||'you-and-i-forever':(clean(m.effect,80)==='you-and-i-forever'?'red-pulse':clean(m.effect,80)||'red-pulse')):'normal',malfunctionTools:s.malfunction&&m.malfunctionTools&&typeof m.malfunctionTools==='object'?Object.fromEntries(Object.entries(m.malfunctionTools).slice(0,34).map(([k,v])=>[clean(k,40),!!v])):{},joined:old && state.profiles[old] ? state.profiles[old].joined : new Date().toISOString()};
       if(old && old!==username){
         delete state.profiles[old];
         for(const msg of state.messages) if(msg.username===old) msg.username=username;
       }
       state.profiles[username]=profile; s.username=username; save();
       // Profile changes propagate to every existing message immediately, so old messages update too.
-      for(const msg of state.messages){ if(msg.username===username){ Object.assign(msg,{avatar:profile.avatar,bio:profile.bio,role:profile.role,glow:profile.glow,badge:profile.badge,banner:profile.banner,chatBackground:profile.chatBackground,effect:profile.effect,malfunctionTools:profile.malfunctionTools||{}}); } }
+      for(const msg of state.messages){ if(msg.username===username){ Object.assign(msg,{avatar:profile.avatar,bio:profile.bio,role:profile.role,glow:profile.glow,badge:profile.badge,banner:profile.banner,effect:profile.effect,malfunctionTools:profile.malfunctionTools||{}}); } }
       save();
       send(ws,{type:'profileSaved',profile:publicProfile(profile)});
       broadcast({type:'profileUpdated',profile:publicProfile(profile),previousUsername:old||null});
@@ -103,19 +95,9 @@ wss.on('connection',(ws)=>{
     if(m.type==='message') {
       if(!s.username || !state.profiles[s.username]) return;
       const p=state.profiles[s.username];
-      const msg={id:id(),time:new Date().toISOString(),username:p.username,avatar:p.avatar,role:p.role,glow:p.glow,badge:p.badge,banner:p.banner||'',chatBackground:p.chatBackground||'',effect:p.effect,malfunctionTools:p.malfunctionTools||{},text:clean(m.text,500),image:clean(m.image,800),gif:clean(m.gif,800),media:cleanMedia(m.media,11000000),mediaType:['image','gif','video'].includes(m.mediaType)?m.mediaType:'' ,replyTo:m.replyTo?{id:clean(m.replyTo.id,80),username:clean(m.replyTo.username,24),text:clean(m.replyTo.text,500)}:null,reactions:[]};
+      const msg={id:id(),time:new Date().toISOString(),username:p.username,avatar:p.avatar,role:p.role,glow:p.glow,badge:p.badge,banner:p.banner||'',effect:p.effect,malfunctionTools:p.malfunctionTools||{},text:clean(m.text,500),image:clean(m.image,800),gif:clean(m.gif,800),media:cleanMedia(m.media,11000000),mediaType:['image','gif','video'].includes(m.mediaType)?m.mediaType:'' ,replyTo:m.replyTo?{id:clean(m.replyTo.id,80),username:clean(m.replyTo.username,24),text:clean(m.replyTo.text,500)}:null,reactions:[]};
       if(!msg.text&&!msg.image&&!msg.gif&&!msg.media) return;
-      state.messages.push(msg);
-      state.chatMessageCounter=(state.chatMessageCounter||0)+1;
-      if(state.chatMessageCounter>=12){
-        const removed=state.messages.splice(0,Math.min(9,state.messages.length));
-        state.chatMessageCounter=0;
-        save();
-        const history=state.messages.slice(-250);
-        broadcast({type:'historyPruned',removedIds:removed.map(x=>x.id),history});
-        send(ws,{type:'historyPruned',removedIds:removed.map(x=>x.id),history});
-      }
-      state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); send(ws,{type:'message',message:msg}); return;
+      state.messages.push(msg); state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); send(ws,{type:'message',message:msg}); return;
     }
     if(m.type==='reaction') {
       if(!s.username || !state.profiles[s.username]) return;
