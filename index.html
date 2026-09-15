@@ -93,6 +93,10 @@
             <div id="seasonCodeStatus" class="code-redeem-status" aria-live="polite"></div>
             <div id="seasonUnlockedList" class="season-unlocked-list"></div>
         </section>
+        <section id="echoFriendsShowcase" class="echo-friends-showcase" hidden aria-label="ECHO SHARE friends">
+            <div class="section-label"><span>FRIEND NETWORK</span><span id="echoFriendsCount">0 / 0</span></div>
+            <div id="echoFriendsGrid" class="echo-friends-grid"></div>
+        </section>
     </main>
 
     <!-- Loading screen -->
@@ -253,12 +257,19 @@
                 <div id="chatMessages" class="chat-messages"></div>
                 <div id="chatTyping" class="chat-typing"></div>
                 <div id="chatReplyBar" class="chat-reply-bar" hidden></div>
-                <div class="chat-composer">
-                    <button id="chatMediaButton" type="button" title="Send image, GIF, or video">MEDIA</button>
-                    <input id="chatMessageInput" maxlength="500" autocomplete="off" placeholder="Type a message...">
-                    <button id="chatSendButton" class="chat-send" type="button">➤</button>
+                <div class="chat-composer-wrap">
+                    <div class="chat-composer-options" aria-label="Chat options">
+                        <button id="chatMediaButton" class="chat-option" type="button" title="Send image, GIF, or video">＋ MEDIA</button>
+                        <button id="chatGifButton" class="chat-option" type="button" title="Send a GIF">GIF</button>
+                        <button id="chatReplyOption" class="chat-option" type="button" title="Clear the current reply">↩ REPLY</button>
+                    </div>
+                    <div class="chat-composer">
+                        <div class="chat-input-orb" aria-hidden="true"></div>
+                        <input id="chatMessageInput" maxlength="500" autocomplete="off" placeholder="Transmit a message...">
+                        <button id="chatSendButton" class="chat-send" type="button" aria-label="Send message">➤</button>
+                    </div>
                 </div>
-                <div class="chat-composer-hint">MEDIA opens your files so you can send an image, GIF, or video.</div>
+                <div class="chat-composer-hint">ENTER TO SEND · MEDIA FOR IMAGE / GIF / VIDEO · VIDEO NEVER AUTOPLAYS</div>
                 <input id="chatMediaInput" type="file" accept="image/*,video/*,.gif" hidden>
                 <input id="chatAvatarFileInput" type="file" accept="image/*" hidden>
                 <input id="chatBadgeFileInput" type="file" accept="image/*" hidden>

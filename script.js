@@ -333,6 +333,31 @@ document.addEventListener("keydown", event => {
 
 
 /* =========================================
+   ECHO//SHARE FRIEND NETWORK
+   ========================================= */
+const echoFriendsShowcase=document.getElementById('echoFriendsShowcase');
+const echoFriendsGrid=document.getElementById('echoFriendsGrid');
+const echoFriendsCount=document.getElementById('echoFriendsCount');
+window.chatFriendCards=[];
+function renderEchoFriendsShowcase(){
+  if(!echoFriendsShowcase||!echoFriendsGrid)return;
+  const cards=Array.isArray(window.chatFriendCards)?window.chatFriendCards:[];
+  echoFriendsShowcase.hidden=cards.length===0;
+  if(echoFriendsCount) echoFriendsCount.textContent=`${cards.length} FRIEND${cards.length===1?'':'S'}`;
+  echoFriendsGrid.innerHTML=cards.map(profile=>{
+    const bg=profile.chatBackground||profile.banner||'';
+    return `<button type="button" class="echo-friend-card" data-friend-card="${escapeText(profile.username)}" style="--friend-glow:${escapeText(profile.glow||'#39ff88')};${bg?`background-image:linear-gradient(135deg,rgba(2,7,5,.68),rgba(2,7,5,.86)),url('${escapeText(bg)}')`:''}">
+      <span class="echo-friend-sheen"></span><span class="echo-friend-avatar"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""></span>
+      <span class="echo-friend-info"><b>${escapeText(profile.username)}</b><small>${escapeText(profile.role||'MEMBER')}</small><i>${profile.effect&&profile.effect!=='normal'?`✦ ${escapeText(profile.effect)}`:'CONNECTED'}</i></span><span class="echo-friend-arrow">↗</span>
+    </button>`;
+  }).join('');
+  echoFriendsGrid.querySelectorAll('[data-friend-card]').forEach(b=>b.addEventListener('click',()=>{
+    const profile=window.chatFriendCards.find(x=>x.username===b.dataset.friendCard); if(profile) showViewedProfile(profile);
+  }));
+}
+renderEchoFriendsShowcase();
+
+/* =========================================
    CHAT_90
    ========================================= */
 
@@ -704,7 +729,7 @@ function connectChatSocket(){
     }
 
     if(packet.type==="profileUpdated"){
-      if(packet.profile){const name=packet.profile.username;const oldName=packet.previousUsername;chatOnlineProfiles=chatOnlineProfiles.map(p=>(p.username===name||p.username===oldName)?{...p,...packet.profile}:p);chatServerMessages=chatServerMessages.map(m=>(m.username===name||m.username===oldName)?{...m,...packet.profile}:m);if(getChatProfile()?.username===name)saveChatProfile({...getChatProfile(),...packet.profile});renderGlobalChat(false);}return;
+      if(packet.profile){const name=packet.profile.username;const oldName=packet.previousUsername;const key=packet.profile.profileKey;chatOnlineProfiles=chatOnlineProfiles.map(p=>(key?(p.profileKey===key):(p.username===name||p.username===oldName))?{...p,...packet.profile}:p);chatServerMessages=chatServerMessages.map(m=>(key?(m.profileKey===key):(m.username===name||m.username===oldName))?{...m,...packet.profile}:m);if(getChatProfile()?.username===name && (!key||getChatProfile()?.profileKey===key||getChatProfile()?.access===packet.profile.access))saveChatProfile({...getChatProfile(),...packet.profile});renderGlobalChat(false);}return;
     }
     if(packet.type==="historyPruned"){
       chatServerMessages=Array.isArray(packet.history)?packet.history:chatServerMessages.filter(m=>!(packet.ids||[]).includes(m.id));
@@ -728,12 +753,21 @@ function connectChatSocket(){
 
     if(packet.type==="friends"){
       window.chatFriends=Array.isArray(packet.friends)?packet.friends:[];
-      renderSocialPanel();
+      window.chatIncomingFriends=Array.isArray(packet.incoming)?packet.incoming:[];
+      window.chatOutgoingFriends=Array.isArray(packet.outgoing)?packet.outgoing:[];
+      window.chatFriendCards=Array.isArray(packet.cards)?packet.cards:[];
+      renderSocialPanel(); renderEchoFriendsShowcase();
       return;
     }
     if(packet.type==="friendNotice"){
-      showChatNotification(packet.username, packet.added ? "added you as a friend" : "removed you from friends");
+      if(Array.isArray(packet.friends)) window.chatFriends=packet.friends;
+      if(Array.isArray(packet.incoming)) window.chatIncomingFriends=packet.incoming;
+      renderSocialPanel();
+      const status=packet.status||'';
+      const text=status==='accepted'?`you and ${packet.username} are now friends`:status==='request'?`sent you a friend request`:status==='removed'?`you are no longer friends`:status==='cancelled'?`cancelled the friend request`:`updated your friend status`;
+      showChatNotification(packet.username,text);
       try{playChatNotificationSound();}catch(_){}
+      wsSend({type:'getFriends'});
       return;
     }
     if(packet.type==="dm"){
@@ -804,6 +838,7 @@ function authenticateChat(){
   // A password switch is a fresh CHAT_90 session. This prevents an old WebSocket
   // or old browser profile from carrying the previous access tier into the new one.
   chatManualClose=true;
+  if(chatReconnectTimer){clearTimeout(chatReconnectTimer);chatReconnectTimer=null;}
   try{ chatSocket?.close(); }catch(_){}
   chatSocket=null; chatConnected=false; chatAuthenticated=false; chatPendingPackets=[];
   chatManualClose=false;
@@ -911,13 +946,13 @@ function renderMessage(message){
   const isSpecialMessage=String(message.role||'').toUpperCase().includes('SPECIAL')||String(message.role||'').toUpperCase().includes('MALFUNCTION')||(message.effect&&message.effect!=='normal');
   const malfunctionClasses=message.malfunctionTools&&typeof message.malfunctionTools==='object'?Object.keys(message.malfunctionTools).filter(k=>message.malfunctionTools[k]).map(k=>'mf-'+k).join(' '):'';
   article.className=`chat-message ${message.bot?'bot':''} ${isSpecialMessage?'special-message':''} ${message.effect||''} ${malfunctionClasses}`; article.dataset.effect=message.effect||'normal'; article.style.setProperty('--chat-glow',message.glow||'#ff3030'); article.dataset.messageId=message.id||'';
-  const badge=message.badge?`<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">`:''; const angelic=message.effect==='angelic-praise'&&String(message.role||'').toUpperCase().includes('MALFUNCTION');
+  const badge=message.badge?`<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">`:''; const messageBanner=message.banner?`<div class="chat-message-banner" style="background-image:url('${escapeText(message.banner)}')"></div>`:''; const angelic=message.effect==='angelic-praise'&&String(message.role||'').toUpperCase().includes('MALFUNCTION');
   const manage=isElevatedAccess()&&!message.bot?`<div class="chat-message-actions"><button data-action="delete">DELETE</button><button data-action="kick">REMOVE USER</button></div>`:'';
   const reply=message.replyTo?`<div class="chat-reply-preview"><b>↪ ${escapeText(message.replyTo.username||'USER')}</b><span>${escapeText(message.replyTo.text||'[MEDIA]')}</span></div>`:'';
   const media=message.media?`<div class="chat-message-media">${message.mediaType==='video'?`<video controls preload="metadata" playsinline src="${escapeText(message.media)}"></video>`:`<img src="${escapeText(message.media)}" alt="Shared media" loading="lazy">`}</div>`:'';
   const legacyImage=message.image?`<img class="chat-message-image" src="${escapeText(message.image)}" alt="Chat image" loading="lazy">`:''; const legacyGif=message.gif?`<img class="chat-message-image" src="${escapeText(message.gif)}" alt="GIF" loading="lazy">`:'';
   const reactions=Array.isArray(message.reactions)?message.reactions:[]; const reactionThumb=reactions.length?`<span class="chat-reaction-count"><img src="${escapeText(reactions[reactions.length-1].url)}" alt=""> ${reactions.length}</span>`:''; const miniStar=message.effect==='star-mid'?'<span class="message-mini-star" aria-hidden="true">★</span>':message.effect==='you-and-i-forever'?'<span class="message-mini-eye" aria-hidden="true">◉</span>':''; const cardBackground=message.chatBackground?`<div class="chat-message-background" style="background-image:url('${escapeText(message.chatBackground)}')"></div>`:'';
-  article.innerHTML=`${cardBackground}${angelic?'<div class="angelic-message-aura" aria-hidden="true"></div>':''}<div class="chat-message-head"><button class="chat-message-identity" type="button"><img class="chat-message-avatar" src="${escapeText(message.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><span class="chat-message-name">${escapeText(message.username)}</span></button>${badge}<span class="chat-message-role">${escapeText(message.role||'MEMBER')}</span><span class="chat-message-time">${escapeText(new Date(message.time||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))}</span></div>${reply}<div class="chat-message-body">${escapeText(message.text||'')}${miniStar}</div>${media}${legacyImage}${legacyGif}<div class="chat-message-tools"><button class="chat-tool-button" data-action="reply">↩ REPLY</button><button class="chat-tool-button" data-action="react">☆ GIF REACT</button>${reactionThumb}</div>${manage}`;
+  article.innerHTML=`${cardBackground}${messageBanner}${angelic?'<div class="angelic-message-aura" aria-hidden="true"></div>':''}<div class="chat-message-head"><button class="chat-message-identity" type="button"><img class="chat-message-avatar" src="${escapeText(message.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><span class="chat-message-name">${escapeText(message.username)}</span></button>${badge}<span class="chat-message-role">${escapeText(message.role||'MEMBER')}</span><span class="chat-message-time">${escapeText(new Date(message.time||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))}</span></div>${reply}<div class="chat-message-body">${escapeText(message.text||'')}${miniStar}</div>${media}${legacyImage}${legacyGif}<div class="chat-message-tools"><button class="chat-tool-button" data-action="reply">↩ REPLY</button><button class="chat-tool-button" data-action="react">☆ GIF REACT</button>${reactionThumb}</div>${manage}`;
   article.querySelector('.chat-message-identity').addEventListener('click',()=>showViewedProfile(chatOnlineProfiles.find(p=>p.username===message.username)||{username:message.username,avatar:message.avatar,role:message.role,glow:message.glow,badge:message.badge,banner:message.banner,effect:message.effect,chatBackground:message.chatBackground,tags:[],bio:'',joined:''})); article.querySelector('[data-action="reply"]')?.addEventListener('click',()=>startChatReply(message)); article.querySelector('[data-action="react"]')?.addEventListener('click',()=>openReactionPicker(message.id)); article.querySelector('[data-action="delete"]')?.addEventListener('click',()=>wsSend({type:'delete',id:message.id})); article.querySelector('[data-action="kick"]')?.addEventListener('click',()=>wsSend({type:'kick',username:message.username})); chatMessages.appendChild(article); const body=article.querySelector('.chat-message-body'); if(shouldType && body && message.text){ body.dataset.fullText=message.text; typewriterText(body,message.text,miniStar); }
 }
 
@@ -1032,14 +1067,28 @@ function showChatNotification(username,text,glow){
 }
 function requestFriends(){
   wsSend({type:"getFriends"});
-  chatSocialCard.hidden=false; renderSocialPanel();
+  chatSocialCard.hidden=false;
+  renderSocialPanel();
+}
+function friendState(username){
+  const friends=window.chatFriends||[], incoming=window.chatIncomingFriends||[], outgoing=window.chatOutgoingFriends||[];
+  if(friends.includes(username)) return 'friend';
+  if(incoming.includes(username)) return 'incoming';
+  if(outgoing.includes(username)) return 'pending';
+  return 'none';
 }
 function renderSocialPanel(){
   if(!chatSocialList)return;
-  const names=window.chatFriends||[];
-  chatSocialList.innerHTML=names.length?names.map(n=>`<div class="chat-social-item"><b>${escapeText(n)}</b><br><button type="button" data-dm="${escapeText(n)}">MESSAGE</button><button type="button" data-friend-remove="${escapeText(n)}">REMOVE</button></div>`).join(""):'<div class="chat-social-item">No friends yet.</div>';
-  chatSocialList.querySelectorAll("[data-dm]").forEach(b=>b.onclick=()=>openDM(b.dataset.dm));
-  chatSocialList.querySelectorAll("[data-friend-remove]").forEach(b=>b.onclick=()=>wsSend({type:"friendToggle",username:b.dataset.friendRemove}));
+  const friends=window.chatFriends||[], incoming=window.chatIncomingFriends||[], outgoing=window.chatOutgoingFriends||[];
+  const parts=[];
+  if(incoming.length) parts.push(`<div class="social-subtitle">INCOMING REQUESTS</div>`+incoming.map(n=>`<div class="chat-social-item pending-item"><b>${escapeText(n)}</b><span>PENDING FROM USER</span><button type="button" data-friend-accept="${escapeText(n)}">ACCEPT</button></div>`).join(''));
+  if(friends.length) parts.push(`<div class="social-subtitle">FRIENDS</div>`+friends.map(n=>`<div class="chat-social-item"><b>${escapeText(n)}</b><span>CONNECTED</span><button type="button" data-dm="${escapeText(n)}">MESSAGE</button><button type="button" data-friend-remove="${escapeText(n)}">REMOVE</button></div>`).join(''));
+  if(outgoing.length) parts.push(`<div class="social-subtitle">OUTGOING</div>`+outgoing.filter(n=>!friends.includes(n)).map(n=>`<div class="chat-social-item"><b>${escapeText(n)}</b><span>PENDING</span><button type="button" data-friend-cancel="${escapeText(n)}">CANCEL</button></div>`).join(''));
+  chatSocialList.innerHTML=parts.join('')||'<div class="chat-social-item empty">No friend signals yet.</div>';
+  chatSocialList.querySelectorAll('[data-dm]').forEach(b=>b.onclick=()=>openDM(b.dataset.dm));
+  chatSocialList.querySelectorAll('[data-friend-remove]').forEach(b=>b.onclick=()=>wsSend({type:'friendToggle',username:b.dataset.friendRemove}));
+  chatSocialList.querySelectorAll('[data-friend-accept]').forEach(b=>b.onclick=()=>wsSend({type:'friendToggle',username:b.dataset.friendAccept}));
+  chatSocialList.querySelectorAll('[data-friend-cancel]').forEach(b=>b.onclick=()=>wsSend({type:'friendToggle',username:b.dataset.friendCancel}));
 }
 function openDM(username){
   if(!username || username===getChatProfile()?.username)return;
@@ -1068,13 +1117,16 @@ showViewedProfile = function(profile){
   if(!profile)return;
   const me=getChatProfile();
   const isMe=me?.username===profile.username;
-  const isFriend=(window.chatFriends||[]).includes(profile.username);
+  const state=friendState(profile.username);
+  window.chatViewedProfileUsername=profile.username;
   const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-30).reverse();
-  const banner=profile.banner?`<div class="viewed-profile-banner" style="background-image:url("${escapeText(profile.banner)}")"></div>`:`<div class="viewed-profile-banner viewed-profile-banner-empty"></div>`;
-  chatViewedProfile.innerHTML=`${banner}<div class="viewed-profile-hero ${profile.effect==='angelic-praise'&&profile.access==='malfunction'?'angelic-profile-hero':''}" style="--chat-glow:${escapeText(profile.glow||"#ff3030")}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div><div class="viewed-status">${profile.effect&&profile.effect!=='normal'?`✦ ${escapeText(profile.effect)}`:'ACTIVE ON CHAT_90'}</div></div></div><div class="viewed-profile-actions">${!isMe?`<button type="button" id="viewDM">MESSAGE</button><button type="button" id="viewFriend">${isFriend?'REMOVE FRIEND':'ADD FRIEND'}</button>`:'<span>THIS IS YOUR PROFILE</span>'}</div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.mediaType==='video'?'[VIDEO]':m.gif?'[GIF]':'[MEDIA]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
+  const banner=profile.banner?`<div class="viewed-profile-banner" style="background-image:url('${escapeText(profile.banner)}')"></div>`:`<div class="viewed-profile-banner viewed-profile-banner-empty"></div>`;
+  const messageBg=profile.chatBackground?`<div class="viewed-message-banner" style="background-image:url('${escapeText(profile.chatBackground)}')"><span>MESSAGE BANNER</span></div>`:'';
+  const friendButton=!isMe?(state==='friend'?'REMOVE FRIEND':state==='incoming'?'ACCEPT FRIEND':state==='pending'?'PENDING':'ADD FRIEND'):'';
+  chatViewedProfile.innerHTML=`${banner}<div class="viewed-profile-hero ${profile.effect==='angelic-praise'&&profile.access==='malfunction'?'angelic-profile-hero':''}" style="--chat-glow:${escapeText(profile.glow||'#ff3030')}"><div class="viewed-avatar-shell"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""></div><div class="viewed-profile-name"><div class="viewed-kicker">CHAT_90 PROFILE</div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}" alt="">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div><div class="viewed-status">${profile.effect&&profile.effect!=='normal'?`✦ ${escapeText(profile.effect)}`:'ACTIVE ON CHAT_90'}</div></div></div><div class="viewed-profile-actions">${!isMe?`<button type="button" id="viewDM">MESSAGE</button><button type="button" id="viewFriend" class="friend-${state}">${friendButton}</button>`:'<span>THIS IS YOUR PROFILE</span>'}</div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="viewed-section-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div>${messageBg}<div class="viewed-section-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.mediaType==='video'?'[VIDEO]':m.gif?'[GIF]':'[MEDIA]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
   chatProfileModal.hidden=false;
   document.getElementById("viewDM")?.addEventListener("click",()=>{chatProfileModal.hidden=true;openDM(profile.username)});
-  document.getElementById("viewFriend")?.addEventListener("click",()=>{wsSend({type:"friendToggle",username:profile.username});document.getElementById("viewFriend").textContent=isFriend?'ADD FRIEND':'REMOVE FRIEND';});
+  document.getElementById("viewFriend")?.addEventListener("click",()=>{if(state==='pending')return;wsSend({type:"friendToggle",username:profile.username});document.getElementById("viewFriend").textContent=state==='friend'?'UPDATING…':state==='incoming'?'ACCEPTING…':'PENDING…';});
 };
 
 /* ===========================
@@ -1177,10 +1229,13 @@ chatEnterButton?.addEventListener('click',enterChat);
 chatUsernameInput?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();enterChat();}});
 chatBackButton?.addEventListener('click',returnToArchive);
 chatEditProfile?.addEventListener('click',openChatSetupForEdit);
-chatLogout?.addEventListener('click',()=>{ chatManualClose=true; try{chatSocket?.close();}catch(_){} chatSocket=null; chatAuthenticated=false; chatConnected=false; window.chat90Password=null; chatAccessLevel='normal'; chatManualClose=false; openChatAuth(); });
+chatLogout?.addEventListener('click',()=>{ chatManualClose=true; if(chatReconnectTimer){clearTimeout(chatReconnectTimer);chatReconnectTimer=null;} try{chatSocket?.close();}catch(_){} chatSocket=null; chatAuthenticated=false; chatConnected=false; window.chat90Password=null; chatAccessLevel='normal'; chatManualClose=false; openChatAuth(); });
 chatSendButton?.addEventListener('click',()=>{const v=chatMessageInput.value; if(v.trim()){chatMessageInput.value='';sendChatMessage(v);}});
 chatMessageInput?.addEventListener('keydown',e=>{if(e.key==='Enter' && !e.shiftKey){e.preventDefault(); if(window.echoShareGetSetting?.('enterSend')!==false) chatSendButton?.click();}});
 chatMediaButton?.addEventListener('click',()=>chatMediaInput?.click());
+chatGifButton?.addEventListener('click',()=>chatMediaInput?.click());
+document.getElementById('chatReplyOption')?.addEventListener('click',()=>{ if(chatReplyTarget) clearChatReply(); else chatMessageInput?.focus(); });
+chatMessageInput?.addEventListener('input',()=>{ chatMessageInput.classList.toggle('chat-input-active',!!chatMessageInput.value.trim()); });
 chatMediaInput?.addEventListener('change',()=>{const f=chatMediaInput.files?.[0];handleChatMediaFile(f);chatMediaInput.value='';});
 chatReactionFileInput?.addEventListener('change',()=>{const f=chatReactionFileInput.files?.[0];handleReactionFile(f);chatReactionFileInput.value='';});
 chatBannerUploadButton?.addEventListener('click',()=>chatBannerFileInput?.click());
