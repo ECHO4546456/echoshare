@@ -67,7 +67,7 @@ const pingTimer = setInterval(()=>{
 }, 30000);
 pingTimer.unref();
 wss.on('connection',(ws)=>{
-  const sid=id(); sessions.set(sid,{ws,username:null,special:false}); clients.set(ws,sid);
+  const sid=id(); sessions.set(sid,{ws,username:null,special:false,malfunction:false,authenticated:false}); clients.set(ws,sid);
   send(ws,{type:'hello',sessionId:sid,history:state.messages.slice(-250),online:onlineProfiles()});
   ws.on('message',(raw)=>{
     let m; try { m=JSON.parse(raw); } catch (_) { return; }
@@ -75,9 +75,10 @@ wss.on('connection',(ws)=>{
     if(m.type==='auth') {
       const pass=String(m.password||'');
       if(pass!==NORMAL_PASSWORD && pass!==SPECIAL_PASSWORD && pass!==MALFUNCTION_PASSWORD) return send(ws,{type:'authResult',ok:false,message:'ACCESS DENIED — INVALID PASSWORD.'});
-      s.special=pass===SPECIAL_PASSWORD; s.malfunction=pass===MALFUNCTION_PASSWORD; return send(ws,{type:'authResult',ok:true,special:s.special,malfunction:s.malfunction});
+      s.special=pass===SPECIAL_PASSWORD; s.malfunction=pass===MALFUNCTION_PASSWORD; s.authenticated=true; return send(ws,{type:'authResult',ok:true,special:s.special,malfunction:s.malfunction});
     }
     if(m.type==='profile') {
+      if(!s.authenticated) return send(ws,{type:'error',message:'CHAT_90 authentication required.'});
       if(!s.special && !s.malfunction && (m.access==='special'||m.access==='malfunction')) return send(ws,{type:'error',message:'Elevated access cannot be self-assigned.'});
       const username=clean(m.username,24); if(!username) return;
       if(state.banned.includes(username.toLowerCase())) return send(ws,{type:'kicked',message:'This username is blocked from CHAT_90.'});
@@ -98,7 +99,7 @@ wss.on('connection',(ws)=>{
       return;
     }
     if(m.type==='message') {
-      if(!s.username || !s.profileKey || !state.profiles[s.profileKey]) return;
+      if(!s.authenticated || !s.username || !s.profileKey || !state.profiles[s.profileKey]) return;
       const p=state.profiles[s.profileKey];
       const msg={id:id(),time:new Date().toISOString(),profileKey:p.profileKey||s.profileKey,access:p.access||'normal',username:p.username,avatar:p.avatar,role:p.role,glow:p.glow,badge:p.badge,banner:p.banner||'',chatBackground:p.chatBackground||'',effect:p.effect,malfunctionTools:p.malfunctionTools||{},text:clean(m.text,500),image:clean(m.image,800),gif:clean(m.gif,800),media:cleanMedia(m.media,11000000),mediaType:['image','gif','video'].includes(m.mediaType)?m.mediaType:'' ,replyTo:m.replyTo?{id:clean(m.replyTo.id,80),username:clean(m.replyTo.username,24),text:clean(m.replyTo.text,500)}:null,reactions:[]};
       if(!msg.text&&!msg.image&&!msg.gif&&!msg.media) return;
@@ -116,7 +117,7 @@ wss.on('connection',(ws)=>{
       state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); send(ws,{type:'message',message:msg}); return;
     }
     if(m.type==='reaction') {
-      if(!s.username || !state.profiles[s.profileKey]) return;
+      if(!s.authenticated || !s.username || !state.profiles[s.profileKey]) return;
       const target=state.messages.find(x=>x.id===clean(m.messageId,80));
       if(!target || !m.url) return;
       const url=cleanMedia(m.url,5600000); if(!url.startsWith('data:image/gif') && !url.startsWith('data:image/')) return;
@@ -142,7 +143,7 @@ wss.on('connection',(ws)=>{
       return;
     }
     if(m.type==='friendToggle') {
-      if(!s.username) return;
+      if(!s.authenticated || !s.username) return;
       const me=s.username, target=clean(m.username,24);
       if(!Object.values(state.profiles).some(p=>p.username===target) || target===me) return;
       state.friends[me] ||= []; state.friends[target] ||= [];
@@ -191,7 +192,7 @@ wss.on('connection',(ws)=>{
       return;
     }
     if(m.type==='getFriends') {
-      if(!s.username) return;
+      if(!s.authenticated || !s.username) return;
       const incoming=state.friendRequests[s.username]||[];
       const outgoing=[];
       for(const [target, list] of Object.entries(state.friendRequests)) if(Array.isArray(list)&&list.includes(s.username)) outgoing.push(target);
@@ -201,7 +202,7 @@ wss.on('connection',(ws)=>{
       return;
     }
     if(m.type==='dmSend') {
-      if(!s.username) return;
+      if(!s.authenticated || !s.username) return;
       const target=clean(m.to,24), text=clean(m.text,500);
       if(!target || !text || !Object.values(state.profiles).some(p=>p.username===target)) return;
       const key=[s.username,target].sort().join('|||');
@@ -215,13 +216,14 @@ wss.on('connection',(ws)=>{
       return;
     }
     if(m.type==='dmHistory') {
-      if(!s.username) return;
+      if(!s.authenticated || !s.username) return;
       const target=clean(m.with,24);
       const key=[s.username,target].sort().join('|||');
       send(ws,{type:'dmHistory',with:target,messages:state.dms[key]||[]});
       return;
     }
     if(m.type==='requestProfile') {
+      if(!s.authenticated) return;
       const target=clean(m.username,24); const p=state.profiles[s.profileKey] && state.profiles[s.profileKey].username===target ? state.profiles[s.profileKey] : Object.values(state.profiles).find(x=>x.username===target); if(p) send(ws,{type:'profile',profile:publicProfile(p)}); return;
     }
   });

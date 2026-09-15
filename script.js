@@ -505,6 +505,17 @@ function openChatAuth() {
     setTimeout(() => chatPasswordInput.focus(), 50);
 }
 
+function renderMe(profile){
+  if(!chatMeCard) return;
+  const p=profile||{};
+  const glow=escapeText(p.glow||'#39ff88');
+  const banner=p.banner?`<div class="chat-me-banner" style="background-image:url(\'${escapeText(p.banner)}\')"></div>`:'';
+  const badge=p.badge?`<img class="chat-badge" src="${escapeText(p.badge)}" alt="badge">`:'';
+  const effect=p.effect&&p.effect!=='normal'?`<span class="chat-me-effect">✦ ${escapeText(p.effect)}</span>`:'<span class="chat-me-effect">READY</span>';
+  chatMeCard.style.setProperty('--chat-glow',glow);
+  chatMeCard.innerHTML=`${banner}<div class="chat-me-avatar-wrap"><img class="chat-me-avatar" src="${escapeText(p.avatar||CHAT_DEFAULT_AVATAR)}" alt=""></div><div class="chat-me-name" style="text-shadow:0 0 12px ${glow}">${escapeText(p.username||'UNSET')} ${badge}</div><div class="chat-me-role">${escapeText(p.role||'MEMBER')}</div><div class="chat-me-bio">${escapeText(p.bio||'No bio added.')}</div>${effect}`;
+}
+
 function returnToArchive() {
     chatAuthPage.hidden = true;
     chatSetupPage.hidden = true;
@@ -700,6 +711,7 @@ function connectChatSocket(){
       chatAccessLevel=packet.malfunction?"malfunction":packet.special?"special":"normal";
       sendChatProfileToServer();
       flushChatPackets();
+      wsSend({type:"getFriends"});
       return;
     }
 
@@ -1230,7 +1242,7 @@ chatUsernameInput?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventD
 chatBackButton?.addEventListener('click',returnToArchive);
 chatEditProfile?.addEventListener('click',openChatSetupForEdit);
 chatLogout?.addEventListener('click',()=>{ chatManualClose=true; if(chatReconnectTimer){clearTimeout(chatReconnectTimer);chatReconnectTimer=null;} try{chatSocket?.close();}catch(_){} chatSocket=null; chatAuthenticated=false; chatConnected=false; window.chat90Password=null; chatAccessLevel='normal'; chatManualClose=false; openChatAuth(); });
-chatSendButton?.addEventListener('click',()=>{const v=chatMessageInput.value; if(v.trim()){chatMessageInput.value='';sendChatMessage(v);}});
+chatSendButton?.addEventListener('click',()=>{const v=String(chatMessageInput?.value||'').trim(); if(!v)return; if(!chatAuthenticated){if(!chatSocket||chatSocket.readyState===WebSocket.CLOSED) connectChatSocket(); chatMessageInput?.classList.add('chat-send-waiting'); setTimeout(()=>chatMessageInput?.classList.remove('chat-send-waiting'),500); return;} chatMessageInput.value=''; chatMessageInput.classList.remove('chat-input-active'); chatMessageInput.classList.add('chat-send-flash'); setTimeout(()=>chatMessageInput.classList.remove('chat-send-flash'),260); sendChatMessage(v);});
 chatMessageInput?.addEventListener('keydown',e=>{if(e.key==='Enter' && !e.shiftKey){e.preventDefault(); if(window.echoShareGetSetting?.('enterSend')!==false) chatSendButton?.click();}});
 chatMediaButton?.addEventListener('click',()=>chatMediaInput?.click());
 chatGifButton?.addEventListener('click',()=>chatMediaInput?.click());
