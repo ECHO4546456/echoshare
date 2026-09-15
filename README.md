@@ -1,23 +1,25 @@
-ECHO//SHARE CHAT_90 — MALFUNCTION UPDATE
+# ECHO//SHARE — CHAT_90 Clean UI + VFX Build
 
-Added:
-- Upload buttons for profile image, badge, and banner for member/special/malfunction accounts.
-- New MALFUNCTION access code: Ink.
-- MALFUNCTION role/tag and 34 experimental controls.
-- YOU AND I FOREVER message effect with contained VFX and eye symbol.
-- MALFUNCTION MEDIA: upload image/video, test locally, or ANNOY ALL broadcast.
-- Broadcast media overlay blocks CHAT_90 until video playback ends, then fades away.
-- Instant profile/effect/tool synchronization remains server-backed.
-- Background audio elements are loaded before script execution so the existing audio system can find them.
+## Included
+- Existing ECHO//SHARE lobby and Wiki preserved.
+- CHAT_90 access codes are isolated by tier in local browser storage:
+  - Member: `56789`
+  - Special/Admin: `9!GAG`
+  - Malfunction/Ink: `Ink`
+- Curated message effects only, plus `ANGELIC PRAISE` and `YOU AND I FOREVER` for Ink.
+- Halloween redemption effects work for normal members after redemption.
+- Halloween VFX have distinct animated visual treatments.
+- Messages use a profile rail, avatar frame, clean reaction controls, and a long bottom composer.
+- Fresh messages type themselves letter-by-letter; old history loads instantly to avoid lag.
+- Shared chat videos never autoplay.
+- Profile image, badge, and banner upload controls use one reliable file-picker path each.
+- Profile banners and chat-card backgrounds are propagated with the profile/message data.
+- Server prunes the oldest 9 chat messages after every 12 non-bot messages and syncs the reduced history to all connected clients.
+- Server rejects normal users from using elevated-only effects while allowing redeemed seasonal effects.
 
-Codes:
-- Member: 56789
-- Special/Admin: 9!GAG
-- Malfunction: Ink
+## Render
+The backend is `server.js`. Set the Render start command to `node server.js`.
+The frontend connects to the existing CHAT_90 endpoint in `script.js`.
 
-Replace the frontend and backend files in the same GitHub repository/branch used by Render. Do not upload the ZIP itself as a website file.
-
-
-## Embedded audio
-This build embeds the background-noise and chat-notification MP3 data directly into `script.js`.
-You do NOT need an `audio/` folder for those two sounds in this build. The HTML audio elements are populated by the script at runtime.
+## Note about Roblox image IDs
+The profile banner and chat-card fields accept normal image URLs and Roblox numeric asset IDs through Roblox's thumbnail endpoint. If a Roblox asset has no publicly available thumbnail, the browser cannot display it; uploading the image file is the reliable option.
