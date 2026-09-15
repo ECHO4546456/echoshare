@@ -1,0 +1,1 @@
+export default {name:"Silver_Guild",people:27000,active:3500,color:"#b8f3ff",backgroundURI:"",hoverText:"A club in ECHO//WORLD.",wiki:"Silver_Guild is a club in ECHO//WORLD.",x:430,y:760,tags:["Independent","Network"]};

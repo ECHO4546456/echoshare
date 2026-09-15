@@ -1,23 +1,24 @@
-ECHO//SHARE CHAT_90 — MALFUNCTION UPDATE
+# ECHO//WORLD — Launch Ready
 
-Added:
-- Upload buttons for profile image, badge, and banner for member/special/malfunction accounts.
-- New MALFUNCTION access code: Ink.
-- MALFUNCTION role/tag and 34 experimental controls.
-- YOU AND I FOREVER message effect with contained VFX and eye symbol.
-- MALFUNCTION MEDIA: upload image/video, test locally, or ANNOY ALL broadcast.
-- Broadcast media overlay blocks CHAT_90 until video playback ends, then fades away.
-- Instant profile/effect/tool synchronization remains server-backed.
-- Background audio elements are loaded before script execution so the existing audio system can find them.
+## In GitHub Codespaces
 
-Codes:
-- Member: 56789
-- Special/Admin: 9!GAG
-- Malfunction: Ink
+1. Open the **ECHO_FIX** folder in the Explorer.
+2. Open the **Terminal**.
+3. Run:
 
-Replace the frontend and backend files in the same GitHub repository/branch used by Render. Do not upload the ZIP itself as a website file.
+```bash
+npm start
+```
 
+4. Codespaces will show port **8080**.
+5. Click **Open in Browser**.
 
-## Embedded audio
-This build embeds the background-noise and chat-notification MP3 data directly into `script.js`.
-You do NOT need an `audio/` folder for those two sounds in this build. The HTML audio elements are populated by the script at runtime.
+If Codespaces does not show the port automatically, open the **PORTS** tab at the bottom, choose port `8080`, then click the globe/open icon.
+
+### Important
+
+Do not use the Source Control panel to launch the website. Source Control is only for Git/GitHub.
+
+You can also install the VS Code **Live Server** extension and right-click `index.html` → **Open with Live Server**.
+
+The site is a static HTML/CSS/JavaScript app and needs a local web server because it loads the individual club `.js` files as ES modules.

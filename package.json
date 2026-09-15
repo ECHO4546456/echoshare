@@ -1,7 +1,7 @@
 {
-  "name": "echo-share-chat-90",
-  "version": "1.0.0",
+  "name": "echo-world",
   "private": true,
-  "scripts": { "start": "node server.js" },
-  "dependencies": { "ws": "^8.18.0" }
+  "scripts": {
+    "start": "python3 -m http.server 8080"
+  }
 }

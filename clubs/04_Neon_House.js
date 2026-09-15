@@ -1,0 +1,1 @@
+export default {name:"Neon_House",people:56000,active:8900,color:"#1ce0ff",backgroundURI:"",hoverText:"A club in ECHO//WORLD.",wiki:"Neon_House is a club in ECHO//WORLD.",x:-980,y:510,tags:["Independent","Network"]};

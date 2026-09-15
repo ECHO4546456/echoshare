@@ -1,0 +1,1 @@
+export default {name:"Ghost_Network",people:9000,active:1200,color:"#76f0ff",backgroundURI:"",hoverText:"A club in ECHO//WORLD.",wiki:"Ghost_Network is a club in ECHO//WORLD.",x:80,y:-1050,tags:["Independent","Network"]};

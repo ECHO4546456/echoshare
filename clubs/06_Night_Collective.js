@@ -1,0 +1,1 @@
+export default {name:"Night_Collective",people:31000,active:4700,color:"#348cff",backgroundURI:"",hoverText:"A club in ECHO//WORLD.",wiki:"Night_Collective is a club in ECHO//WORLD.",x:-350,y:830,tags:["Independent","Network"]};
