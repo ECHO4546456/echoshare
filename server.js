@@ -21,6 +21,8 @@ function save() { fs.writeFileSync(DB, JSON.stringify(state, null, 2)); }
 function id() { return crypto.randomUUID(); }
 function clean(s, n) { return String(s ?? '').trim().slice(0, n); }
 function cleanMedia(s, max) { const v=String(s??'').trim(); return v.length<=max?v:''; }
+const SEASONAL_EFFECTS = new Set(['halloween-pumpkin','halloween-fog','halloween-candy','halloween-jack','halloween-ghosts','halloween-witchfire','halloween-static','halloween-reaper','halloween-harvest']);
+function allowedEffectForSession(s, requested){ const e=clean(requested,80); if(SEASONAL_EFFECTS.has(e)) return e; if(s.malfunction) return e==='angelic-praise'?'angelic-praise':e||'you-and-i-forever'; if(s.special) return ['you-and-i-forever','angelic-praise'].includes(e)?'red-pulse':e||'red-pulse'; return 'normal'; }
 function broadcast(packet, except) {
   const data = JSON.stringify(packet);
   for (const [ws] of clients) if (ws !== except && ws.readyState === WebSocket.OPEN) ws.send(data);
@@ -77,7 +79,7 @@ wss.on('connection',(ws)=>{
       const username=clean(m.username,24); if(!username) return;
       if(state.banned.includes(username.toLowerCase())) return send(ws,{type:'kicked',message:'This username is blocked from CHAT_90.'});
       const old=s.username;
-      const profile={username,avatar:clean(m.avatar,500)||'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',bio:clean(m.bio,160),tags:Array.isArray(m.tags)?m.tags.map(x=>clean(x,24)).filter(Boolean).slice(0,12):[],access:s.malfunction?'malfunction':s.special?'special':'normal',role:s.malfunction?'MALFUNCTION':s.special?'SPECIAL / ADMIN':'MEMBER',glow:(s.special||s.malfunction)?clean(m.glow,30)||'#ff2d2d':'#39ff88',badge:clean(m.badge,500),banner:cleanMedia(m.banner,4200000),chatBackground:cleanMedia(m.chatBackground,4200000),effect:(s.special||s.malfunction)?(s.malfunction?(clean(m.effect,80)==='angelic-praise'?'angelic-praise':clean(m.effect,80)||'you-and-i-forever'):(['you-and-i-forever','angelic-praise'].includes(clean(m.effect,80))?'red-pulse':clean(m.effect,80)||'red-pulse')):'normal',malfunctionTools:s.malfunction&&m.malfunctionTools&&typeof m.malfunctionTools==='object'?Object.fromEntries(Object.entries(m.malfunctionTools).slice(0,34).map(([k,v])=>[clean(k,40),!!v])):{},joined:old && state.profiles[old] ? state.profiles[old].joined : new Date().toISOString()};
+      const profile={username,avatar:clean(m.avatar,500)||'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',bio:clean(m.bio,160),tags:Array.isArray(m.tags)?m.tags.map(x=>clean(x,24)).filter(Boolean).slice(0,12):[],access:s.malfunction?'malfunction':s.special?'special':'normal',role:s.malfunction?'MALFUNCTION':s.special?'SPECIAL / ADMIN':'MEMBER',glow:(s.special||s.malfunction)?clean(m.glow,30)||'#ff2d2d':'#39ff88',badge:clean(m.badge,500),banner:cleanMedia(m.banner,4200000),chatBackground:cleanMedia(m.chatBackground,4200000),effect:allowedEffectForSession(s,m.effect),malfunctionTools:s.malfunction&&m.malfunctionTools&&typeof m.malfunctionTools==='object'?Object.fromEntries(Object.entries(m.malfunctionTools).slice(0,34).map(([k,v])=>[clean(k,40),!!v])):{},joined:old && state.profiles[old] ? state.profiles[old].joined : new Date().toISOString()};
       if(old && old!==username){
         delete state.profiles[old];
         for(const msg of state.messages) if(msg.username===old) msg.username=username;
@@ -97,7 +99,18 @@ wss.on('connection',(ws)=>{
       const p=state.profiles[s.username];
       const msg={id:id(),time:new Date().toISOString(),username:p.username,avatar:p.avatar,role:p.role,glow:p.glow,badge:p.badge,banner:p.banner||'',chatBackground:p.chatBackground||'',effect:p.effect,malfunctionTools:p.malfunctionTools||{},text:clean(m.text,500),image:clean(m.image,800),gif:clean(m.gif,800),media:cleanMedia(m.media,11000000),mediaType:['image','gif','video'].includes(m.mediaType)?m.mediaType:'' ,replyTo:m.replyTo?{id:clean(m.replyTo.id,80),username:clean(m.replyTo.username,24),text:clean(m.replyTo.text,500)}:null,reactions:[]};
       if(!msg.text&&!msg.image&&!msg.gif&&!msg.media) return;
-      state.messages.push(msg); state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); send(ws,{type:'message',message:msg}); return;
+      state.messages.push(msg);
+      let prunedIds=[];
+      const userMessageCount=state.messages.filter(x=>!x.bot).length;
+      if(userMessageCount>0 && userMessageCount%12===0){
+        const removeCount=Math.min(9,state.messages.length);
+        prunedIds=state.messages.slice(0,removeCount).map(x=>x.id).filter(Boolean);
+        state.messages=state.messages.slice(removeCount);
+        const archiveBot={id:id(),time:new Date().toISOString(),bot:true,username:'ECHO BOT',avatar:'https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png',role:'SYSTEM',glow:'#9b9b9b',text:'ARCHIVE CLEANUP // 9 older messages were moved out of the live room.'};
+        state.messages.push(archiveBot);
+        broadcast({type:'historyPruned',ids:prunedIds,history:state.messages.slice(-250),notice:archiveBot});
+      }
+      state.messages=state.messages.slice(-500); save(); broadcast({type:'message',message:msg}); send(ws,{type:'message',message:msg}); return;
     }
     if(m.type==='reaction') {
       if(!s.username || !state.profiles[s.username]) return;
