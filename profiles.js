@@ -11,13 +11,13 @@ const ECHO_PROFILES = {
     UPDATE: {
         name: "UPDATE",
         id: "ES-UPDATE-001",
-        image: "pngs/giphy.gif",
+        image: "pngs/LadyLosi.png",
         tagline: "This is the very beginning of the Echo//Share network.",
         birthDate: "Not here.",
         joined: "September 10, 2026",
         readers: "2M",
         support: "6B",
-        status: "Offline.",
+        
 
         theme: "purple",
 
