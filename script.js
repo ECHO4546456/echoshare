@@ -394,7 +394,7 @@ const chatImageButton = document.getElementById("chatImageButton");
 const CHAT_NORMAL_PASSWORD = "56789";
 const CHAT_SPECIAL_PASSWORD = "9!GAG";
 const CHAT_MALFUNCTION_PASSWORD = "Ink";
-const CHAT_DEFAULT_AVATAR = "https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png";
+const CHAT_DEFAULT_AVATAR = "pngs/giphy.gif";
 
 let chatAccessLevel = "normal";
 let chatEditing = false;

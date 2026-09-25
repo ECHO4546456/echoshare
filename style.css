@@ -518,7 +518,7 @@ button {
     border-radius: 30px;
     background:
         linear-gradient(90deg, rgba(2,8,5,0.97) 0%, rgba(3,10,7,0.82) 56%, rgba(2,7,5,0.96) 100%),
-        url("https://i.pinimg.com/736x/2f/85/41/2f854111c4615359a7e39fec07e5e9bb.jpg")
+        url("pngs/Card\ back.gif")
         center / cover no-repeat;
     box-shadow: 0 25px 80px rgba(0,0,0,0.35);
 }

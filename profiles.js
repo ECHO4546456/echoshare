@@ -11,7 +11,7 @@ const ECHO_PROFILES = {
     UPDATE: {
         name: "UPDATE",
         id: "ES-UPDATE-001",
-        image: "https://cdn.pfps.gg/pfps/3651-dark-purple-anime.png",
+        image: "pngs/giphy.gif",
         tagline: "This is the very beginning of the Echo//Share network.",
         birthDate: "Not here.",
         joined: "September 10, 2026",
