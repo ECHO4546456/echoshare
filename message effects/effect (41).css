@@ -1,0 +1,15 @@
+/* Haunted Static — CHAT_90 modular effect */
+.chat-message.halloween-static{
+  --fx-color:#c8d2ff;
+  position:relative;
+  border-color:rgba(200,210,255,.30);
+  box-shadow:0 0 18px rgba(200,210,255,.12), inset 0 0 24px rgba(200,210,255,.035);
+}
+.chat-message.halloween-static .chat-message-name{text-shadow:0 0 8px #c8d2ff,0 0 18px rgba(200,210,255,.55);}
+.chat-message.halloween-static .chat-message-body{text-shadow:0 0 8px rgba(200,210,255,.28);}
+@keyframes fxMod_halloween_static{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.halloween-static{animation:none!important;filter:none!important;}
+.chat-message.halloween-static{animation:fxMod_halloween_static 2.8s ease-in-out infinite;}

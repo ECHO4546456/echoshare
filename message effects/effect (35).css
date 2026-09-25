@@ -1,0 +1,14 @@
+/* Angelic Praise — CHAT_90 modular effect */
+.chat-message.angelic-praise{
+  --fx-color:#d9f7ff;
+  position:relative;
+  border-color:rgba(217,247,255,.30);
+  box-shadow:0 0 18px rgba(217,247,255,.12), inset 0 0 24px rgba(217,247,255,.035);
+}
+.chat-message.angelic-praise .chat-message-name{text-shadow:0 0 8px #d9f7ff,0 0 18px rgba(217,247,255,.55);}
+.chat-message.angelic-praise .chat-message-body{text-shadow:0 0 8px rgba(217,247,255,.28);}
+@keyframes fxMod_angelic_praise{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.angelic-praise{animation:none!important;filter:none!important;}

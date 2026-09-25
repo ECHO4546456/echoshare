@@ -1,0 +1,15 @@
+/* Dark Matter — CHAT_90 modular effect */
+.chat-message.dark-matter-red{
+  --fx-color:#ff5a36;
+  position:relative;
+  border-color:rgba(255,90,54,.30);
+  box-shadow:0 0 18px rgba(255,90,54,.12), inset 0 0 24px rgba(255,90,54,.035);
+}
+.chat-message.dark-matter-red .chat-message-name{text-shadow:0 0 8px #ff5a36,0 0 18px rgba(255,90,54,.55);}
+.chat-message.dark-matter-red .chat-message-body{text-shadow:0 0 8px rgba(255,90,54,.28);}
+@keyframes fxMod_dark_matter_red{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.dark-matter-red{animation:none!important;filter:none!important;}
+.chat-message.dark-matter-red{animation:fxMod_dark_matter_red 2.8s ease-in-out infinite;}

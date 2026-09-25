@@ -1,0 +1,14 @@
+/* Apocalypse — CHAT_90 modular effect */
+.chat-message.apocalypse{
+  --fx-color:#8f42ff;
+  position:relative;
+  border-color:rgba(143,66,255,.30);
+  box-shadow:0 0 18px rgba(143,66,255,.12), inset 0 0 24px rgba(143,66,255,.035);
+}
+.chat-message.apocalypse .chat-message-name{text-shadow:0 0 8px #8f42ff,0 0 18px rgba(143,66,255,.55);}
+.chat-message.apocalypse .chat-message-body{text-shadow:0 0 8px rgba(143,66,255,.28);}
+@keyframes fxMod_apocalypse{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.apocalypse{animation:none!important;filter:none!important;}

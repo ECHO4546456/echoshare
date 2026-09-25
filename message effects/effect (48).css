@@ -1,0 +1,15 @@
+/* Crimson Flare — CHAT_90 modular effect */
+.chat-message.crimson-flare{
+  --fx-color:#ff2040;
+  position:relative;
+  border-color:rgba(255,32,64,.30);
+  box-shadow:0 0 18px rgba(255,32,64,.12), inset 0 0 24px rgba(255,32,64,.035);
+}
+.chat-message.crimson-flare .chat-message-name{text-shadow:0 0 8px #ff2040,0 0 18px rgba(255,32,64,.55);}
+.chat-message.crimson-flare .chat-message-body{text-shadow:0 0 8px rgba(255,32,64,.28);}
+@keyframes fxMod_crimson_flare{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.crimson-flare{animation:none!important;filter:none!important;}
+.chat-message.crimson-flare{animation:fxMod_crimson_flare 2.8s ease-in-out infinite;}

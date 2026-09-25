@@ -1,0 +1,14 @@
+/* Red Curse — CHAT_90 modular effect */
+.chat-message.red-curse{
+  --fx-color:#ff5a36;
+  position:relative;
+  border-color:rgba(255,90,54,.30);
+  box-shadow:0 0 18px rgba(255,90,54,.12), inset 0 0 24px rgba(255,90,54,.035);
+}
+.chat-message.red-curse .chat-message-name{text-shadow:0 0 8px #ff5a36,0 0 18px rgba(255,90,54,.55);}
+.chat-message.red-curse .chat-message-body{text-shadow:0 0 8px rgba(255,90,54,.28);}
+@keyframes fxMod_red_curse{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.red-curse{animation:none!important;filter:none!important;}

@@ -1,0 +1,15 @@
+/* Nightmare — CHAT_90 modular effect */
+.chat-message.nightmare{
+  --fx-color:#ff164f;
+  position:relative;
+  border-color:rgba(255,22,79,.30);
+  box-shadow:0 0 18px rgba(255,22,79,.12), inset 0 0 24px rgba(255,22,79,.035);
+}
+.chat-message.nightmare .chat-message-name{text-shadow:0 0 8px #ff164f,0 0 18px rgba(255,22,79,.55);}
+.chat-message.nightmare .chat-message-body{text-shadow:0 0 8px rgba(255,22,79,.28);}
+@keyframes fxMod_nightmare{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.nightmare{animation:none!important;filter:none!important;}
+.chat-message.nightmare{animation:fxMod_nightmare 2.8s ease-in-out infinite;}

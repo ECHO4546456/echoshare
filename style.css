@@ -3305,3 +3305,243 @@ body::after {
   .search-shell::after,
   .code-redeem-panel::after { animation:none; }
 }
+
+/* =========================================================
+   ECHO//SHARE — VFX POLISH PASS
+   Keeps the existing structure, but gives the archive,
+   wiki, lobby, settings and CHAT_90 a much stronger visual layer.
+   ========================================================= */
+:root{
+  --echo-green:#39ff88;
+  --echo-cyan:#54eaff;
+  --echo-red:#ff3030;
+  --echo-purple:#a855ff;
+  --echo-blue:#7ddcff;
+}
+
+/* ---------- Global glass / glow ---------- */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(circle at 12% 18%,rgba(57,255,136,.045),transparent 28%),
+    radial-gradient(circle at 84% 30%,rgba(84,234,255,.04),transparent 25%),
+    radial-gradient(circle at 50% 100%,rgba(168,85,255,.035),transparent 32%);
+  animation:echoAmbientDrift 14s ease-in-out infinite alternate;
+}
+@keyframes echoAmbientDrift{to{transform:scale(1.035) translate3d(0,-10px,0);filter:hue-rotate(8deg)}}
+
+.topbar,.archive-preview,.code-redeem-panel,.profile-hero,.profile-layout,.chat-page,.chat-auth-card,.chat-setup-card,.site-settings-card{position:relative;z-index:1}
+
+/* ---------- Archive cards / lobby entry ---------- */
+.featured-card,.example-search,.site-settings-button{
+  transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease,filter .22s ease;
+}
+.featured-card:hover{
+  transform:translateY(-5px) scale(1.008);
+  filter:brightness(1.08);
+  box-shadow:0 0 0 1px rgba(57,255,136,.16),0 18px 55px rgba(0,0,0,.38),0 0 55px rgba(57,255,136,.12);
+}
+.featured-card:active{transform:translateY(-1px) scale(.995)}
+.featured-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.09) 45%,transparent 70%);
+  transform:translateX(-130%);
+  animation:archiveCardSweep 5s ease-in-out infinite;
+}
+@keyframes archiveCardSweep{0%,35%{transform:translateX(-130%)}68%,100%{transform:translateX(130%)}}
+
+/* ---------- Wiki / record VFX ---------- */
+.profile-page{overflow:hidden}
+.profile-page::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    linear-gradient(rgba(84,234,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(57,255,136,.022) 1px,transparent 1px);
+  background-size:46px 46px;
+  mask-image:linear-gradient(to bottom,black,transparent 88%);
+  animation:wikiGridDrift 16s linear infinite;
+}
+@keyframes wikiGridDrift{to{background-position:46px 46px}}
+.wiki-topbar{box-shadow:0 12px 35px rgba(0,0,0,.22)}
+.wiki-topbar::before{
+  content:"";
+  position:absolute;
+  left:10%;right:10%;top:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--echo-cyan),var(--echo-green),transparent);
+  box-shadow:0 0 18px rgba(84,234,255,.25);
+  animation:wikiBeam 4.5s linear infinite;
+}
+@keyframes wikiBeam{0%{transform:translateX(-45%);opacity:.25}50%{opacity:1}100%{transform:translateX(45%);opacity:.25}}
+.profile-hero{
+  border-color:rgba(57,255,136,.18)!important;
+  box-shadow:0 18px 75px rgba(0,0,0,.32),0 0 55px rgba(57,255,136,.06),inset 0 0 70px rgba(84,234,255,.025);
+}
+.profile-hero::after{
+  content:"";
+  position:absolute;
+  width:420px;height:420px;
+  right:-190px;top:-230px;
+  border:1px solid rgba(84,234,255,.09);
+  border-radius:50%;
+  box-shadow:0 0 45px rgba(84,234,255,.04),inset 0 0 45px rgba(84,234,255,.03);
+  animation:recordOrbit 13s linear infinite;
+  pointer-events:none;
+}
+@keyframes recordOrbit{to{transform:rotate(360deg)}}
+.profile-avatar-frame{position:relative;isolation:isolate}
+.profile-avatar-frame::before{
+  content:"";
+  position:absolute;
+  inset:-7px;
+  border-radius:inherit;
+  border:1px solid rgba(84,234,255,.2);
+  box-shadow:0 0 22px rgba(84,234,255,.08);
+  animation:avatarRing 3.5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes avatarRing{50%{transform:scale(1.035) rotate(1deg);box-shadow:0 0 35px rgba(57,255,136,.12)}}
+.wiki-article{border-color:rgba(84,234,255,.12)!important;box-shadow:0 20px 65px rgba(0,0,0,.3),inset 0 0 45px rgba(84,234,255,.025)}
+.wiki-article::after{
+  content:"ECHO://DOCUMENT//90";
+  position:absolute;
+  right:20px;bottom:15px;
+  font-size:7px;font-weight:900;letter-spacing:3px;
+  color:rgba(84,234,255,.22);
+  pointer-events:none;
+  text-shadow:0 0 12px rgba(84,234,255,.15);
+}
+.article-heading h2{letter-spacing:.015em;text-shadow:0 0 12px rgba(57,255,136,.12),0 0 35px rgba(84,234,255,.07)}
+.article-content p{position:relative}
+.article-content p::before{
+  content:"";
+  position:absolute;
+  left:-14px;top:.65em;
+  width:4px;height:4px;
+  border-radius:50%;
+  background:var(--echo-green);
+  box-shadow:0 0 10px var(--echo-green);
+  opacity:.4;
+}
+.article-letter{transition:color .15s ease,text-shadow .15s ease,transform .15s ease}
+.article-letter:hover{transform:translateY(-1px);text-shadow:0 0 10px #fff,0 0 22px var(--echo-cyan)!important}
+
+/* ---------- CHAT_90 access lobby ---------- */
+.chat-auth-page,.chat-setup-page{min-height:calc(100vh - 74px)!important}
+.chat-auth-page::before,.chat-setup-page::before{inset:3% 5%;border-color:rgba(84,234,255,.09);box-shadow:0 0 60px rgba(84,234,255,.035),inset 0 0 55px rgba(57,255,136,.018)}
+.chat-auth-page::after,.chat-setup-page::after{color:rgba(57,255,136,.34);text-shadow:0 0 15px rgba(57,255,136,.14)}
+.chat-auth-card,.chat-setup-card{
+  border-radius:22px!important;
+  box-shadow:0 28px 100px rgba(0,0,0,.62),0 0 65px rgba(57,255,136,.075),0 0 120px rgba(84,234,255,.035),inset 0 0 70px rgba(57,255,136,.025)!important;
+}
+.chat-auth-card::before,.chat-setup-card::before{background:linear-gradient(90deg,transparent,rgba(84,234,255,.07),rgba(57,255,136,.05),transparent);animation:lobbySweep 5.5s ease-in-out infinite}
+.chat-auth-card::after,.chat-setup-card::after{width:170px;height:170px;border-color:rgba(57,255,136,.14);box-shadow:0 0 40px rgba(57,255,136,.07),0 0 90px rgba(84,234,255,.035)}
+.chat-auth-icon{color:#fff!important;font-size:44px!important}
+#chatPasswordButton,#chatEnterButton{border-color:rgba(57,255,136,.28)!important;background:linear-gradient(120deg,rgba(57,255,136,.08),rgba(84,234,255,.05),rgba(168,85,255,.05))!important}
+#chatPasswordButton:hover,#chatEnterButton:hover{transform:translateY(-2px);box-shadow:0 0 18px rgba(57,255,136,.15),0 0 45px rgba(84,234,255,.08)!important}
+.chat-small-button:hover,.chat-file-button:hover{border-color:rgba(84,234,255,.28)!important;color:#fff!important;box-shadow:0 0 18px rgba(84,234,255,.08)}
+
+/* ---------- Settings ---------- */
+.site-settings-modal{backdrop-filter:blur(14px)!important;background:rgba(0,0,0,.68)!important}
+.site-settings-card{border-radius:22px!important;border-color:rgba(84,234,255,.18)!important;box-shadow:0 30px 100px rgba(0,0,0,.7),0 0 70px rgba(84,234,255,.055),inset 0 0 55px rgba(57,255,136,.025)!important}
+.site-settings-card::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,transparent 15%,rgba(84,234,255,.035) 50%,transparent 85%);
+  animation:settingsSweep 7s ease-in-out infinite;
+}
+@keyframes settingsSweep{0%,30%{transform:translateX(-90%)}70%,100%{transform:translateX(90%)}}
+.settings-section{border-color:rgba(84,234,255,.11)!important;background:rgba(2,8,10,.48)!important;box-shadow:inset 0 0 28px rgba(84,234,255,.018)}
+.settings-section:hover{border-color:rgba(57,255,136,.2)!important;box-shadow:0 0 28px rgba(57,255,136,.045),inset 0 0 30px rgba(57,255,136,.02)}
+.settings-section input[type="range"]{accent-color:var(--echo-green)}
+.settings-action{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.settings-action:hover{transform:translateY(-1px);box-shadow:0 0 20px rgba(84,234,255,.08)}
+
+/* ---------- CHAT_90 stronger frame ---------- */
+.chat-page{
+  border-radius:22px;
+  filter:drop-shadow(0 30px 90px rgba(0,0,0,.5));
+}
+.chat-topbar{border-radius:18px 18px 0 0!important;min-height:72px!important}
+.chat-brand span{letter-spacing:.05em;text-shadow:0 0 8px #fff,0 0 18px var(--echo-cyan),0 0 38px var(--echo-green)!important}
+.chat-layout{border-color:rgba(84,234,255,.16)!important;box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 70px rgba(84,234,255,.045)!important}
+.chat-users-panel,.chat-profile-panel{background:linear-gradient(180deg,rgba(5,13,14,.9),rgba(2,6,9,.93))!important}
+.chat-users-panel{border-right-color:rgba(84,234,255,.12)!important}
+.chat-profile-panel{border-left-color:rgba(57,255,136,.12)!important}
+.chat-user-row{position:relative;border:1px solid transparent;transition:transform .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease}
+.chat-user-row:hover{transform:translateX(3px);background:linear-gradient(90deg,rgba(57,255,136,.07),rgba(84,234,255,.025))!important;border-color:rgba(57,255,136,.12);box-shadow:0 0 18px rgba(57,255,136,.04)}
+.chat-main{background:
+  radial-gradient(circle at 50% 0%,rgba(84,234,255,.08),transparent 35%),
+  radial-gradient(circle at 100% 90%,rgba(168,85,255,.06),transparent 25%),
+  linear-gradient(rgba(0,0,0,.64),rgba(0,0,0,.78)),
+  url("https://64.media.tumblr.com/d2e03b7fadc982e132a2054d7ebd0f00/c98fca04521d6d60-00/s400x600/92ea9fbd6e2158790c18f59c1130491cfb5535df.gif") center/cover fixed!important;
+}
+.chat-messages{padding:26px 24px 30px!important}
+.chat-messages::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(90deg,transparent,rgba(84,234,255,.018),transparent),linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:100% 100%,100% 42px;
+  mask-image:linear-gradient(to bottom,transparent,black 12%,black 88%,transparent);
+}
+.chat-message{
+  margin-bottom:20px!important;
+  padding:15px 17px!important;
+  border-radius:16px!important;
+  border-color:rgba(255,255,255,.09)!important;
+  background:linear-gradient(135deg,rgba(5,8,10,.88),rgba(3,5,8,.66))!important;
+  box-shadow:0 12px 35px rgba(0,0,0,.3),0 0 24px color-mix(in srgb,var(--chat-glow,#ff3030) 14%,transparent)!important;
+  transform:translateZ(0);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.chat-message:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--chat-glow,#ff3030) 28%,rgba(255,255,255,.09))!important;box-shadow:0 16px 40px rgba(0,0,0,.38),0 0 32px color-mix(in srgb,var(--chat-glow,#ff3030) 19%,transparent)!important}
+.chat-message:not(.star-mid):not(.you-and-i-forever)::after{content:"";position:absolute;left:8%;right:8%;bottom:0;height:1px;background:linear-gradient(90deg,transparent,var(--chat-glow,#ff3030),transparent);opacity:.25;box-shadow:0 0 12px var(--chat-glow,#ff3030);pointer-events:none}
+.chat-message-head{padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.045)}
+.chat-message-avatar{width:30px!important;height:30px!important;border-radius:9px!important;border:1px solid color-mix(in srgb,var(--chat-glow,#ff3030) 40%,transparent);box-shadow:0 0 12px color-mix(in srgb,var(--chat-glow,#ff3030) 18%,transparent)}
+.chat-message-name{font-size:12px!important}
+.chat-message-role{color:#8ba1a1!important}
+.chat-message-body{font-size:14px!important;line-height:1.7!important}
+.chat-message-tools{opacity:.72;transition:opacity .18s ease}
+.chat-message:hover .chat-message-tools{opacity:1}
+.chat-tool-button{border-color:rgba(84,234,255,.14)!important;background:rgba(84,234,255,.025)!important;color:#9fd9e4!important}
+.chat-tool-button:hover{border-color:rgba(84,234,255,.3)!important;box-shadow:0 0 14px rgba(84,234,255,.06)}
+.chat-composer{padding:14px!important;border-top-color:rgba(84,234,255,.12)!important;background:linear-gradient(180deg,rgba(1,4,6,.72),rgba(0,0,0,.9))!important;box-shadow:0 -15px 40px rgba(0,0,0,.25)}
+#chatMessageInput{border-color:rgba(84,234,255,.11)!important;background:rgba(2,7,9,.88)!important}
+#chatMessageInput:focus{border-color:rgba(57,255,136,.35)!important;box-shadow:0 0 22px rgba(57,255,136,.08),inset 0 0 18px rgba(84,234,255,.025)!important}
+.chat-composer button{border-color:rgba(84,234,255,.18)!important;color:#b9edf4!important;background:linear-gradient(135deg,rgba(84,234,255,.055),rgba(57,255,136,.035))!important}
+.chat-composer .chat-send{color:#fff!important;box-shadow:0 0 20px rgba(57,255,136,.08),0 0 40px rgba(84,234,255,.04)!important}
+.chat-me-card{position:relative;overflow:hidden;border:1px solid rgba(57,255,136,.09);border-radius:16px;padding:18px 12px!important;background:linear-gradient(180deg,rgba(57,255,136,.035),rgba(84,234,255,.015),rgba(0,0,0,.2));box-shadow:inset 0 0 30px rgba(57,255,136,.02)}
+.chat-me-card::before{content:"";position:absolute;left:10%;right:10%;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--chat-glow,#39ff88),transparent);box-shadow:0 0 15px var(--chat-glow,#39ff88);animation:meBeam 3s linear infinite}
+@keyframes meBeam{50%{transform:translateX(15%);opacity:.45}}
+.chat-me-name{font-size:21px!important;text-shadow:0 0 10px var(--chat-glow,#39ff88),0 0 24px color-mix(in srgb,var(--chat-glow,#39ff88) 30%,transparent)!important}
+.chat-profile-button{border-color:rgba(84,234,255,.12)!important;background:linear-gradient(90deg,rgba(84,234,255,.025),rgba(57,255,136,.025))!important}
+.chat-profile-button:hover{transform:translateY(-1px);box-shadow:0 0 20px rgba(84,234,255,.07)}
+.chat-online span,.chat-user-dot{background:var(--echo-green)!important;box-shadow:0 0 12px var(--echo-green)!important}
+
+/* ---------- Message backgrounds stay readable ---------- */
+.chat-message.has-chat-background{background-image:linear-gradient(90deg,rgba(2,5,6,.92),rgba(2,5,6,.48) 48%,rgba(2,5,6,.9)),var(--chat-card-bg)!important;box-shadow:0 15px 45px rgba(0,0,0,.45),0 0 30px color-mix(in srgb,var(--chat-glow,#39ff88) 18%,transparent)!important}
+.chat-message-background{opacity:.28!important}
+
+/* ---------- VFX accessibility switches ---------- */
+.settings-no-vfx .chat-message::before,.settings-no-vfx .chat-message::after,.settings-no-vfx .profile-hero::after,.settings-no-vfx .chat-auth-card::before,.settings-no-vfx .chat-setup-card::before{animation:none!important}
+.settings-no-motion *,.settings-no-motion *{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+
+@media (max-width:950px){
+  .chat-page{width:calc(100% - 20px)!important}
+}
+@media (max-width:650px){
+  .chat-page{width:calc(100% - 12px)!important;min-height:500px!important}
+  .chat-messages{padding:16px 12px 22px!important}
+  .chat-message{padding:13px!important}
+  .chat-brand span{font-size:20px!important}
+  .profile-hero::after{display:none}
+}

@@ -1,0 +1,15 @@
+/* Ghost Parade — CHAT_90 modular effect */
+.chat-message.halloween-ghosts{
+  --fx-color:#9bfff4;
+  position:relative;
+  border-color:rgba(155,255,244,.30);
+  box-shadow:0 0 18px rgba(155,255,244,.12), inset 0 0 24px rgba(155,255,244,.035);
+}
+.chat-message.halloween-ghosts .chat-message-name{text-shadow:0 0 8px #9bfff4,0 0 18px rgba(155,255,244,.55);}
+.chat-message.halloween-ghosts .chat-message-body{text-shadow:0 0 8px rgba(155,255,244,.28);}
+@keyframes fxMod_halloween_ghosts{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.halloween-ghosts{animation:none!important;filter:none!important;}
+.chat-message.halloween-ghosts{animation:fxMod_halloween_ghosts 2.8s ease-in-out infinite;}

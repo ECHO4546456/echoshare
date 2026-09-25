@@ -1,0 +1,14 @@
+/* Soul Shatter — CHAT_90 modular effect */
+.chat-message.soul-shatter{
+  --fx-color:#ff6a00;
+  position:relative;
+  border-color:rgba(255,106,0,.30);
+  box-shadow:0 0 18px rgba(255,106,0,.12), inset 0 0 24px rgba(255,106,0,.035);
+}
+.chat-message.soul-shatter .chat-message-name{text-shadow:0 0 8px #ff6a00,0 0 18px rgba(255,106,0,.55);}
+.chat-message.soul-shatter .chat-message-body{text-shadow:0 0 8px rgba(255,106,0,.28);}
+@keyframes fxMod_soul_shatter{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.soul-shatter{animation:none!important;filter:none!important;}

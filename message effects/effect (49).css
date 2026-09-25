@@ -1,0 +1,14 @@
+/* Dark Flame — CHAT_90 modular effect */
+.chat-message.dark-flame{
+  --fx-color:#ff164f;
+  position:relative;
+  border-color:rgba(255,22,79,.30);
+  box-shadow:0 0 18px rgba(255,22,79,.12), inset 0 0 24px rgba(255,22,79,.035);
+}
+.chat-message.dark-flame .chat-message-name{text-shadow:0 0 8px #ff164f,0 0 18px rgba(255,22,79,.55);}
+.chat-message.dark-flame .chat-message-body{text-shadow:0 0 8px rgba(255,22,79,.28);}
+@keyframes fxMod_dark_flame{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.dark-flame{animation:none!important;filter:none!important;}

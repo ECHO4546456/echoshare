@@ -1,0 +1,15 @@
+/* Abyssal Glow — CHAT_90 modular effect */
+.chat-message.abyssal-glow{
+  --fx-color:#8c55ff;
+  position:relative;
+  border-color:rgba(140,85,255,.30);
+  box-shadow:0 0 18px rgba(140,85,255,.12), inset 0 0 24px rgba(140,85,255,.035);
+}
+.chat-message.abyssal-glow .chat-message-name{text-shadow:0 0 8px #8c55ff,0 0 18px rgba(140,85,255,.55);}
+.chat-message.abyssal-glow .chat-message-body{text-shadow:0 0 8px rgba(140,85,255,.28);}
+@keyframes fxMod_abyssal_glow{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.abyssal-glow{animation:none!important;filter:none!important;}
+.chat-message.abyssal-glow{animation:fxMod_abyssal_glow 2.8s ease-in-out infinite;}

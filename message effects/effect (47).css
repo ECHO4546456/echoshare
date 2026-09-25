@@ -1,0 +1,15 @@
+/* Witchfire — CHAT_90 modular effect */
+.chat-message.halloween-witchfire{
+  --fx-color:#7cff4e;
+  position:relative;
+  border-color:rgba(124,255,78,.30);
+  box-shadow:0 0 18px rgba(124,255,78,.12), inset 0 0 24px rgba(124,255,78,.035);
+}
+.chat-message.halloween-witchfire .chat-message-name{text-shadow:0 0 8px #7cff4e,0 0 18px rgba(124,255,78,.55);}
+.chat-message.halloween-witchfire .chat-message-body{text-shadow:0 0 8px rgba(124,255,78,.28);}
+@keyframes fxMod_halloween_witchfire{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.halloween-witchfire{animation:none!important;filter:none!important;}
+.chat-message.halloween-witchfire{animation:fxMod_halloween_witchfire 2.8s ease-in-out infinite;}

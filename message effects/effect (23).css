@@ -1,0 +1,14 @@
+/* Warped Reality — CHAT_90 modular effect */
+.chat-message.warped-reality{
+  --fx-color:#ff2d68;
+  position:relative;
+  border-color:rgba(255,45,104,.30);
+  box-shadow:0 0 18px rgba(255,45,104,.12), inset 0 0 24px rgba(255,45,104,.035);
+}
+.chat-message.warped-reality .chat-message-name{text-shadow:0 0 8px #ff2d68,0 0 18px rgba(255,45,104,.55);}
+.chat-message.warped-reality .chat-message-body{text-shadow:0 0 8px rgba(255,45,104,.28);}
+@keyframes fxMod_warped_reality{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.warped-reality{animation:none!important;filter:none!important;}

@@ -1,0 +1,14 @@
+/* Apex Blood — CHAT_90 modular effect */
+.chat-message.apex-blood{
+  --fx-color:#ff003c;
+  position:relative;
+  border-color:rgba(255,0,60,.30);
+  box-shadow:0 0 18px rgba(255,0,60,.12), inset 0 0 24px rgba(255,0,60,.035);
+}
+.chat-message.apex-blood .chat-message-name{text-shadow:0 0 8px #ff003c,0 0 18px rgba(255,0,60,.55);}
+.chat-message.apex-blood .chat-message-body{text-shadow:0 0 8px rgba(255,0,60,.28);}
+@keyframes fxMod_apex_blood{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.apex-blood{animation:none!important;filter:none!important;}

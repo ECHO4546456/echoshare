@@ -1,0 +1,14 @@
+/* Red Lightning — CHAT_90 modular effect */
+.chat-message.red-lightning{
+  --fx-color:#ff2d68;
+  position:relative;
+  border-color:rgba(255,45,104,.30);
+  box-shadow:0 0 18px rgba(255,45,104,.12), inset 0 0 24px rgba(255,45,104,.035);
+}
+.chat-message.red-lightning .chat-message-name{text-shadow:0 0 8px #ff2d68,0 0 18px rgba(255,45,104,.55);}
+.chat-message.red-lightning .chat-message-body{text-shadow:0 0 8px rgba(255,45,104,.28);}
+@keyframes fxMod_red_lightning{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.red-lightning{animation:none!important;filter:none!important;}

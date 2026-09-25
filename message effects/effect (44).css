@@ -1,0 +1,14 @@
+/* You and I Forever — CHAT_90 modular effect */
+.chat-message.you-and-i-forever{
+  --fx-color:#ff2d9d;
+  position:relative;
+  border-color:rgba(255,45,157,.30);
+  box-shadow:0 0 18px rgba(255,45,157,.12), inset 0 0 24px rgba(255,45,157,.035);
+}
+.chat-message.you-and-i-forever .chat-message-name{text-shadow:0 0 8px #ff2d9d,0 0 18px rgba(255,45,157,.55);}
+.chat-message.you-and-i-forever .chat-message-body{text-shadow:0 0 8px rgba(255,45,157,.28);}
+@keyframes fxMod_you_and_i_forever{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.you-and-i-forever{animation:none!important;filter:none!important;}

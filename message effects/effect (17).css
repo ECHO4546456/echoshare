@@ -1,0 +1,14 @@
+/* Berserker — CHAT_90 modular effect */
+.chat-message.berserker{
+  --fx-color:#ff355e;
+  position:relative;
+  border-color:rgba(255,53,94,.30);
+  box-shadow:0 0 18px rgba(255,53,94,.12), inset 0 0 24px rgba(255,53,94,.035);
+}
+.chat-message.berserker .chat-message-name{text-shadow:0 0 8px #ff355e,0 0 18px rgba(255,53,94,.55);}
+.chat-message.berserker .chat-message-body{text-shadow:0 0 8px rgba(255,53,94,.28);}
+@keyframes fxMod_berserker{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.berserker{animation:none!important;filter:none!important;}

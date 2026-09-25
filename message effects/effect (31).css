@@ -1,0 +1,15 @@
+/* Omega Red — CHAT_90 modular effect */
+.chat-message.omega-red{
+  --fx-color:#ff6a00;
+  position:relative;
+  border-color:rgba(255,106,0,.30);
+  box-shadow:0 0 18px rgba(255,106,0,.12), inset 0 0 24px rgba(255,106,0,.035);
+}
+.chat-message.omega-red .chat-message-name{text-shadow:0 0 8px #ff6a00,0 0 18px rgba(255,106,0,.55);}
+.chat-message.omega-red .chat-message-body{text-shadow:0 0 8px rgba(255,106,0,.28);}
+@keyframes fxMod_omega_red{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.omega-red{animation:none!important;filter:none!important;}
+.chat-message.omega-red{animation:fxMod_omega_red 2.8s ease-in-out infinite;}

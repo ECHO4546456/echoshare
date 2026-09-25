@@ -1,0 +1,15 @@
+/* Reaper Bell — CHAT_90 modular effect */
+.chat-message.halloween-reaper{
+  --fx-color:#d8d8ff;
+  position:relative;
+  border-color:rgba(216,216,255,.30);
+  box-shadow:0 0 18px rgba(216,216,255,.12), inset 0 0 24px rgba(216,216,255,.035);
+}
+.chat-message.halloween-reaper .chat-message-name{text-shadow:0 0 8px #d8d8ff,0 0 18px rgba(216,216,255,.55);}
+.chat-message.halloween-reaper .chat-message-body{text-shadow:0 0 8px rgba(216,216,255,.28);}
+@keyframes fxMod_halloween_reaper{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.halloween-reaper{animation:none!important;filter:none!important;}
+.chat-message.halloween-reaper{animation:fxMod_halloween_reaper 2.8s ease-in-out infinite;}

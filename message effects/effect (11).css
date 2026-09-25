@@ -1,0 +1,15 @@
+/* Blood Harvest — CHAT_90 modular effect */
+.chat-message.halloween-harvest{
+  --fx-color:#ff2a00;
+  position:relative;
+  border-color:rgba(255,42,0,.30);
+  box-shadow:0 0 18px rgba(255,42,0,.12), inset 0 0 24px rgba(255,42,0,.035);
+}
+.chat-message.halloween-harvest .chat-message-name{text-shadow:0 0 8px #ff2a00,0 0 18px rgba(255,42,0,.55);}
+.chat-message.halloween-harvest .chat-message-body{text-shadow:0 0 8px rgba(255,42,0,.28);}
+@keyframes fxMod_halloween_harvest{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.halloween-harvest{animation:none!important;filter:none!important;}
+.chat-message.halloween-harvest{animation:fxMod_halloween_harvest 2.8s ease-in-out infinite;}

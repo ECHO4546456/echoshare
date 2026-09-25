@@ -1,0 +1,15 @@
+/* Grave Light — CHAT_90 modular effect */
+.chat-message.grave-light{
+  --fx-color:#ff2d68;
+  position:relative;
+  border-color:rgba(255,45,104,.30);
+  box-shadow:0 0 18px rgba(255,45,104,.12), inset 0 0 24px rgba(255,45,104,.035);
+}
+.chat-message.grave-light .chat-message-name{text-shadow:0 0 8px #ff2d68,0 0 18px rgba(255,45,104,.55);}
+.chat-message.grave-light .chat-message-body{text-shadow:0 0 8px rgba(255,45,104,.28);}
+@keyframes fxMod_grave_light{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.grave-light{animation:none!important;filter:none!important;}
+.chat-message.grave-light{animation:fxMod_grave_light 2.8s ease-in-out infinite;}

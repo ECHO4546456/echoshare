@@ -1,0 +1,15 @@
+/* Demon Aura — CHAT_90 modular effect */
+.chat-message.demon-aura{
+  --fx-color:#ff5a36;
+  position:relative;
+  border-color:rgba(255,90,54,.30);
+  box-shadow:0 0 18px rgba(255,90,54,.12), inset 0 0 24px rgba(255,90,54,.035);
+}
+.chat-message.demon-aura .chat-message-name{text-shadow:0 0 8px #ff5a36,0 0 18px rgba(255,90,54,.55);}
+.chat-message.demon-aura .chat-message-body{text-shadow:0 0 8px rgba(255,90,54,.28);}
+@keyframes fxMod_demon_aura{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.demon-aura{animation:none!important;filter:none!important;}
+.chat-message.demon-aura{animation:fxMod_demon_aura 2.8s ease-in-out infinite;}

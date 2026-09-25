@@ -1,0 +1,15 @@
+/* Graveyard Fog — CHAT_90 modular effect */
+.chat-message.halloween-fog{
+  --fx-color:#9ca8b7;
+  position:relative;
+  border-color:rgba(156,168,183,.30);
+  box-shadow:0 0 18px rgba(156,168,183,.12), inset 0 0 24px rgba(156,168,183,.035);
+}
+.chat-message.halloween-fog .chat-message-name{text-shadow:0 0 8px #9ca8b7,0 0 18px rgba(156,168,183,.55);}
+.chat-message.halloween-fog .chat-message-body{text-shadow:0 0 8px rgba(156,168,183,.28);}
+@keyframes fxMod_halloween_fog{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.halloween-fog{animation:none!important;filter:none!important;}
+.chat-message.halloween-fog{animation:fxMod_halloween_fog 2.8s ease-in-out infinite;}

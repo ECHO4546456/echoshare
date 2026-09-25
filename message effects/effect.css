@@ -1,0 +1,15 @@
+/* Blood Moon — CHAT_90 modular effect */
+.chat-message.blood-moon{
+  --fx-color:#8f42ff;
+  position:relative;
+  border-color:rgba(143,66,255,.30);
+  box-shadow:0 0 18px rgba(143,66,255,.12), inset 0 0 24px rgba(143,66,255,.035);
+}
+.chat-message.blood-moon .chat-message-name{text-shadow:0 0 8px #8f42ff,0 0 18px rgba(143,66,255,.55);}
+.chat-message.blood-moon .chat-message-body{text-shadow:0 0 8px rgba(143,66,255,.28);}
+@keyframes fxMod_blood_moon{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.blood-moon{animation:none!important;filter:none!important;}
+.chat-message.blood-moon{animation:fxMod_blood_moon 2.8s ease-in-out infinite;}

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ECHO//SHARE</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="message-effects.css">
 </head>
 <body>
 
@@ -211,8 +212,6 @@
             <label>TAGS <input id="chatTagsInput" maxlength="180" placeholder="Artist, Gamer, Writer"></label>
             <label>BADGE IMAGE URL<input id="chatBadgeInput" placeholder="https://... or upload a badge"></label>
             <button id="chatBadgeUploadButton" class="chat-file-button" type="button">UPLOAD BADGE</button>
-            <label>PROFILE BANNER<input id="chatBannerInput" placeholder="Optional banner image URL or image ID"></label>
-            <button id="chatBannerUploadButton" class="chat-file-button" type="button">UPLOAD BANNER</button>
             <label>CHAT CARD BACKGROUND<input id="chatBackgroundInput" placeholder="Image URL or Roblox image ID"></label>
             <small class="chat-field-hint">This image appears behind your messages in CHAT_90.</small>
             <div id="chatSpecialOptions" class="special-options" hidden>
@@ -261,7 +260,6 @@
                 <input id="chatMediaInput" type="file" accept="image/*,video/*,.gif" hidden>
                 <input id="chatAvatarFileInput" type="file" accept="image/*" hidden>
                 <input id="chatBadgeFileInput" type="file" accept="image/*" hidden>
-                <input id="chatBannerFileInput" type="file" accept="image/*" hidden>
                 <input id="chatReactionFileInput" type="file" accept="image/gif,.gif" hidden>
             </main>
 
@@ -310,7 +308,9 @@
                     <label>MASTER VOLUME <input id="settingMasterVolume" type="range" min="0" max="100" value="100"></label>
                     <label>BACKGROUND VOLUME <input id="settingBackgroundVolume" type="range" min="0" max="100" value="5"></label>
                     <label>NOTIFICATION VOLUME <input id="settingNotificationVolume" type="range" min="0" max="100" value="70"></label>
+                    <label>CLICK / SEARCH VOLUME <input id="settingClickVolume" type="range" min="0" max="100" value="65"></label>
                     <button id="settingTestNotification" class="settings-action" type="button">TEST NOTIFICATION SOUND</button>
+                    <button id="settingTestClick" class="settings-action" type="button">TEST CLICK / SEARCH SOUND</button>
                     <button id="settingToggleBackground" class="settings-action" type="button">TOGGLE BACKGROUND SOUND</button>
                 </section>
                 <section class="settings-section">
@@ -325,7 +325,6 @@
                 <section class="settings-section">
                     <h3>👤 PROFILES</h3>
                     <label class="settings-toggle"><input id="settingProfileAnimations" type="checkbox" checked> PROFILE GLOW ANIMATIONS</label>
-                    <label class="settings-toggle"><input id="settingShowBanners" type="checkbox" checked> SHOW PROFILE BANNERS</label>
                     <label class="settings-toggle"><input id="settingRememberProfile" type="checkbox" checked> REMEMBER LOCAL PROFILE</label>
                 </section>
                 <section class="settings-section">
@@ -357,8 +356,9 @@
         Made By: Hero until dawn / Frogmen
     </footer>
 
-    <audio id="chatNotificationSound" preload="auto"></audio>
-    <audio id="backgroundNoise" loop preload="auto"></audio>
+    <audio id="chatNotificationSound" src="sounds/chat-notification.mp3.mp3" preload="auto"></audio>
+    <audio id="clickSound" src="sounds/Goodjob!.mp3" preload="auto"></audio>
+    <audio id="backgroundNoise" src="sounds/background-noise.mp3.mp3" loop preload="auto"></audio>
 
     <script src="profiles.js"></script>
     <script src="script.js"></script>

@@ -1,0 +1,14 @@
+/* Void Rift — CHAT_90 modular effect */
+.chat-message.void-rift{
+  --fx-color:#b53cff;
+  position:relative;
+  border-color:rgba(181,60,255,.30);
+  box-shadow:0 0 18px rgba(181,60,255,.12), inset 0 0 24px rgba(181,60,255,.035);
+}
+.chat-message.void-rift .chat-message-name{text-shadow:0 0 8px #b53cff,0 0 18px rgba(181,60,255,.55);}
+.chat-message.void-rift .chat-message-body{text-shadow:0 0 8px rgba(181,60,255,.28);}
+@keyframes fxMod_void_rift{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.void-rift{animation:none!important;filter:none!important;}
