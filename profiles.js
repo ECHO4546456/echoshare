@@ -19,7 +19,7 @@ const ECHO_PROFILES = {
         support: "KnownBot.",
         status: "AI.",
 
-        theme: "purple",
+        theme: "Lady_Losis_search",
 
         Authors: [
             "Frogmen",

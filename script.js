@@ -190,7 +190,7 @@ function openProfile(profile) {
     profilePage.classList.remove(
         "red-profile",
         "blue-profile",
-        "purple-profile",
+        "Lady_Losis_search-profile",
         "green-profile",
         "Custom-profile"
     );
@@ -198,8 +198,8 @@ if (profile.theme === "red") {
     profilePage.classList.add("red-profile");
 }
 
-if (profile.theme === "purple") {
-    profilePage.classList.add("purple-profile");
+if (profile.theme === "Lady_Losis_search") {
+    profilePage.classList.add("Lady_Losis_search-profile");
 }
 
 if (profile.theme === "Custom") {
