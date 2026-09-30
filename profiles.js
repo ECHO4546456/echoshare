@@ -16,16 +16,14 @@ const ECHO_PROFILES = {
         birthDate: "Not here.",
         joined: "September 10, 2026",
         readers: "2M",
-        support: "KnownBot.",
+        support: "KB.",
         status: "AI.",
 
-        theme: "Lady_Losis_search",
+        theme: "Lady_Losis",
 
-        Authors: [
-            "Frogmen",
-            "Writer///Tea,",
-            "Doc//Senders",
-            "ECHO RECORD"
+        Tags: [
+            "KISHIN",
+            "AI"
         ],
         articleTitle: "About Lay_losi",
 
@@ -653,7 +651,7 @@ const ECHO_PROFILES = {
             {
                 heading: "History",
                 paragraphs: [
-                    "TNo history behind UPDATE."
+                    "No history behind Update_Logs."
                 ]
             }
         ]
