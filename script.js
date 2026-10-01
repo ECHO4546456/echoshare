@@ -508,7 +508,10 @@ chatAvatarFileInput?.addEventListener('change',()=>{const f=chatAvatarFileInput.
 chatBadgeFileInput?.addEventListener('change',()=>{const f=chatBadgeFileInput.files?.[0];handleBadgeFile(f);chatBadgeFileInput.value='';});
 
 
-const CHAT90_SERVER_URL = "https://echoshare-0nsm.onrender.com";
+const CHAT90_SERVER_URL = (() => {
+  if (location.protocol === "http:" || location.protocol === "https:") return location.origin;
+  return "https://echoshare-0nsm.onrender.com";
+})();
 /* ===========================
    CHAT_90 GIF ARCHIVE PICKER
    =========================== */
@@ -520,10 +523,23 @@ async function loadGifLibrary(){
 }
 function openGifPicker(){
   if(!gifPicker) return;
-  gifPicker.hidden=false; gifPicker.innerHTML=`<div class="gif-picker-head"><div><b>GIF ARCHIVE</b><small>${gifLibrary.length} stored reactions</small></div><button type="button" id="gifPickerClose">×</button></div><input id="gifSearchInput" placeholder="Search GIFs..."><div id="gifGrid" class="gif-grid"></div>`;
-  const grid=document.getElementById('gifGrid'); const search=document.getElementById('gifSearchInput');
-  const draw=()=>{const q=search.value.trim().toLowerCase();const list=gifLibrary.filter(x=>!q||x.name.toLowerCase().includes(q));grid.innerHTML=list.map(x=>`<button class="gif-tile" data-gif="${escapeText(x.url)}" title="${escapeText(x.name)}"><img src="${escapeText(x.url)}" alt=""><span>${escapeText(x.name)}</span></button>`).join('')||'<div class="gif-empty">NO GIFS FOUND</div>';grid.querySelectorAll('[data-gif]').forEach(b=>b.addEventListener('click',()=>{sendChatMessage('',{media:b.dataset.gif,mediaType:'gif'});gifPicker.hidden=true;}));};
-  search.addEventListener('input',draw); document.getElementById('gifPickerClose').addEventListener('click',()=>gifPicker.hidden=true); draw();
+  gifPicker.hidden=false;
+  gifPicker.innerHTML=`<div class="gif-picker-head"><div><span class="gif-picker-kicker">CHAT_90 // MEDIA ARCHIVE</span><b>GIF LIBRARY</b><small>${gifLibrary.length} stored reactions</small></div><button type="button" id="gifPickerClose">×</button></div><div class="gif-picker-search"><span>⌕</span><input id="gifSearchInput" placeholder="Search your GIF archive..."></div><div class="gif-grid-wrap"><div id="gifGrid" class="gif-grid"></div></div>`;
+  const grid=document.getElementById('gifGrid');
+  const search=document.getElementById('gifSearchInput');
+  const draw=()=>{
+    const q=search.value.trim().toLowerCase();
+    const list=gifLibrary.filter(x=>!q||x.name.toLowerCase().includes(q));
+    grid.innerHTML=list.map(x=>`<button class="gif-tile" data-gif="${escapeText(x.url)}" title="${escapeText(x.name)}"><img src="${escapeText(x.url)}" alt=""><span>${escapeText(x.name)}</span></button>`).join('')||'<div class="gif-empty">NO MATCHING GIFS</div>';
+    grid.querySelectorAll('[data-gif]').forEach(b=>b.addEventListener('click',()=>{
+      sendChatMessage('',{media:b.dataset.gif,mediaType:'gif'});
+      gifPicker.hidden=true;
+    }));
+  };
+  search.addEventListener('input',draw);
+  document.getElementById('gifPickerClose').addEventListener('click',()=>gifPicker.hidden=true);
+  draw();
+  setTimeout(()=>search.focus(),30);
 }
 chatGifButton?.addEventListener('click',openGifPicker);
 loadGifLibrary();
@@ -670,6 +686,11 @@ function connectChatSocket(){
     }
 
     if(packet.type==="message"){
+      // Replace an optimistic local copy with the authoritative server message.
+      if(packet.message && packet.message.username===getChatProfile()?.username){
+        const localIndex=chatServerMessages.findIndex(x=>String(x.id||'').startsWith('local-') && x.username===packet.message.username && x.text===packet.message.text && (x.media||'')===(packet.message.media||'') && (x.mediaType||'')===(packet.message.mediaType||''));
+        if(localIndex>=0) chatServerMessages.splice(localIndex,1);
+      }
       if(packet.message && packet.message.username!==getChatProfile()?.username && !packet.message.bot){
         showChatNotification(packet.message.username, packet.message.text || (packet.message.mediaType==="video"?"sent a video":packet.message.mediaType==="gif"?"sent a GIF":"sent an image"), packet.message.glow);
         playChatNotificationSound();
@@ -820,7 +841,21 @@ function renderMessage(message){
 }
 
 function sendChatMessage(text,extra={}){
-  const p=getChatProfile(); if(!p)return; const cleanText=String(text||'').trim(); const packet={type:'message',text:cleanText,...extra}; if(chatReplyTarget)packet.replyTo={id:chatReplyTarget.id,username:chatReplyTarget.username,text:chatReplyTarget.text||'[MEDIA]'}; if(!cleanText&&!extra.image&&!extra.gif&&!extra.media)return; wsSend(packet); clearChatReply();
+  const p=getChatProfile();
+  if(!p) return;
+  const cleanText=String(text||'').trim();
+  const packet={type:'message',text:cleanText,...extra};
+  if(chatReplyTarget) packet.replyTo={id:chatReplyTarget.id,username:chatReplyTarget.username,text:chatReplyTarget.text||'[MEDIA]'};
+  if(!cleanText&&!extra.image&&!extra.gif&&!extra.media) return;
+  const sent=wsSend(packet);
+  // Keep the composer functional even while the server is reconnecting.
+  // Once the socket reconnects the queued packet is delivered normally.
+  if(!sent && !chatServerMessages.some(m=>m.id===packet.__optimisticId)){
+    const optimistic={...packet,id:`local-${Date.now()}-${Math.random().toString(36).slice(2)}`,time:new Date().toISOString(),username:p.username,avatar:p.avatar,role:p.role,glow:p.glow,badge:p.badge,chatBackground:p.chatBackground||'',effect:p.effect||'normal'};
+    chatServerMessages.push(optimistic);
+    renderGlobalChat(true);
+  }
+  clearChatReply();
 }
 function deleteChatMessage(id){if(!window.chat90AdminActive)return;wsSend({type:'adminCommand',command:'delete',args:[id]});}
 function kickCurrentUser(username){if(!window.chat90AdminActive)return;wsSend({type:'adminCommand',command:'ban',args:[username||getChatProfile()?.username,'4d']});}
