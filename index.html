@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ECHO//SHARE</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="message-effects.css">
+    <link rel="stylesheet" href="chat90-effects.css">
+    <link rel="stylesheet" href="admin-panel/admin.css">
 </head>
 <body>
 
@@ -86,13 +87,30 @@
             </button>
         </section>
 
-        <section class="code-redeem-panel" aria-label="Halloween code redemption">
-            <div class="code-redeem-kicker">ECHO//SHARE // SEASONAL ACCESS</div>
-            <h2>🎃 HALLOW NIGHT CODE REDEEM</h2>
-            <p>Redeem seasonal codes in this browser to unlock exclusive CHAT_90 message effects.</p>
-            <div class="code-redeem-row"><input id="seasonCodeInput" maxlength="40" autocomplete="off" placeholder="ENTER SEASON CODE"><button id="seasonCodeRedeem" type="button">REDEEM</button></div>
-            <div id="seasonCodeStatus" class="code-redeem-status" aria-live="polite"></div>
-            <div id="seasonUnlockedList" class="season-unlocked-list"></div>
+        <section class="creator-message-panel" aria-label="Message from the creator and development team">
+            <div class="creator-message-kicker">ECHO//SHARE // FINAL ARCHIVE MESSAGE</div>
+            <h2>A FINAL MONOLITHIC MESSAGE FROM THE CREATOR AND THE DEVELOPMENT TEAM</h2>
+            <div class="creator-message-body">
+                <p><strong>To the Entirety of the SSML Community—Every Single User, Member, and Soul Across the Server Walls:</strong></p>
+                <p>This is a direct message from me and the entire Development Team. We are stepping away from the backend structures, the scripts, and the administrative console to speak to you purely from the heart. We know the history of this place. We know the weight of the digital soil we have all been treading on for years. And as we look at the vast, sprawling empire that stands before us today, we want to say one thing clearly and universally: <strong>We want to thank the SSML for absolutely everything.</strong></p>
+                <h3>Standing Firm Through the Crucible of Betrayal</h3>
+                <p>When we look back at the history of the SSML, we are reminded that this server was never a place of easy peace. It was a crucible. We want to thank you all for staying by our side even after the absolute nightmares we have all been through together while being here.</p>
+                <p>This environment has tested our limits in ways outsiders could never comprehend. We have endured the trials of betrayal—moments where the foundation of trust was completely shattered, where masks slipped, and where internal warfare threatened to burn down everything we worked for. We watched relationships dissolve, alliances crumble, and factions clash in the dark. Yet, through every single betrayal, every traumatic server era, and every scar left behind by the past, you stayed. You kept the lines active. You refused to let the fire go out.</p>
+                <p>To have a community that stands firm through that level of psychological warfare and emotional turbulence is something rare. For staying loyal to the broader vision of the SSML when it would have been infinitely easier to walk away: you have our eternal, personified respect.</p>
+                <h3>The Reality of the Final Ending</h3>
+                <p>We all know the nature of the digital world. Every empire, network, and shared space must eventually face its sunset. Nothing lasts forever, and the fact that an end point exists somewhere down the line makes the present moment infinitely more valuable.</p>
+                <p>While you are still here, right now, in the living breathing present of this server, I want to personally step forward and give you my deep, individual personified thanks. It is an honor to witness this community exist in its peak form. Me and the Dev team are so insanely happy and profoundly grateful that you have given our code life and our structures meaning. Without your voices, conflicts, loyalties, and stories, these servers would just be cold, empty databases drifting in the dark.</p>
+                <h3>What We Created Together: An Insane Legacy</h3>
+                <p>When we step back and look at the grand architecture of the SSML, we should be absolutely, insanely thankful for the things we have created together. Look at what has been built from nothing but text and shared imagination:</p>
+                <ul>
+                    <li><strong>The Massive Clubs &amp; Factions:</strong> The monumental institutions like the Hon Dynasty, &gt;frozen.hearts&lt;, and the vast networks that defied standard server limits. You created spaces of absolute identity and sovereignty.</li>
+                    <li><strong>The Inseparable Alliances:</strong> The deep, complex brotherhoods that survived the worst toxicity and ego clashes just to form an unyielding shield when the community needed it most.</li>
+                    <li><strong>The Lifelong Bonds:</strong> The safe havens formed between individuals behind closed doors—the rare, quiet spots where users could drop their armor, reveal their raw emotions, and find real comfort from unspoken traumas.</li>
+                </ul>
+                <p>We didn't just build a communication platform; we engineered a living, breathing mythos. We created an environment where people grew up, where individuals matured through hardship, and where legends were forged in real-time.</p>
+                <p>Thank you for the late nights, the strategic wars, the shared laughter, and the unwavering dedication. No matter when or how the final ending comes, what we built within the SSML walls is permanently etched into the history of this platform. We are proud of this server, but more than anything, we are proud of <strong>you.</strong></p>
+                <p class="creator-signoff">With absolute gratitude, love, and respect,<br><span>— The Creator &amp; Development Team</span></p>
+            </div>
         </section>
     </main>
 
@@ -214,18 +232,6 @@
             <button id="chatBadgeUploadButton" class="chat-file-button" type="button">UPLOAD BADGE</button>
             <label>CHAT CARD BACKGROUND<input id="chatBackgroundInput" placeholder="Image URL or Roblox image ID"></label>
             <small class="chat-field-hint">This image appears behind your messages in CHAT_90.</small>
-            <div id="chatSpecialOptions" class="special-options" hidden>
-                <div class="special-title">SPECIAL ACCESS</div>
-                <label>GLOW COLOR<input id="chatGlowInput" type="text" value="#ff2d2d" placeholder="#ff2d2d"></label>
-                <label>MESSAGE EFFECT<select id="chatEffectInput"></select></label>
-            </div>
-            <div id="chatMalfunctionOptions" class="malfunction-options" hidden>
-                <div class="malfunction-title">MALFUNCTION // OVERDRIVE ACCESS</div>
-                <p>34 experimental controls. Changes save and broadcast instantly.</p>
-                <div id="malfunctionToolsGrid" class="malfunction-tools-grid"></div>
-                <button id="malfunctionMediaButton" class="malfunction-media-button" type="button">☣ MALFUNCTION MEDIA</button>
-                <input id="malfunctionMediaInput" type="file" accept="image/*,video/*" hidden>
-            </div>
             <button id="chatEnterButton" type="button">ENTER CHAT_90</button>
             <button id="chatSetupBack" class="chat-small-button" type="button">← RETURN TO ARCHIVE</button>
         </div>
@@ -252,11 +258,12 @@
                 <div id="chatTyping" class="chat-typing"></div>
                 <div id="chatReplyBar" class="chat-reply-bar" hidden></div>
                 <div class="chat-composer">
-                    <button id="chatMediaButton" type="button" title="Send image, GIF, or video">MEDIA</button>
-                    <input id="chatMessageInput" maxlength="500" autocomplete="off" placeholder="Type a message...">
-                    <button id="chatSendButton" class="chat-send" type="button">➤</button>
+                    <button id="chatGifButton" class="chat-composer-tool" type="button" title="Open GIF library">GIF</button>
+                    <button id="chatMediaButton" class="chat-composer-tool plus" type="button" title="Send image or video">＋</button>
+                    <input id="chatMessageInput" maxlength="500" autocomplete="off" placeholder="Message SSML...">
+                    <button id="chatSendButton" class="chat-send" type="button">SEND</button>
                 </div>
-                <div class="chat-composer-hint">MEDIA opens your files so you can send an image, GIF, or video.</div>
+                <div class="chat-composer-hint">GIF opens the archive library • ＋ sends an image or video</div>
                 <input id="chatMediaInput" type="file" accept="image/*,video/*,.gif" hidden>
                 <input id="chatAvatarFileInput" type="file" accept="image/*" hidden>
                 <input id="chatBadgeFileInput" type="file" accept="image/*" hidden>
@@ -338,17 +345,34 @@
         </div>
     </div>
 
-    <div id="malfunctionMediaOverlay" class="malfunction-media-overlay" hidden>
-        <div class="malfunction-media-card">
-            <div class="malfunction-media-kicker">MALFUNCTION // BROADCAST CONTROL</div>
-            <h2 id="malfunctionMediaTitle">MEDIA LOADED</h2>
-            <div id="malfunctionMediaPreview" class="malfunction-media-preview"></div>
-            <p>TEST plays it only for you. ANNOY ALL broadcasts it to everyone in CHAT_90 and blocks the chat until playback finishes.</p>
-            <div class="malfunction-media-actions">
-                <button id="malfunctionTestButton" type="button">TEST</button>
-                <button id="malfunctionAnnoyButton" type="button" hidden>ANNOY ALL</button>
-                <button id="malfunctionCancelButton" type="button">CANCEL</button>
+
+    <div id="gifPicker" class="gif-picker" hidden></div>
+
+    <div id="adminPinModal" class="admin-pin-modal" hidden>
+        <div class="admin-pin-card">
+            <div class="admin-pin-kicker">CHAT_90 // PRIVILEGED CONSOLE</div>
+            <div class="admin-rainbow-title">ADMIN ACCESS</div>
+            <p>Enter the administrator PIN to open the private control panel.</p>
+            <input id="adminPinInput" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
+            <div id="adminPinStatus" class="admin-pin-status"></div>
+            <div class="admin-pin-actions"><button id="adminPinCancel" type="button">CANCEL</button><button id="adminPinSubmit" type="button">UNLOCK</button></div>
+        </div>
+    </div>
+
+    <div id="adminPanel" class="admin-panel" hidden>
+        <div class="admin-panel-card">
+            <div class="admin-panel-head">
+                <div><div class="admin-kicker">CHAT_90 // ADMINISTRATIVE CORE</div><h2>COMMAND CONSOLE</h2><span id="adminStatusLine">SECURE SESSION // RED PRIVILEGE</span></div>
+                <button id="adminPanelClose" class="admin-close" type="button">×</button>
             </div>
+            <div class="admin-command-row"><span class="admin-prompt">›</span><input id="adminCommandInput" autocomplete="off" spellcheck="false" placeholder="Type a command..."/><button id="adminCommandSend" type="button">EXECUTE</button></div>
+            <div id="adminSuggestions" class="admin-suggestions" hidden></div>
+            <div id="adminOutput" class="admin-output" aria-live="polite"></div>
+            <div class="admin-quick-actions">
+                <button data-admin-cmd="/help">HELP</button><button data-admin-cmd="/users">USERS</button><button data-admin-cmd="/effects">EFFECTS</button><button data-admin-cmd="/history">HISTORY</button><button data-admin-cmd="/clear">CLEAR</button>
+            </div>
+            <div class="admin-media-strip"><div><b>ANNOY ALL</b><small>Upload audio/video, preview it, then confirm the broadcast.</small></div><button id="adminAnnoyMediaButton" type="button">MEDIA</button><input id="adminAnnoyMediaInput" type="file" accept="audio/*,video/*" hidden></div>
+            <div id="adminConfirm" class="admin-confirm" hidden><div class="admin-confirm-title">COMMAND ACTIVE</div><div id="adminConfirmName"></div><div class="admin-confirm-actions"><button id="adminConfirmNo" type="button">CANCEL</button><button id="adminConfirmYes" type="button">YES, ACTIVATE</button></div></div>
         </div>
     </div>
 
@@ -362,6 +386,7 @@
 
     <script src="profiles.js"></script>
     <script src="script.js"></script>
+    <script src="admin-panel/admin.js"></script>
 
 </body>
 </html>

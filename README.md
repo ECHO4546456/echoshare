@@ -18,10 +18,10 @@ This build keeps the ECHO//SHARE archive structure and upgrades the visual/audio
 - After more than 10 non-bot messages, CHAT_90 removes the oldest 6 messages and ECHO BOT posts: `Cleaned up 6 Messages <3`.
 - The cleanup is synchronized to connected users with a history sync packet.
 
-## Access codes
+## Access
 - Member: `56789`
-- Special/Admin: `9!GAG`
-- Malfunction: `Ink`
+- Admin console: press `Ctrl + P` inside CHAT_90, then enter PIN `7879`.
+- Admin privilege is applied server-side for the active session and turns the account/message history red.
 
 ## Deploy
 Upload/replace the project files in the same GitHub repository and Render service used by ECHO//SHARE. Render starts the backend with `npm start` / `node server.js`.
