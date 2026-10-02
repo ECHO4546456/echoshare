@@ -973,9 +973,16 @@ function renderGlobalUsers(){
   chatUsersList.innerHTML='';
   users.forEach(user=>{
     const row=document.createElement('button');
-    row.type='button'; row.className='chat-user-row chat-user-clickable';
-    row.style.setProperty('--chat-glow',user.glow||'#ff3030');
-    row.innerHTML=`<span class="chat-user-dot"></span><img class="chat-user-avatar" src="${escapeText(user.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div class="chat-user-name" style="text-shadow:0 0 8px ${escapeText(user.glow||'#ff3030')}">${escapeText(user.username)} <span class="chat-user-role">${escapeText(user.role||'MEMBER')}</span></div>`;
+    row.type='button';
+    row.className='chat-user-row chat-user-clickable';
+    row.style.setProperty('--chat-glow',user.glow||'#39ff88');
+    const badge=user.badge?`<img class="chat-user-badge" src="${escapeText(user.badge)}" alt="badge">`:'';
+    row.innerHTML=`<span class="chat-user-dot"></span>
+      <img class="chat-user-avatar" src="${escapeText(user.avatar||CHAT_DEFAULT_AVATAR)}" alt="">
+      <div class="chat-user-name" style="text-shadow:0 0 8px ${escapeText(user.glow||'#39ff88')}">
+        <span class="chat-user-name-line">${escapeText(user.username)} ${badge}</span>
+        <span class="chat-user-role">${escapeText(user.role||'MEMBER')}</span>
+      </div>`;
     row.addEventListener('click',()=>showViewedProfile(user));
     chatUsersList.appendChild(row);
   });
@@ -1017,8 +1024,84 @@ function readFileAsDataURL(file,maxBytes){return new Promise((resolve,reject)=>{
 async function handleChatMediaFile(file){if(!file)return;try{const data=await readFileAsDataURL(file,8*1024*1024);const isVideo=file.type.startsWith('video/');const isGif=file.type==='image/gif'||file.name.toLowerCase().endsWith('.gif');sendChatMessage('',{media:data,mediaType:isVideo?'video':(isGif?'gif':'image')});}catch(e){alert(e.message==='File too large'?'MEDIA FILE IS TOO LARGE — 8 MB MAX.':'Could not read that file.');}}
 async function handleReactionFile(file){if(!file||!chatReactionTargetId)return;try{const data=await readFileAsDataURL(file,4*1024*1024);wsSend({type:'reaction',messageId:chatReactionTargetId,url:data});}catch(e){alert(e.message==='File too large'?'REACTION GIF IS TOO LARGE — 4 MB MAX.':'Could not read that GIF.');}chatReactionTargetId=null;}
 
-async function handleAvatarFile(file){if(!file)return;try{chatAvatarInput.value=await readFileAsDataURL(file,3*1024*1024);saveProfileFromForm(true);}catch(e){alert(e.message==='File too large'?'PROFILE IMAGE IS TOO LARGE — 3 MB MAX.':'Could not read that image.');}}
-async function handleBadgeFile(file){if(!file)return;try{chatBadgeInput.value=await readFileAsDataURL(file,2*1024*1024);saveProfileFromForm(true);}catch(e){alert(e.message==='File too large'?'BADGE IS TOO LARGE — 2 MB MAX.':'Could not read that image.');}}
+function compressChatImage(file, options = {}) {
+  return new Promise((resolve, reject) => {
+    if (!file) return reject(new Error("No file"));
+    const maxInput = options.maxInput || 12 * 1024 * 1024;
+    const maxSide = options.maxSide || 512;
+    const quality = options.quality ?? 0.86;
+    if (file.size > maxInput) return reject(new Error("File too large"));
+
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      try {
+        const w = img.naturalWidth || img.width;
+        const h = img.naturalHeight || img.height;
+        const scale = Math.min(1, maxSide / Math.max(w, h));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(w * scale));
+        canvas.height = Math.max(1, Math.round(h * scale));
+        const ctx = canvas.getContext("2d", { alpha: true });
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        let data = canvas.toDataURL("image/webp", quality);
+        if (!data.startsWith("data:image/webp")) data = canvas.toDataURL("image/png");
+        if (data.length > (options.maxOutput || 700000)) data = canvas.toDataURL("image/jpeg", 0.72);
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Image load failed"));
+    };
+    img.src = url;
+  });
+}
+
+function showChatUploadPreview(input, fileData, labelText) {
+  if (!input?.parentElement || !fileData) return;
+  const host = input.parentElement;
+  let preview = host.querySelector(".chat-upload-preview");
+  if (!preview) {
+    preview = document.createElement("div");
+    preview.className = "chat-upload-preview";
+    host.appendChild(preview);
+  }
+  preview.innerHTML = `<img src="${escapeText(fileData)}" alt=""><span>${escapeText(labelText || "READY")}</span>`;
+}
+
+async function handleAvatarFile(file) {
+  if (!file) return;
+  try {
+    const data = await compressChatImage(file, { maxSide: 640, quality: 0.88, maxOutput: 800000 });
+    chatAvatarInput.value = data;
+    showChatUploadPreview(chatAvatarInput, data, "PROFILE IMAGE READY");
+    saveProfileFromForm(true);
+  } catch (e) {
+    alert(e.message === "File too large" ? "PROFILE IMAGE IS TOO LARGE — 12 MB MAX." : "Could not read that image.");
+  }
+}
+
+async function handleBadgeFile(file) {
+  if (!file) return;
+  try {
+    const data = await compressChatImage(file, { maxSide: 256, quality: 0.90, maxOutput: 450000 });
+    chatBadgeInput.value = data;
+    showChatUploadPreview(chatBadgeInput, data, "BADGE READY");
+    saveProfileFromForm(true);
+  } catch (e) {
+    alert(e.message === "File too large" ? "BADGE FILE IS TOO LARGE — 12 MB MAX." : "Could not read that badge image.");
+  }
+}
 function normalizeChatImageInput(value){
   const v=String(value||'').trim();
   if(!v)return '';
@@ -1124,17 +1207,59 @@ chatDMModal?.addEventListener("click",e=>{if(e.target===chatDMModal)chatDMModal.
 chatDMSend?.addEventListener("click",sendDM);
 chatDMInput?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();sendDM();}});
 
-/* High-quality profile modal: social controls + full visual hierarchy. */
+/* CHAT_90 PROFILE VIEW — stable, full-card layout */
 showViewedProfile = function(profile){
-  if(!profile)return;
+  if(!profile || !chatViewedProfile || !chatProfileModal) return;
   const me=getChatProfile();
   const isMe=me?.username===profile.username;
   const isFriend=(window.chatFriends||[]).includes(profile.username);
-  const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-30).reverse();
-  chatViewedProfile.innerHTML=`<div class="viewed-profile-hero ${profile.effect==='angelic-praise'&&profile.access==='malfunction'?'angelic-profile-hero':''}" style="--chat-glow:${escapeText(profile.glow||"#ff3030")}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div><div class="viewed-status">${profile.effect&&profile.effect!=='normal'?`✦ ${escapeText(profile.effect)}`:'ACTIVE ON CHAT_90'}</div></div></div><div class="viewed-profile-actions">${!isMe?`<button type="button" id="viewDM">MESSAGE</button><button type="button" id="viewFriend">${isFriend?'REMOVE FRIEND':'ADD FRIEND'}</button>`:'<span>THIS IS YOUR PROFILE</span>'}</div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.mediaType==='video'?'[VIDEO]':m.gif?'[GIF]':'[MEDIA]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
+  const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-40).reverse();
+  const safeAvatar=profile.avatar||CHAT_DEFAULT_AVATAR;
+  const badge=profile.badge?`<img class="viewed-profile-badge" src="${escapeText(profile.badge)}" alt="Badge">`:'';
+  const tags=(profile.tags||[]).filter(Boolean);
+  const status=profile.effect&&profile.effect!=='normal'?`✦ ${escapeText(profile.effect)}`:'ACTIVE ON CHAT_90';
+
+  chatViewedProfile.innerHTML=`
+    <div class="viewed-profile-shell" style="--chat-glow:${escapeText(profile.glow||'#39ff88')}">
+      <div class="viewed-profile-hero">
+        <div class="viewed-profile-avatar-wrap">
+          <span class="viewed-profile-orbit" aria-hidden="true"></span>
+          <img class="viewed-profile-avatar" src="${escapeText(safeAvatar)}" alt="">
+          ${badge}
+        </div>
+        <div class="viewed-profile-heading">
+          <div class="viewed-profile-kicker">CHAT_90 // IDENTITY RECORD</div>
+          <h2>${escapeText(profile.username)}</h2>
+          <div class="viewed-profile-role">${escapeText(profile.role||'MEMBER')}</div>
+          <div class="viewed-profile-status"><span></span>${status}</div>
+        </div>
+      </div>
+      <div class="viewed-profile-actions">
+        ${!isMe?`<button type="button" id="viewDM">MESSAGE</button><button type="button" id="viewFriend">${isFriend?'REMOVE FRIEND':'ADD FRIEND'}</button>`:`<span>THIS IS YOUR PROFILE</span>`}
+      </div>
+      <section class="viewed-profile-section">
+        <div class="viewed-profile-section-title">BIO</div>
+        <div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div>
+      </section>
+      <section class="viewed-profile-section">
+        <div class="viewed-profile-section-title">TAGS</div>
+        <div class="tags">${tags.map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div>
+      </section>
+      <section class="viewed-profile-section viewed-history-section">
+        <div class="viewed-profile-section-title">CHAT HISTORY <small>${history.length} RECORDS</small></div>
+        <div class="viewed-history">
+          ${history.length?history.map(m=>{const label=m.text||(m.mediaType==='video'?'[VIDEO]':m.mediaType==='gif'||m.gif?'[GIF]':'[MEDIA]');return `<div class="viewed-history-row"><span>${escapeText(label)}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`}).join(''):'<div class="viewed-empty">No messages yet.</div>'}
+        </div>
+      </section>
+    </div>`;
+
   chatProfileModal.hidden=false;
   document.getElementById("viewDM")?.addEventListener("click",()=>{chatProfileModal.hidden=true;openDM(profile.username)});
-  document.getElementById("viewFriend")?.addEventListener("click",()=>{wsSend({type:"friendToggle",username:profile.username});document.getElementById("viewFriend").textContent=isFriend?'ADD FRIEND':'REMOVE FRIEND';});
+  document.getElementById("viewFriend")?.addEventListener("click",()=>{
+    wsSend({type:"friendToggle",username:profile.username});
+    const button=document.getElementById("viewFriend");
+    if(button) button.textContent=isFriend?'ADD FRIEND':'REMOVE FRIEND';
+  });
 };
 
 /* ===========================
@@ -1143,15 +1268,55 @@ showViewedProfile = function(profile){
 (function initChatGifVault(){
   const modal=document.getElementById('chatGifModal'),grid=document.getElementById('chatGifGrid'),search=document.getElementById('chatGifSearch'),close=document.getElementById('chatGifClose');
   if(!modal||!grid)return;
-  const files=Array.isArray(window.ECHO_GIF_LIBRARY)?window.ECHO_GIF_LIBRARY:[];
-  function draw(q=''){
-    const n=String(q).trim().toLowerCase(); const list=files.filter(src=>!n||decodeURIComponent(src).split('/').pop().toLowerCase().includes(n));
-    grid.innerHTML=list.map(src=>{const name=decodeURIComponent(src.split('/').pop());return `<button class="gif-tile" type="button" data-gif="${escapeText(src)}"><img src="${escapeText(src)}" alt="${escapeText(name)}" loading="lazy"><span>${escapeText(name)}</span></button>`}).join('')||'<div class="admin-empty">NO GIFS FOUND</div>';
-    grid.querySelectorAll('[data-gif]').forEach(b=>b.addEventListener('click',()=>{sendChatMessage('',{gif:b.dataset.gif});modal.hidden=true;}));
+  let files=Array.isArray(window.ECHO_GIF_LIBRARY)?window.ECHO_GIF_LIBRARY.slice():[];
+  let loadedFromServer=false;
+
+  const normalizeEntry=(entry)=>{
+    if(typeof entry==='string'){
+      const raw=entry.replace(/\\/g,'/');
+      const parts=raw.split('/');
+      const file=parts.pop()||'gif';
+      return {name:decodeURIComponent(file),url:parts.concat(encodeURIComponent(file)).join('/')};
+    }
+    if(entry&&entry.url)return {name:entry.name||entry.url.split('/').pop(),url:entry.url};
+    return null;
+  };
+
+  files=files.map(normalizeEntry).filter(Boolean);
+
+  async function loadLibrary(){
+    if(loadedFromServer)return;
+    try{
+      const response=await fetch('/api/gifs',{cache:'no-store'});
+      if(response.ok){
+        const data=await response.json();
+        if(Array.isArray(data)&&data.length){files=data.map(normalizeEntry).filter(Boolean);loadedFromServer=true;}
+      }
+    }catch(_){}
   }
-  window.EchoGifVault={open(){modal.hidden=false;draw(search?.value||'');setTimeout(()=>search?.focus(),20)},close(){modal.hidden=true}};
+
+  function draw(q=''){
+    const n=String(q).trim().toLowerCase();
+    const list=files.filter(item=>!n||item.name.toLowerCase().includes(n));
+    grid.innerHTML=list.map(item=>`
+      <button class="gif-tile" type="button" data-gif="${escapeText(item.url)}" title="${escapeText(item.name)}">
+        <img src="${escapeText(item.url)}" alt="${escapeText(item.name)}" loading="lazy" decoding="async"
+             onerror="this.closest('.gif-tile')?.classList.add('gif-missing')">
+        <span>${escapeText(item.name)}</span>
+      </button>`).join('')||'<div class="admin-empty">NO GIFS FOUND</div>';
+    grid.querySelectorAll('[data-gif]').forEach(button=>button.addEventListener('click',()=>{sendChatMessage('',{gif:button.dataset.gif});modal.hidden=true;}));
+  }
+
+  window.EchoGifVault={
+    async open(){modal.hidden=false;grid.innerHTML='<div class="gif-loading">LOADING MEDIA VAULT...</div>';await loadLibrary();draw(search?.value||'');setTimeout(()=>search?.focus(),30);},
+    close(){modal.hidden=true}
+  };
+
   document.getElementById('chatGifButton')?.addEventListener('click',()=>window.EchoGifVault.open());
-  close?.addEventListener('click',()=>window.EchoGifVault.close()); modal.addEventListener('click',e=>{if(e.target===modal)window.EchoGifVault.close()}); search?.addEventListener('input',()=>draw(search.value));
+  close?.addEventListener('click',()=>window.EchoGifVault.close());
+  modal.addEventListener('click',e=>{if(e.target===modal)window.EchoGifVault.close()});
+  search?.addEventListener('input',()=>draw(search.value));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)window.EchoGifVault.close()});
 })();
 
 function playAnnoyAllMedia(packet){
@@ -1165,6 +1330,22 @@ function playAnnoyAllMedia(packet){
   const finish=()=>wrap.remove(); media.addEventListener('ended',finish,{once:true}); media.addEventListener('error',finish,{once:true});
   const p=media.play(); if(p?.catch)p.catch(()=>{label.textContent='MEDIA READY — BROWSER BLOCKED AUTOPLAY';});
 }
+
+/* ===========================
+   CHAT_90 ADMIN HOTKEY
+   Ctrl + I opens the hidden admin panel.
+   =========================== */
+document.addEventListener("keydown", (event) => {
+  if (event.ctrlKey && event.key.toLowerCase() === "i") {
+    event.preventDefault();
+    if (window.EchoAdminPanel?.open) {
+      window.EchoAdminPanel.open();
+    } else {
+      const panel = document.getElementById("adminPanel");
+      if (panel) panel.hidden = false;
+    }
+  }
+});
 
 (function initAdminBridge(){
   window.EchoAdminAPI={
@@ -1284,3 +1465,15 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 
+
+
+/* ===========================
+   CHAT_90 FINAL UI / DATA STABILITY
+   =========================== */
+(function chat90FinalStability(){
+  function refreshUploadPreviews(){
+    if(chatAvatarInput?.value?.startsWith('data:image/')) showChatUploadPreview(chatAvatarInput,chatAvatarInput.value,'PROFILE IMAGE READY');
+    if(chatBadgeInput?.value?.startsWith('data:image/')) showChatUploadPreview(chatBadgeInput,chatBadgeInput.value,'BADGE READY');
+  }
+  refreshUploadPreviews();
+})();

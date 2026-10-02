@@ -11,3 +11,9 @@
 
 .admin-ban-history-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}.admin-ban-history-row button{border:1px solid rgba(255,90,120,.25);border-radius:6px;background:rgba(255,30,70,.08);color:#ff8da3;padding:4px 7px;font-size:7px;font-weight:900;cursor:pointer}
 .admin-user.selected b{background:linear-gradient(90deg,#ff5a7d,#ffd95a,#62ff9a,#5be7ff,#9c7bff,#ff5ad6);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:adminRainbow 3.5s linear infinite;text-shadow:none}
+
+
+/* FINAL CHAT_90 GIF PICKER OVERRIDE */
+.chat-gif-modal{overflow:hidden}
+.chat-gif-card{box-sizing:border-box}
+.chat-gif-card .chat-modal-close{z-index:4}

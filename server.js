@@ -122,11 +122,13 @@ wss.on('connection',(ws)=>{
       const old=s.username;
       const profile={
         username,
-        avatar:clean(m.avatar,500)||'pngs/LadyLosi.png',
+        // Uploaded avatars/badges are compressed in the browser, but keep enough
+        // room for a real data URL so the image is not silently truncated.
+        avatar:cleanMedia(m.avatar,900000)||'pngs/LadyLosi.png',
         bio:clean(m.bio,160),
         tags:Array.isArray(m.tags)?m.tags.map(x=>clean(x,24)).filter(Boolean).slice(0,12):[],
         access:s.admin?'admin':'normal', role:s.admin?'ADMIN':'MEMBER', admin:!!s.admin,
-        glow:s.admin?'#ff3030':'#39ff88', badge:clean(m.badge,500),
+        glow:s.admin?'#ff3030':'#39ff88', badge:cleanMedia(m.badge,600000),
         chatBackground:cleanMedia(m.chatBackground,4200000), effect:s.admin?(clean(m.effect,80)||'admin-core'):clean(m.effect,80)||'normal',
         joined:old && state.profiles[old] ? state.profiles[old].joined : new Date().toISOString()
       };
