@@ -1,5 +1,5 @@
 (function(){
-  const commands=['/help','/users','/online','/user','/history','/ban','/unban','/kick','/delete','/clear','/say','/announce','/effect','/effects','/glow','/bans','/history-bans'];
+  const commands=['/help','/users','/online','/user','/history','/ban','/unban','/kick','/delete','/clear','/say','/announce','/effect','/effects','/glow','/bans','/history-bans','/annoy all','/status','/whois','/find'];
   const $=id=>document.getElementById(id);
   const pinModal=$('adminPinModal'), panel=$('adminPanelModal'), pinInput=$('adminPinInput'), pinStatus=$('adminPinStatus'), input=$('adminCommandInput'), output=$('adminOutput'), suggestions=$('adminSuggestions'), usersList=$('adminUsersList'), selected=$('adminSelectedUser'), mediaInput=$('adminAnnoyFile'), mediaName=$('adminMediaName');
   let history=[], historyIndex=-1, selectedUser='', allUsers=[];

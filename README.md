@@ -36,3 +36,6 @@ Upload/replace the project files in the same GitHub repository and Render servic
 - Active message effects are organized under `message effects/<effect>/effect.css`; older loose effect files are in `message effects/archive/`.
 - Audio is loaded from `sounds/Goodjob!.mp3`, `sounds/background-noise.mp3.mp3`, and `sounds/chat-notification.mp3.mp3`.
 - CHAT_90 automatically removes the six oldest non-system messages after the shared history passes ten user messages, then posts `Cleaned up 6 Messages <3`.
+
+
+CHAT_90 fixes: same-origin Render WebSocket support, restored creator message, persistent audio settings, GIF API fallback, admin console PIN 7879, member password 56789.

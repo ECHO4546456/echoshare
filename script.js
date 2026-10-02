@@ -682,7 +682,11 @@ chatBadgeFileInput?.addEventListener('change',()=>{const f=chatBadgeFileInput.fi
 /* ===========================
    CHAT_90 GLOBAL NETWORK LAYER
    =========================== */
-const CHAT90_SERVER_URL = "https://echoshare-0nsm.onrender.com";
+const CHAT90_SERVER_URL = (() => {
+  const host = String(location.hostname || '').toLowerCase();
+  if (host.endsWith('.onrender.com')) return location.origin;
+  return 'https://echoshare-0nsm.onrender.com';
+})();
 let chatSocket = null;
 let chatConnected = false;
 let chatAuthenticated = false;
@@ -927,6 +931,21 @@ function authenticateChat(){
   if(existing){ existing.admin=false; existing.access='normal'; existing.role='MEMBER'; existing.glow='#39ff88'; existing.effect='normal'; saveChatProfile(existing); openChat(); return; }
   chatEditing=false; chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value=''; chatBadgeInput.value=''; chatBackgroundInput.value=''; chatEffectInput.value='normal'; showOnly(chatSetupPage); chatUsernameInput.focus();
 }
+function openChatSetupForEdit(){
+  const profile=getChatProfile();
+  if(!profile) return;
+  chatEditing=true;
+  chatUsernameInput.value=profile.username||'';
+  chatAvatarInput.value=profile.avatar||'';
+  chatBioInput.value=profile.bio||'';
+  chatTagsInput.value=(profile.tags||[]).join(', ');
+  chatBadgeInput.value=profile.badge||'';
+  if(chatBackgroundInput) chatBackgroundInput.value=profile.chatBackground||'';
+  if(chatEffectInput) chatEffectInput.value=profile.effect||'normal';
+  showOnly(chatSetupPage);
+  chatUsernameInput.focus();
+}
+
 function enterChat(){
   const username=chatUsernameInput.value.trim(); if(!username) return chatUsernameInput.focus();
   const old=getChatProfile()||{}; const admin=!!old.admin;
@@ -1229,9 +1248,8 @@ function playAnnoyAllMedia(packet){
     const eventName=el.type==='range'?'input':'change';
     el.addEventListener(eventName,e=>{
       settings[key]=el.type==='range'?Math.max(0,Math.min(100,Number(e.target.value)||0)):e.target.checked;
-      save();
-      syncUI();
       if(key==='remember' && settings.remember===false) localStorage.removeItem('echoChatProfile');
+      save();
     });
   });
   document.getElementById('settingToggleBackground')?.addEventListener('click',()=>{
@@ -1253,5 +1271,16 @@ function playAnnoyAllMedia(packet){
   apply();
   syncUI();
 })();
+
+// Keep audio controls synchronized even when the browser pauses an element or the page changes visibility.
+['backgroundNoise','chatNotificationSound','clickSound'].forEach(id=>{
+  const el=document.getElementById(id);
+  el?.addEventListener('volumechange',()=>{
+    if(id==='backgroundNoise' && window.echoShareSettings) el.loop=true;
+  });
+});
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden) unlockBackgroundNoise();
+});
 
 

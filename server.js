@@ -68,14 +68,20 @@ function addMessage(msg) { state.messages.push(msg); state.messages = state.mess
 
 const server = http.createServer((req,res)=>{
   const requestPath = decodeURIComponent(req.url.split('?')[0]);
-  if (requestPath === '/health') { res.writeHead(200, {'Content-Type':'application/json','Cache-Control':'no-store'}); return res.end(JSON.stringify({ok:true,service:'CHAT_90'})); }
+  if (requestPath === '/health') { res.writeHead(200, {'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':'*'}); return res.end(JSON.stringify({ok:true,service:'CHAT_90'})); }
+  if (requestPath === '/api/gifs') {
+    const dir=path.join(ROOT,'gifs_emojis','gifs_emojis');
+    let files=[]; try { files=fs.readdirSync(dir).filter(name=>/\.(gif|webp|png|jpe?g)$/i.test(name)).sort((a,b)=>a.localeCompare(b)); } catch(_) {}
+    res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':'*'});
+    return res.end(JSON.stringify(files.map(name=>({name:name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' '),url:'/gifs_emojis/gifs_emojis/'+encodeURIComponent(name)}))));
+  }
   let u = requestPath; if (u === '/') u='/index.html';
   const file = path.normalize(path.join(ROOT,u));
   if (!file.startsWith(ROOT)) return res.writeHead(403).end();
   fs.readFile(file,(err,data)=>{
     if(err) return res.writeHead(404).end('Not found');
     const ext=path.extname(file).toLowerCase();
-    const types={'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.mp3':'audio/mpeg','.mp4':'video/mp4','.webm':'video/webm','.svg':'image/svg+xml'};
+    const types={'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.mp3':'audio/mpeg','.ogg':'audio/ogg','.wav':'audio/wav','.mp4':'video/mp4','.webm':'video/webm','.svg':'image/svg+xml'};
     res.writeHead(200,{'Content-Type':types[ext]||'application/octet-stream','Cache-Control':'no-cache'}); res.end(data);
   });
 });
