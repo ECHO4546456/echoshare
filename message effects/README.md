@@ -1,3 +1,7 @@
-ECHO//SHARE CHAT_90 MESSAGE EFFECTS
+# CHAT_90 Message Effects
 
-Each effect lives in its own folder with an effect.css file. message-effects.css imports every effect so the main stylesheet stays organized.
+Each active effect has its own folder and `effect.css`. The master `../message-effects.css` remains loaded by the site so existing visual rules continue to work.
+
+Active effects: normal, prism, star-mid, void-rift, crimson-flare, blood-glitch, red-lightning, nightmare, singularity, hologram, admin-core.
+
+Older loose effect files were moved into `archive/`.

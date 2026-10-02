@@ -18,10 +18,21 @@ This build keeps the ECHO//SHARE archive structure and upgrades the visual/audio
 - After more than 10 non-bot messages, CHAT_90 removes the oldest 6 messages and ECHO BOT posts: `Cleaned up 6 Messages <3`.
 - The cleanup is synchronized to connected users with a history sync packet.
 
-## Access
+## Access codes
 - Member: `56789`
-- Admin console: press `Ctrl + P` inside CHAT_90, then enter PIN `7879`.
-- Admin privilege is applied server-side for the active session and turns the account/message history red.
+- Special/Admin: `9!GAG`
+- Malfunction: `Ink`
 
 ## Deploy
 Upload/replace the project files in the same GitHub repository and Render service used by ECHO//SHARE. Render starts the backend with `npm start` / `node server.js`.
+
+
+## CHAT_90 current build
+- Member password: `56789`
+- Admin console: press `Ctrl+P` inside the site, then enter PIN `7879`.
+- GIF vault reads the files listed in `gif-library.js` from `gifs_emojis/gifs_emojis/`.
+- Image/video upload is the `＋` button beside GIF.
+- Admin tools live in `admin panel/`.
+- Active message effects are organized under `message effects/<effect>/effect.css`; older loose effect files are in `message effects/archive/`.
+- Audio is loaded from `sounds/Goodjob!.mp3`, `sounds/background-noise.mp3.mp3`, and `sounds/chat-notification.mp3.mp3`.
+- CHAT_90 automatically removes the six oldest non-system messages after the shared history passes ten user messages, then posts `Cleaned up 6 Messages <3`.

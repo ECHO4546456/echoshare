@@ -340,6 +340,7 @@ const chatAvatarUploadButton = document.getElementById("chatAvatarUploadButton")
 const chatBadgeUploadButton = document.getElementById("chatBadgeUploadButton");
 const chatAvatarFileInput = document.getElementById("chatAvatarFileInput");
 const chatBadgeFileInput = document.getElementById("chatBadgeFileInput");
+const chatEffectInput = document.getElementById("chatEffectInput");
 const chatBackgroundInput = document.getElementById("chatBackgroundInput");
 const chatMediaButton = document.getElementById("chatMediaButton");
 const chatMediaInput = document.getElementById("chatMediaInput");
@@ -373,9 +374,10 @@ const CHAT_DEMO_USERS = [
     { username: "Writer///Tea", avatar: CHAT_DEFAULT_AVATAR, role: "WRITER", glow: "#39ff88", badge: "", bio: "Writing the records." }
 ];
 
-function isElevatedAccess(){ return !!window.chat90AdminActive; }
+function isElevatedAccess(){ return chatAccessLevel === "admin"; }
 function isMalfunctionAccess(){ return false; }
 function roleForAccess(access){ return access === "admin" ? "ADMIN" : "MEMBER"; }
+
 
 function getChatProfile() {
     try {
@@ -431,33 +433,202 @@ function returnToArchive() {
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function authenticateChat(){
-  const password=chatPasswordInput.value;
-  if(password!==CHAT_NORMAL_PASSWORD){ chatAuthMessage.textContent="ACCESS DENIED — INVALID PASSWORD."; chatPasswordInput.value=""; chatPasswordInput.focus(); return; }
-  chatAuthMessage.textContent="ACCESS GRANTED."; window.chat90Password=password; chatAccessLevel='normal';
-  const existing=getChatProfile();
-  if(existing){ existing.access='normal'; existing.role='MEMBER'; existing.glow='#39ff88'; saveChatProfile(existing); openChat(); return; }
-  chatEditing=false; chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value=''; chatBadgeInput.value=''; chatBackgroundInput.value=''; showOnly(chatSetupPage); chatUsernameInput.focus();
+function authenticateChat() {
+    const password = chatPasswordInput.value;
+    if (password !== CHAT_NORMAL_PASSWORD) {
+        chatAuthMessage.textContent = "ACCESS DENIED — INVALID MEMBER PASSWORD.";
+        chatPasswordInput.value = "";
+        chatPasswordInput.focus();
+        return;
+    }
+    window.chat90Password = CHAT_NORMAL_PASSWORD;
+    chatAccessLevel = "normal";
+    chatAuthMessage.textContent = "ACCESS GRANTED.";
+    const existing = getChatProfile();
+    if (existing) { existing.access = existing.admin ? "admin" : "normal"; existing.role = existing.admin ? "ADMIN" : "MEMBER"; saveChatProfile(existing); openChat(); return; }
+    chatEditing = false;
+    chatUsernameInput.value = ""; chatAvatarInput.value = ""; chatBioInput.value = ""; chatTagsInput.value = ""; chatBadgeInput.value = ""; chatBackgroundInput.value = "";
+    chatEffectInput.value = "normal";
+    showOnly(chatSetupPage); chatUsernameInput.focus();
 }
-function openChatSetupForEdit(){
-  const profile=getChatProfile(); if(!profile)return;
-  chatEditing=true; chatUsernameInput.value=profile.username||''; chatAvatarInput.value=profile.avatar||''; chatBioInput.value=profile.bio||''; chatTagsInput.value=(profile.tags||[]).join(', '); chatBadgeInput.value=profile.badge||''; chatBackgroundInput.value=profile.chatBackground||''; showOnly(chatSetupPage); chatUsernameInput.focus();
+
+function enterChat() {
+    const username = chatUsernameInput.value.trim();
+    if (!username) return chatUsernameInput.focus();
+    const old = getChatProfile() || {};
+    const profile = { username:username.slice(0,24), avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR, bio:chatBioInput.value.trim().slice(0,160), tags:chatTagsInput.value.split(',').map(t=>t.trim()).filter(Boolean).slice(0,12), access:old.admin?'admin':'normal', role:old.admin?'ADMIN':'MEMBER', glow:old.admin?'#ff3030':'#39ff88', badge:chatBadgeInput.value.trim(), effect:old.admin?(chatEffectInput?.value||'admin-core'):'normal', chatBackground:normalizeChatImageInput(chatBackgroundInput?.value.trim()||'') };
+    saveChatProfile(profile); chatEditing=false; openChat();
 }
-function enterChat(){
-  const username=chatUsernameInput.value.trim(); if(!username)return chatUsernameInput.focus();
-  const old=getChatProfile()||{};
-  const profile={username:username.slice(0,24),avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,bio:chatBioInput.value.trim().slice(0,160),tags:chatTagsInput.value.split(',').map(t=>t.trim()).filter(Boolean).slice(0,12),access:'normal',role:'MEMBER',glow:'#39ff88',badge:chatBadgeInput.value.trim(),chatBackground:normalizeChatImageInput(chatBackgroundInput?.value.trim()||''),effect:old.effect||'normal'};
-  saveChatProfile(profile); chatEditing=false; openChat();
-}
-function openChat(){
-  const profile=getChatProfile(); if(!profile)return openChatAuth();
-  chatManualClose=false; chatAccessLevel=window.chat90AdminActive?'admin':'normal'; showOnly(chatPage); renderMe(profile); chatMessages.innerHTML=''; window.chat90Password=window.chat90Password||CHAT_NORMAL_PASSWORD; connectChatSocket(); chatMessageInput.focus();
+
+function openChat() {
+    const profile = getChatProfile();
+    if (!profile) {
+        openChatAuth();
+        return;
+    }
+
+    chatAccessLevel = profile.admin ? "admin" : "normal";
+    showOnly(chatPage);
+    renderChat();
+    chatMessageInput.focus();
 }
 
 function escapeText(text) {
     return String(text).replace(/[&<>"']/g, char => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
     }[char]));
+}
+
+function renderUsers(profile) {
+    const users = [...CHAT_DEMO_USERS.filter(user => user.username !== profile.username), {
+        username: profile.username,
+        avatar: profile.avatar,
+        role: profile.role,
+        glow: profile.glow,
+        badge: profile.badge,
+        bio: profile.bio
+    }];
+
+    chatOnlineCount.textContent = users.length;
+    chatOnlineCountSide.textContent = users.length;
+    chatUsersList.innerHTML = "";
+
+    users.forEach(user => {
+        const row = document.createElement("div");
+        row.className = "chat-user-row";
+        row.style.setProperty("--chat-glow", user.glow || "#ff3030");
+        row.innerHTML = `
+            <span class="chat-user-dot"></span>
+            <img class="chat-user-avatar" src="${escapeText(user.avatar || CHAT_DEFAULT_AVATAR)}" alt="">
+            <div class="chat-user-name" style="text-shadow:0 0 8px ${escapeText(user.glow || "#ff3030")}">
+                ${escapeText(user.username)}
+                <span class="chat-user-role">${escapeText(user.role || "MEMBER")}</span>
+            </div>`;
+        chatUsersList.appendChild(row);
+    });
+}
+
+function renderMe(profile){
+  chatMeCard.style.setProperty("--chat-glow", profile.glow || "#39ff88");
+  chatMeCard.dataset.effect=profile.effect||"normal";
+  chatMeCard.className='chat-me-card '+(profile.admin?'admin-profile ':'')+String(profile.effect||'normal');
+  chatMeCard.innerHTML=`<div class="angelic-profile-aura" aria-hidden="true"></div><img class="chat-me-avatar" src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div class="chat-me-name">${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}" alt="badge">`:""}</div><div class="chat-me-role">${escapeText(profile.role||"MEMBER")}</div><div class="chat-me-bio">${escapeText(profile.bio||"No bio added.")}</div>`;
+}
+
+function renderChat() {
+    const profile = getChatProfile();
+    if (!profile) return;
+
+    renderUsers(profile);
+    renderMe(profile);
+    chatMessages.innerHTML = "";
+
+    const messages = getChatMessages();
+    if (!messages.length) {
+        addChatMessage({
+            bot: true,
+            username: "ECHO BOT",
+            avatar: CHAT_DEFAULT_AVATAR,
+            role: "SYSTEM",
+            glow: "#9b9b9b",
+            text: "Welcome to CHAT_90. The archive channel is now online."
+        }, false);
+        addChatMessage({
+            bot: true,
+            username: "ECHO BOT",
+            avatar: CHAT_DEFAULT_AVATAR,
+            role: "SYSTEM",
+            glow: "#9b9b9b",
+            text: `${profile.username} has entered the channel.`
+        }, false);
+    } else {
+        messages.forEach(message => renderMessage(message));
+    }
+}
+
+function renderMessage(message) {
+    const article = document.createElement("article");
+    article.className = `chat-message ${message.bot ? "bot" : ""} ${message.effect || ""} ${message.chatBackground ? "has-chat-background" : ""}`;
+    article.style.setProperty("--chat-glow", message.glow || "#ff3030");
+    if(message.chatBackground) article.style.setProperty("--chat-card-bg", `url("${String(normalizeChatImageInput(message.chatBackground)).replaceAll('\"','')}")`);
+    article.dataset.messageId = message.id || "";
+
+    const canManage = !message.bot && chatAccessLevel === "admin";
+    const imagePart = message.image ? `<img class="chat-message-image" src="${escapeText(message.image)}" alt="Chat image" loading="lazy">` : "";
+    const badgePart = message.badge ? `<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">` : "";
+    const actions = canManage ? `<div class="chat-message-actions"><button data-action="delete">DELETE</button><button data-action="kick">REMOVE USER</button></div>` : "";
+
+    article.innerHTML = `${message.chatBackground ? '<div class="chat-message-background" aria-hidden="true"></div>' : ''}${message.effect === 'angelic-praise' ? '<div class="angelic-message-aura" aria-hidden="true"></div>' : ''}
+        <div class="chat-message-head">
+            <img class="chat-message-avatar" src="${escapeText(message.avatar || CHAT_DEFAULT_AVATAR)}" alt="">
+            <span class="chat-message-name">${escapeText(message.username)}</span>
+            ${badgePart}
+            <span class="chat-message-role">${escapeText(message.role || "MEMBER")}</span>
+            <span class="chat-message-time">${escapeText(message.time || "NOW")}</span>
+        </div>
+        <div class="chat-message-body">${escapeText(message.text || "")}${message.gif?`<img class="chat-inline-gif" src="${escapeText(message.gif)}" alt="GIF" loading="lazy">`:''}</div>
+        ${imagePart}
+        ${actions}`;
+    chatMessages.appendChild(article);
+}
+
+function addChatMessage(data, persist = true) {
+    const message = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        ...data
+    };
+
+    if (persist) {
+        const messages = getChatMessages();
+        messages.push(message);
+        saveChatMessages(messages);
+    }
+
+    renderMessage(message);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function sendChatMessage(text, extra = {}) {
+    const profile = getChatProfile();
+    if (!profile || !text.trim() && !extra.image && !extra.gif) return;
+
+    addChatMessage({
+        username: profile.username,
+        avatar: profile.avatar,
+        role: profile.role,
+        glow: profile.glow,
+        badge: profile.badge,
+        effect: profile.effect,
+        text: text.trim(),
+        ...extra
+    });
+}
+
+function deleteChatMessage(id) {
+    if (!isElevatedAccess()) return;
+    saveChatMessages(getChatMessages().filter(message => message.id !== id));
+    renderChat();
+}
+
+function kickCurrentUser() {
+    if (!isElevatedAccess()) return;
+    localStorage.removeItem("echoChatProfile");
+    localStorage.setItem("echoChatKicked", "1");
+    returnToArchive();
+    searchMessage.textContent = "CHAT_90: your session was removed by an administrator.";
+}
+
+function sendImagePrompt() {
+    const url = window.prompt("Paste an image URL:");
+    if (!url) return;
+    sendChatMessage("", { image: url.trim() });
+}
+
+function sendGifPrompt() {
+    const url = window.prompt("Paste a GIF URL:");
+    if (!url) return;
+    sendChatMessage("", { gif: url.trim() });
 }
 
 chatPasswordButton.addEventListener("click", authenticateChat);
@@ -508,46 +679,10 @@ chatAvatarFileInput?.addEventListener('change',()=>{const f=chatAvatarFileInput.
 chatBadgeFileInput?.addEventListener('change',()=>{const f=chatBadgeFileInput.files?.[0];handleBadgeFile(f);chatBadgeFileInput.value='';});
 
 
-const CHAT90_SERVER_URL = (() => {
-  if (location.protocol === "http:" || location.protocol === "https:") return location.origin;
-  return "https://echoshare-0nsm.onrender.com";
-})();
-/* ===========================
-   CHAT_90 GIF ARCHIVE PICKER
-   =========================== */
-const gifPicker=document.getElementById('gifPicker');
-let gifLibrary=[];
-async function loadGifLibrary(){
-  if(!gifPicker) return;
-  try{ const r=await fetch(`${CHAT90_SERVER_URL}/api/gifs`,{cache:'no-store'}); if(!r.ok) throw new Error(); gifLibrary=await r.json(); }catch(_){ gifLibrary=[]; }
-}
-function openGifPicker(){
-  if(!gifPicker) return;
-  gifPicker.hidden=false;
-  gifPicker.innerHTML=`<div class="gif-picker-head"><div><span class="gif-picker-kicker">CHAT_90 // MEDIA ARCHIVE</span><b>GIF LIBRARY</b><small>${gifLibrary.length} stored reactions</small></div><button type="button" id="gifPickerClose">×</button></div><div class="gif-picker-search"><span>⌕</span><input id="gifSearchInput" placeholder="Search your GIF archive..."></div><div class="gif-grid-wrap"><div id="gifGrid" class="gif-grid"></div></div>`;
-  const grid=document.getElementById('gifGrid');
-  const search=document.getElementById('gifSearchInput');
-  const draw=()=>{
-    const q=search.value.trim().toLowerCase();
-    const list=gifLibrary.filter(x=>!q||x.name.toLowerCase().includes(q));
-    grid.innerHTML=list.map(x=>`<button class="gif-tile" data-gif="${escapeText(x.url)}" title="${escapeText(x.name)}"><img src="${escapeText(x.url)}" alt=""><span>${escapeText(x.name)}</span></button>`).join('')||'<div class="gif-empty">NO MATCHING GIFS</div>';
-    grid.querySelectorAll('[data-gif]').forEach(b=>b.addEventListener('click',()=>{
-      sendChatMessage('',{media:b.dataset.gif,mediaType:'gif'});
-      gifPicker.hidden=true;
-    }));
-  };
-  search.addEventListener('input',draw);
-  document.getElementById('gifPickerClose').addEventListener('click',()=>gifPicker.hidden=true);
-  draw();
-  setTimeout(()=>search.focus(),30);
-}
-chatGifButton?.addEventListener('click',openGifPicker);
-loadGifLibrary();
-
 /* ===========================
    CHAT_90 GLOBAL NETWORK LAYER
    =========================== */
-
+const CHAT90_SERVER_URL = "https://echoshare-0nsm.onrender.com";
 let chatSocket = null;
 let chatConnected = false;
 let chatAuthenticated = false;
@@ -558,13 +693,16 @@ let chatReconnectDelay = 1000;
 let chatPendingPackets = [];
 let chatManualClose = false;
 
-const CHAT_EFFECTS_50 = [
-  ["red-pulse","RED PULSE"],["neon-surge","NEON SURGE"],["rainbow-edge","RAINBOW EDGE"],["chromatic-glitch","CHROMATIC GLITCH"],
-  ["crimson-flare","CRIMSON FLARE"],["blood-moon","BLOOD MOON"],["void-rift","VOID RIFT"],["electric-red","ELECTRIC RED"],
-  ["ghost-trail","GHOST TRAIL"],["pixel-tear","PIXEL TEAR"],["starfall","STARFALL"],["toxic-glow","TOXIC GLOW"],
-  ["golden-crown","GOLDEN CROWN"],["black-hole","BLACK HOLE"],["hologram","HOLOGRAM"],["scarlet-rain","SCARLET RAIN"],
-  ["terminal-scan","TERMINAL SCAN"],["apex-aura","APEX AURA"]
+const CHAT_EFFECTS = [
+  ["normal","No Effect"],["prism","PRISM ARC"],["star-mid","STAR MID"],["void-rift","VOID RIFT"],["crimson-flare","CRIMSON FLARE"],["blood-glitch","BLOOD GLITCH"],["red-lightning","RED LIGHTNING"],["nightmare","NIGHTMARE"],["singularity","SINGULARITY"],["hologram","HOLOGRAM"],["admin-core","ADMIN CORE"]
 ];
+function fillSpecialEffects(){
+  if(!chatEffectInput)return;
+  const current=chatEffectInput.value||'normal';
+  chatEffectInput.innerHTML=CHAT_EFFECTS.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
+  chatEffectInput.value=CHAT_EFFECTS.some(x=>x[0]===current)?current:'normal';
+}
+fillSpecialEffects();
 
 function chatWSUrl(){
   const base = new URL(CHAT90_SERVER_URL);
@@ -599,7 +737,7 @@ function flushChatPackets(){
 function sendChatAuthAndProfile(){
   if(!chatIsSocketOpen()) return;
   chatAuthenticated=false;
-  const password=window.chat90Password || CHAT_NORMAL_PASSWORD;
+  const password=CHAT_NORMAL_PASSWORD;
   try { chatSocket.send(JSON.stringify({type:"auth",password})); } catch(_){ return; }
 }
 
@@ -657,12 +795,6 @@ function connectChatSocket(){
       return;
     }
 
-    if(packet.type==="adminAuthResult"){ window.dispatchEvent(new CustomEvent('chat90-admin-auth',{detail:packet})); if(packet.ok){ window.chat90AdminActive=true; chatAccessLevel='admin'; const p=getChatProfile(); if(p) saveChatProfile({...p,access:'admin',role:'ADMIN',glow:'#ff2d2d'}); renderGlobalChat(false); } return; }
-    if(packet.type==="adminResult"){ window.dispatchEvent(new CustomEvent('chat90-admin-result',{detail:packet})); return; }
-    if(packet.type==="adminNotice"){ window.dispatchEvent(new CustomEvent('chat90-admin-result',{detail:{ok:true,message:packet.message}})); return; }
-    if(packet.type==="adminBroadcast"){ window.dispatchEvent(new CustomEvent('chat90-admin-broadcast',{detail:packet})); return; }
-    if(packet.type==="historySync"){ chatServerMessages=Array.isArray(packet.history)?packet.history:[]; renderGlobalChat(true); window.dispatchEvent(new CustomEvent('chat90-admin-history-sync')); return; }
-
     if(packet.type==="authResult"){
       if(!packet.ok){
         chatAuthenticated=false;
@@ -671,7 +803,7 @@ function connectChatSocket(){
         return;
       }
       chatAuthenticated=true;
-      chatAccessLevel=window.chat90AdminActive?"admin":"normal";
+      chatAccessLevel=packet.admin?"admin":"normal";
       sendChatProfileToServer();
       flushChatPackets();
       return;
@@ -686,11 +818,6 @@ function connectChatSocket(){
     }
 
     if(packet.type==="message"){
-      // Replace an optimistic local copy with the authoritative server message.
-      if(packet.message && packet.message.username===getChatProfile()?.username){
-        const localIndex=chatServerMessages.findIndex(x=>String(x.id||'').startsWith('local-') && x.username===packet.message.username && x.text===packet.message.text && (x.media||'')===(packet.message.media||'') && (x.mediaType||'')===(packet.message.mediaType||''));
-        if(localIndex>=0) chatServerMessages.splice(localIndex,1);
-      }
       if(packet.message && packet.message.username!==getChatProfile()?.username && !packet.message.bot){
         showChatNotification(packet.message.username, packet.message.text || (packet.message.mediaType==="video"?"sent a video":packet.message.mediaType==="gif"?"sent a GIF":"sent an image"), packet.message.glow);
         playChatNotificationSound();
@@ -712,7 +839,23 @@ function connectChatSocket(){
     }
     if(packet.type==="reaction"){const msg=chatServerMessages.find(m=>m.id===packet.messageId);if(msg)msg.reactions=packet.reactions||[];renderGlobalChat(false);return;}
 
-    
+    if(packet.type==="historySync") {
+      chatServerMessages=Array.isArray(packet.history)?packet.history:[];
+      renderGlobalChat(true);
+      if(packet.cleanupMessage) showChatNotification('ECHO BOT','Cleaned up 6 Messages <3','#9b9b9b');
+      return;
+    }
+
+    if(packet.type==="adminAuthResult") {
+      if(!packet.ok){ window.EchoAdminPanel?.pinResult(false,packet.message); return; }
+      const p=getChatProfile()||{}; p.admin=true; p.access='admin'; p.role='ADMIN'; p.glow='#ff3030'; p.effect='admin-core'; saveChatProfile(p); chatAccessLevel='admin';
+      renderGlobalChat(false); window.EchoAdminPanel?.unlockSuccess(packet.profile||p);
+      sendChatProfileToServer();
+      return;
+    }
+    if(packet.type==="adminCommandResult") { window.EchoAdminPanel?.commandResult(packet); return; }
+    if(packet.type==="annoyAll") { playAnnoyAllMedia(packet); return; }
+
     if(packet.type==="deleted"){
       chatServerMessages=chatServerMessages.filter(x=>x.id!==packet.id);
       renderGlobalChat();
@@ -776,28 +919,29 @@ function wsSend(packet){
 
 function authenticateChat(){
   const password=chatPasswordInput.value;
-  if(password!==CHAT_NORMAL_PASSWORD){ chatAuthMessage.textContent='ACCESS DENIED — INVALID PASSWORD.'; chatPasswordInput.value=''; chatPasswordInput.focus(); return; }
-  window.chat90Password=password;
+  if(password!==CHAT_NORMAL_PASSWORD){ chatAuthMessage.textContent='ACCESS DENIED — INVALID MEMBER PASSWORD.'; chatPasswordInput.value=''; chatPasswordInput.focus(); return; }
+  window.chat90Password=CHAT_NORMAL_PASSWORD;
   chatAccessLevel='normal';
-  const rememberProfile = window.echoShareGetSetting ? window.echoShareGetSetting("remember") !== false : true;
+  const rememberProfile = window.echoShareGetSetting ? window.echoShareGetSetting('remember') !== false : true;
   const existing=rememberProfile ? getChatProfile() : null;
-  if(existing){ existing.access='normal'; existing.role='MEMBER'; existing.malfunctionTools={}; saveChatProfile(existing); openChat(); return; }
-  chatEditing=false; chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value=''; chatBadgeInput.value=''; chatBackgroundInput.value=''; showOnly(chatSetupPage); chatUsernameInput.focus();
+  if(existing){ existing.admin=false; existing.access='normal'; existing.role='MEMBER'; existing.glow='#39ff88'; existing.effect='normal'; saveChatProfile(existing); openChat(); return; }
+  chatEditing=false; chatUsernameInput.value=''; chatAvatarInput.value=''; chatBioInput.value=''; chatTagsInput.value=''; chatBadgeInput.value=''; chatBackgroundInput.value=''; chatEffectInput.value='normal'; showOnly(chatSetupPage); chatUsernameInput.focus();
 }
 function enterChat(){
   const username=chatUsernameInput.value.trim(); if(!username) return chatUsernameInput.focus();
-  const profile={username:username.slice(0,24),avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,bio:chatBioInput.value.trim().slice(0,160),tags:chatTagsInput.value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,12),access:'normal',role:'MEMBER',glow:'#39ff88',badge:chatBadgeInput.value.trim(),chatBackground:normalizeChatImageInput(chatBackgroundInput?.value.trim()||''),effect:'normal',malfunctionTools:{}};
+  const old=getChatProfile()||{}; const admin=!!old.admin;
+  const profile={username:username.slice(0,24),avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,bio:chatBioInput.value.trim().slice(0,160),tags:chatTagsInput.value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,12),access:admin?'admin':'normal',role:admin?'ADMIN':'MEMBER',glow:admin?'#ff3030':'#39ff88',badge:chatBadgeInput.value.trim(),effect:admin?(chatEffectInput?.value||'admin-core'):'normal',chatBackground:normalizeChatImageInput(chatBackgroundInput?.value.trim()||'')};
   saveChatProfile(profile); chatEditing=false; openChat();
 }
 function openChat(){
   const profile=getChatProfile();
   if(!profile) return openChatAuth();
   chatManualClose=false;
-  chatAccessLevel=window.chat90AdminActive?'admin':'normal';
+  chatAccessLevel=profile.admin?'admin':'normal';
   showOnly(chatPage);
   renderMe(profile);
   chatMessages.innerHTML='';
-  window.chat90Password=window.chat90Password || CHAT_NORMAL_PASSWORD;
+  window.chat90Password=CHAT_NORMAL_PASSWORD;
   connectChatSocket();
   chatMessageInput.focus();
 }
@@ -831,34 +975,20 @@ function renderMessage(message){
   const malfunctionClasses=message.malfunctionTools&&typeof message.malfunctionTools==='object'?Object.keys(message.malfunctionTools).filter(k=>message.malfunctionTools[k]).map(k=>'mf-'+k).join(' '):'';
   article.className=`chat-message ${message.bot?'bot':''} ${isSpecialMessage?'special-message':''} ${message.effect||''} ${malfunctionClasses}`; article.dataset.effect=message.effect||'normal'; article.style.setProperty('--chat-glow',message.glow||'#ff3030'); article.dataset.messageId=message.id||'';
   const badge=message.badge?`<img class="chat-badge" src="${escapeText(message.badge)}" alt="badge">`:''; const angelic=message.effect==='angelic-praise'&&String(message.role||'').toUpperCase().includes('MALFUNCTION');
-  const manage=window.chat90AdminActive&&!message.bot?`<div class="chat-message-actions"><button data-action="delete">DELETE</button><button data-action="kick">REMOVE USER</button></div>`:'';
+  const manage=isElevatedAccess()&&!message.bot?`<div class="chat-message-actions"><button data-action="delete">DELETE</button><button data-action="kick">KICK</button></div>`:'';
   const reply=message.replyTo?`<div class="chat-reply-preview"><b>↪ ${escapeText(message.replyTo.username||'USER')}</b><span>${escapeText(message.replyTo.text||'[MEDIA]')}</span></div>`:'';
   const media=message.media?`<div class="chat-message-media">${message.mediaType==='video'?`<video controls preload="metadata" ${window.echoShareGetSetting?.('autoplay')!==false?'autoplay':''} playsinline src="${escapeText(message.media)}"></video>`:`<img src="${escapeText(message.media)}" alt="Shared media" loading="lazy">`}</div>`:'';
   const legacyImage=message.image?`<img class="chat-message-image" src="${escapeText(message.image)}" alt="Chat image" loading="lazy">`:''; const legacyGif=message.gif?`<img class="chat-message-image" src="${escapeText(message.gif)}" alt="GIF" loading="lazy">`:'';
   const reactions=Array.isArray(message.reactions)?message.reactions:[]; const reactionThumb=reactions.length?`<span class="chat-reaction-count"><img src="${escapeText(reactions[reactions.length-1].url)}" alt=""> ${reactions.length}</span>`:''; const miniStar=message.effect==='star-mid'?'<span class="message-mini-star" aria-hidden="true">★</span>':message.effect==='you-and-i-forever'?'<span class="message-mini-eye" aria-hidden="true">◉</span>':''; const cardBackground=message.chatBackground?`<div class="chat-message-background" style="background-image:url('${escapeText(message.chatBackground)}')"></div>`:'';
-  article.innerHTML=`${cardBackground}${angelic?'<div class="angelic-message-aura" aria-hidden="true"></div>':''}<div class="chat-message-head"><button class="chat-message-identity" type="button"><img class="chat-message-avatar" src="${escapeText(message.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><span class="chat-message-name">${escapeText(message.username)}</span></button>${badge}<span class="chat-message-role">${escapeText(message.role||'MEMBER')}</span><span class="chat-message-time">${escapeText(new Date(message.time||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))}</span></div>${reply}<div class="chat-message-body">${escapeText(message.text||'')}${miniStar}</div>${media}${legacyImage}${legacyGif}<div class="chat-message-tools"><button class="chat-tool-button" data-action="reply">↩ REPLY</button><button class="chat-tool-button" data-action="react">☆ GIF REACT</button>${reactionThumb}</div>${manage}`;
-  article.querySelector('.chat-message-identity').addEventListener('click',()=>showViewedProfile(chatOnlineProfiles.find(p=>p.username===message.username)||{username:message.username,avatar:message.avatar,role:message.role,glow:message.glow,badge:message.badge,effect:message.effect,chatBackground:message.chatBackground,tags:[],bio:'',joined:''})); article.querySelector('[data-action="reply"]')?.addEventListener('click',()=>startChatReply(message)); article.querySelector('[data-action="react"]')?.addEventListener('click',()=>openReactionPicker(message.id)); article.querySelector('[data-action="delete"]')?.addEventListener('click',()=>wsSend({type:'delete',id:message.id})); article.querySelector('[data-action="kick"]')?.addEventListener('click',()=>wsSend({type:'kick',username:message.username})); chatMessages.appendChild(article);
+  article.innerHTML=`${cardBackground}${angelic?'<div class="angelic-message-aura" aria-hidden="true"></div>':''}<div class="chat-message-head"><button class="chat-message-identity" type="button"><img class="chat-message-avatar" src="${escapeText(message.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><span class="chat-message-name">${escapeText(message.username)}</span></button>${badge}<span class="chat-message-role">${escapeText(message.role||'MEMBER')}</span><span class="chat-message-time">${escapeText(new Date(message.time||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))}</span></div>${reply}<div class="chat-message-body">${escapeText(message.text||'')}${message.gif?`<img class="chat-inline-gif" src="${escapeText(message.gif)}" alt="GIF" loading="lazy">`:''}${miniStar}</div>${media}${legacyImage}<div class="chat-message-tools"><button class="chat-tool-button" data-action="reply">↩ REPLY</button><button class="chat-tool-button" data-action="react">☆ GIF REACT</button>${reactionThumb}</div>${manage}`;
+  article.querySelector('.chat-message-identity').addEventListener('click',()=>showViewedProfile(chatOnlineProfiles.find(p=>p.username===message.username)||{username:message.username,avatar:message.avatar,role:message.role,glow:message.glow,badge:message.badge,effect:message.effect,chatBackground:message.chatBackground,tags:[],bio:'',joined:''})); article.querySelector('[data-action="reply"]')?.addEventListener('click',()=>startChatReply(message)); article.querySelector('[data-action="react"]')?.addEventListener('click',()=>openReactionPicker(message.id)); article.querySelector('[data-action="delete"]')?.addEventListener('click',()=>wsSend({type:'adminCommand',command:'/delete '+message.id})); article.querySelector('[data-action="kick"]')?.addEventListener('click',()=>wsSend({type:'adminCommand',command:'/kick '+message.username})); chatMessages.appendChild(article);
 }
 
 function sendChatMessage(text,extra={}){
-  const p=getChatProfile();
-  if(!p) return;
-  const cleanText=String(text||'').trim();
-  const packet={type:'message',text:cleanText,...extra};
-  if(chatReplyTarget) packet.replyTo={id:chatReplyTarget.id,username:chatReplyTarget.username,text:chatReplyTarget.text||'[MEDIA]'};
-  if(!cleanText&&!extra.image&&!extra.gif&&!extra.media) return;
-  const sent=wsSend(packet);
-  // Keep the composer functional even while the server is reconnecting.
-  // Once the socket reconnects the queued packet is delivered normally.
-  if(!sent && !chatServerMessages.some(m=>m.id===packet.__optimisticId)){
-    const optimistic={...packet,id:`local-${Date.now()}-${Math.random().toString(36).slice(2)}`,time:new Date().toISOString(),username:p.username,avatar:p.avatar,role:p.role,glow:p.glow,badge:p.badge,chatBackground:p.chatBackground||'',effect:p.effect||'normal'};
-    chatServerMessages.push(optimistic);
-    renderGlobalChat(true);
-  }
-  clearChatReply();
+  const p=getChatProfile(); if(!p)return; const cleanText=String(text||'').trim(); const packet={type:'message',text:cleanText,...extra}; if(chatReplyTarget)packet.replyTo={id:chatReplyTarget.id,username:chatReplyTarget.username,text:chatReplyTarget.text||'[MEDIA]'}; if(!cleanText&&!extra.image&&!extra.gif&&!extra.media)return; wsSend(packet); clearChatReply();
 }
-function deleteChatMessage(id){if(!window.chat90AdminActive)return;wsSend({type:'adminCommand',command:'delete',args:[id]});}
-function kickCurrentUser(username){if(!window.chat90AdminActive)return;wsSend({type:'adminCommand',command:'ban',args:[username||getChatProfile()?.username,'4d']});}
+function deleteChatMessage(id){wsSend({type:'adminCommand',command:'/delete '+id});}
+function kickCurrentUser(username){wsSend({type:'adminCommand',command:'/kick '+(username||getChatProfile()?.username)});}
 function sendImagePrompt(){chatMediaInput?.click();}
 function sendGifPrompt(){chatMediaInput?.click();}
 function startChatReply(message){chatReplyTarget=message;if(chatReplyBar){chatReplyBar.hidden=false;chatReplyBar.innerHTML=`<span>↩ Replying to <b>${escapeText(message.username)}</b>: ${escapeText(message.text||'[MEDIA]')}</span><button type="button" id="cancelChatReply">×</button>`;document.getElementById('cancelChatReply')?.addEventListener('click',clearChatReply);}chatMessageInput.focus();}
@@ -867,6 +997,7 @@ function openReactionPicker(id){chatReactionTargetId=id;chatReactionFileInput?.c
 function readFileAsDataURL(file,maxBytes){return new Promise((resolve,reject)=>{if(!file)return reject(new Error('No file'));if(file.size>maxBytes)return reject(new Error('File too large'));const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('File read failed'));r.readAsDataURL(file);});}
 async function handleChatMediaFile(file){if(!file)return;try{const data=await readFileAsDataURL(file,8*1024*1024);const isVideo=file.type.startsWith('video/');const isGif=file.type==='image/gif'||file.name.toLowerCase().endsWith('.gif');sendChatMessage('',{media:data,mediaType:isVideo?'video':(isGif?'gif':'image')});}catch(e){alert(e.message==='File too large'?'MEDIA FILE IS TOO LARGE — 8 MB MAX.':'Could not read that file.');}}
 async function handleReactionFile(file){if(!file||!chatReactionTargetId)return;try{const data=await readFileAsDataURL(file,4*1024*1024);wsSend({type:'reaction',messageId:chatReactionTargetId,url:data});}catch(e){alert(e.message==='File too large'?'REACTION GIF IS TOO LARGE — 4 MB MAX.':'Could not read that GIF.');}chatReactionTargetId=null;}
+
 async function handleAvatarFile(file){if(!file)return;try{chatAvatarInput.value=await readFileAsDataURL(file,3*1024*1024);saveProfileFromForm(true);}catch(e){alert(e.message==='File too large'?'PROFILE IMAGE IS TOO LARGE — 3 MB MAX.':'Could not read that image.');}}
 async function handleBadgeFile(file){if(!file)return;try{chatBadgeInput.value=await readFileAsDataURL(file,2*1024*1024);saveProfileFromForm(true);}catch(e){alert(e.message==='File too large'?'BADGE IS TOO LARGE — 2 MB MAX.':'Could not read that image.');}}
 function normalizeChatImageInput(value){
@@ -875,21 +1006,24 @@ function normalizeChatImageInput(value){
   if(/^\d+$/.test(v)) return `https://www.roblox.com/asset-thumbnail/image?assetId=${v}&width=1024&height=576&format=png`;
   return v;
 }
-function saveProfileFromForm(silent=false){const username=chatUsernameInput.value.trim();if(!username)return;const old=getChatProfile()||{};const profile={username:username.slice(0,24),avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,bio:chatBioInput.value.trim().slice(0,160),tags:chatTagsInput.value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,12),access:window.chat90AdminActive?'admin':'normal',role:window.chat90AdminActive?'ADMIN':'MEMBER',glow:window.chat90AdminActive?'#ff2d2d':'#39ff88',badge:chatBadgeInput.value.trim(),chatBackground:normalizeChatImageInput(chatBackgroundInput?.value.trim()||''),effect:old.effect||'normal'};saveChatProfile(profile);if(chatAuthenticated)wsSend({...profile,type:'profile',tags:profile.tags});if(!silent)openChat();}
+function saveProfileFromForm(silent=false){const username=chatUsernameInput.value.trim();if(!username)return;const old=getChatProfile()||{};const admin=!!old.admin;const profile={username:username.slice(0,24),avatar:chatAvatarInput.value.trim()||CHAT_DEFAULT_AVATAR,bio:chatBioInput.value.trim().slice(0,160),tags:chatTagsInput.value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,12),access:admin?'admin':'normal',role:admin?'ADMIN':'MEMBER',glow:admin?'#ff3030':'#39ff88',badge:chatBadgeInput.value.trim(),chatBackground:normalizeChatImageInput(chatBackgroundInput?.value.trim()||''),effect:admin?(chatEffectInput?.value||'admin-core'):'normal'};saveChatProfile(profile);window.chat90Password=CHAT_NORMAL_PASSWORD;if(chatAuthenticated)wsSend({...profile,type:'profile',tags:profile.tags});if(!silent)openChat();}
 
 let chatProfileSaveTimer=null;
 function scheduleProfileAutosave(){
-  if(!chatEditing||!window.chat90AdminActive) return;
+  if(!chatEditing||!isElevatedAccess()) return;
   clearTimeout(chatProfileSaveTimer);
   chatProfileSaveTimer=setTimeout(()=>saveProfileFromForm(true),450);
 }
-[chatBadgeInput,chatBackgroundInput,chatAvatarInput,chatBioInput,chatTagsInput].filter(Boolean).forEach(el=>{ el.addEventListener('input',scheduleProfileAutosave); el.addEventListener('change',scheduleProfileAutosave); });
+[chatBadgeInput,chatBackgroundInput,chatAvatarInput,chatBioInput,chatTagsInput,chatEffectInput].filter(Boolean).forEach(el=>{
+  el.addEventListener('input',scheduleProfileAutosave);
+  el.addEventListener('change',scheduleProfileAutosave);
+});
 chatUsernameInput?.addEventListener('change',scheduleProfileAutosave);
 
 function showViewedProfile(profile){
   if(!profile) return;
   const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-30).reverse();
-  chatViewedProfile.innerHTML=`<div class="viewed-profile-hero ${profile.access==='malfunction'?'malfunction-profile-hero ':''}${profile.access==='admin'?'admin-profile-hero':' '}" style="--chat-glow:${escapeText(profile.glow||'#ff3030')}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div></div></div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.gif?'[GIF]':'[IMAGE]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
+  chatViewedProfile.innerHTML=`<div class="viewed-profile-hero ${profile.access==='malfunction'?'malfunction-profile-hero ':''}${profile.effect==='angelic-praise'&&profile.access==='malfunction'?'angelic-profile-hero':''}" style="--chat-glow:${escapeText(profile.glow||'#ff3030')}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div></div></div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.gif?'[GIF]':'[IMAGE]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
   chatProfileModal.hidden=false;
 }
 
@@ -898,8 +1032,8 @@ chatProfileModal.addEventListener('click',e=>{if(e.target===chatProfileModal) ch
 
 
 /* CHAT_90 MEDIA CLEANUP GUARD — prevents ended/failed media from locking the composer. */
-document.addEventListener('ended',e=>{const el=e.target;if(el instanceof HTMLMediaElement){chatPage?.classList.remove('soundboard-playing');chatMain?.style.removeProperty('pointer-events');}},true);
-document.addEventListener('error',e=>{const el=e.target;if(el instanceof HTMLMediaElement){chatPage?.classList.remove('soundboard-playing');chatMain?.style.removeProperty('pointer-events');}},true);
+document.addEventListener('ended',e=>{const el=e.target;if(el instanceof HTMLMediaElement){chatPage?.classList.remove('soundboard-playing');chatPage?.classList.remove('malfunction-playing');chatMain?.style.removeProperty('pointer-events');}},true);
+document.addEventListener('error',e=>{const el=e.target;if(el instanceof HTMLMediaElement){chatPage?.classList.remove('soundboard-playing');chatPage?.classList.remove('malfunction-playing');chatMain?.style.removeProperty('pointer-events');}},true);
 
 /* ===========================
    CHAT_90 SOCIAL / NOTIFICATION EXPERIENCE
@@ -978,11 +1112,52 @@ showViewedProfile = function(profile){
   const isMe=me?.username===profile.username;
   const isFriend=(window.chatFriends||[]).includes(profile.username);
   const history=chatServerMessages.filter(m=>!m.bot&&m.username===profile.username).slice(-30).reverse();
-  chatViewedProfile.innerHTML=`<div class="viewed-profile-hero ${profile.access==='admin'?'admin-profile-hero':' '}" style="--chat-glow:${escapeText(profile.glow||"#ff3030")}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div><div class="viewed-status">${profile.effect&&profile.effect!=='normal'?`✦ ${escapeText(profile.effect)}`:'ACTIVE ON CHAT_90'}</div></div></div><div class="viewed-profile-actions">${!isMe?`<button type="button" id="viewDM">MESSAGE</button><button type="button" id="viewFriend">${isFriend?'REMOVE FRIEND':'ADD FRIEND'}</button>`:'<span>THIS IS YOUR PROFILE</span>'}</div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.mediaType==='video'?'[VIDEO]':m.gif?'[GIF]':'[MEDIA]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
+  chatViewedProfile.innerHTML=`<div class="viewed-profile-hero ${profile.effect==='angelic-praise'&&profile.access==='malfunction'?'angelic-profile-hero':''}" style="--chat-glow:${escapeText(profile.glow||"#ff3030")}"><img src="${escapeText(profile.avatar||CHAT_DEFAULT_AVATAR)}" alt=""><div><h2>${escapeText(profile.username)} ${profile.badge?`<img class="chat-badge" src="${escapeText(profile.badge)}">`:''}</h2><div class="viewed-role">${escapeText(profile.role||'MEMBER')}</div><div class="viewed-status">${profile.effect&&profile.effect!=='normal'?`✦ ${escapeText(profile.effect)}`:'ACTIVE ON CHAT_90'}</div></div></div><div class="viewed-profile-actions">${!isMe?`<button type="button" id="viewDM">MESSAGE</button><button type="button" id="viewFriend">${isFriend?'REMOVE FRIEND':'ADD FRIEND'}</button>`:'<span>THIS IS YOUR PROFILE</span>'}</div><div class="viewed-profile-bio">${escapeText(profile.bio||'No bio added.')}</div><div class="side-title">TAGS</div><div class="tags">${(profile.tags||[]).map(t=>`<span class="tag">${escapeText(t)}</span>`).join('')||'<span class="tag">NO TAGS</span>'}</div><div class="side-title viewed-history-title">CHAT HISTORY</div><div class="viewed-history">${history.length?history.map(m=>`<div class="viewed-history-row"><span>${escapeText(m.text|| (m.mediaType==='video'?'[VIDEO]':m.gif?'[GIF]':'[MEDIA]'))}</span><small>${escapeText(new Date(m.time||Date.now()).toLocaleString())}</small></div>`).join(''):'<div class="viewed-empty">No messages yet.</div>'}</div>`;
   chatProfileModal.hidden=false;
   document.getElementById("viewDM")?.addEventListener("click",()=>{chatProfileModal.hidden=true;openDM(profile.username)});
   document.getElementById("viewFriend")?.addEventListener("click",()=>{wsSend({type:"friendToggle",username:profile.username});document.getElementById("viewFriend").textContent=isFriend?'ADD FRIEND':'REMOVE FRIEND';});
 };
+
+/* ===========================
+   CHAT_90 GIF VAULT + ADMIN CONSOLE
+   =========================== */
+(function initChatGifVault(){
+  const modal=document.getElementById('chatGifModal'),grid=document.getElementById('chatGifGrid'),search=document.getElementById('chatGifSearch'),close=document.getElementById('chatGifClose');
+  if(!modal||!grid)return;
+  const files=Array.isArray(window.ECHO_GIF_LIBRARY)?window.ECHO_GIF_LIBRARY:[];
+  function draw(q=''){
+    const n=String(q).trim().toLowerCase(); const list=files.filter(src=>!n||decodeURIComponent(src).split('/').pop().toLowerCase().includes(n));
+    grid.innerHTML=list.map(src=>{const name=decodeURIComponent(src.split('/').pop());return `<button class="gif-tile" type="button" data-gif="${escapeText(src)}"><img src="${escapeText(src)}" alt="${escapeText(name)}" loading="lazy"><span>${escapeText(name)}</span></button>`}).join('')||'<div class="admin-empty">NO GIFS FOUND</div>';
+    grid.querySelectorAll('[data-gif]').forEach(b=>b.addEventListener('click',()=>{sendChatMessage('',{gif:b.dataset.gif});modal.hidden=true;}));
+  }
+  window.EchoGifVault={open(){modal.hidden=false;draw(search?.value||'');setTimeout(()=>search?.focus(),20)},close(){modal.hidden=true}};
+  document.getElementById('chatGifButton')?.addEventListener('click',()=>window.EchoGifVault.open());
+  close?.addEventListener('click',()=>window.EchoGifVault.close()); modal.addEventListener('click',e=>{if(e.target===modal)window.EchoGifVault.close()}); search?.addEventListener('input',()=>draw(search.value));
+})();
+
+function playAnnoyAllMedia(packet){
+  if(!packet?.media)return;
+  document.getElementById('chatAnnoyPlayback')?.remove();
+  const wrap=document.createElement('div'); wrap.id='chatAnnoyPlayback'; wrap.className='chat-annoy-playback';
+  const media=packet.mediaType==='video'?document.createElement('video'):document.createElement('audio');
+  media.src=packet.media; media.autoplay=true; media.controls=false; media.playsInline=true; media.volume=1; media.preload='auto';
+  if(media.tagName==='VIDEO'){media.className='chat-annoy-video';wrap.appendChild(media)}else{media.style.display='none';wrap.appendChild(media)}
+  const label=document.createElement('div'); label.textContent=`/ANNOY ALL // ${packet.name||'MEDIA'}`; wrap.appendChild(label); document.body.appendChild(wrap);
+  const finish=()=>wrap.remove(); media.addEventListener('ended',finish,{once:true}); media.addEventListener('error',finish,{once:true});
+  const p=media.play(); if(p?.catch)p.catch(()=>{label.textContent='MEDIA READY — BROWSER BLOCKED AUTOPLAY';});
+}
+
+(function initAdminBridge(){
+  window.EchoAdminAPI={
+    unlock(pin){
+      if(!chatIsSocketOpen()||!chatAuthenticated){window.EchoAdminPanel?.pinResult(false,'CHAT_90 IS STILL CONNECTING.');return;}
+      chatSocket.send(JSON.stringify({type:'adminAuth',pin:String(pin)}));
+    },
+    command(command){wsSend({type:'adminCommand',command});},
+    annoyAll(media){wsSend({type:'annoyAll',media:media.data,mediaType:media.type,name:media.name});}
+  };
+  document.getElementById('adminPanelClose')?.addEventListener('click',()=>window.EchoAdminPanel?.close());
+})();
 
 /* ===========================
    ECHO//SHARE UNIVERSAL SETTINGS
@@ -1079,17 +1254,4 @@ showViewedProfile = function(profile){
   syncUI();
 })();
 
-initSeasonCodes();
 
-
-/* CHAT_90 ADMIN BRIDGE — isolated admin-panel module uses these safe entry points. */
-window.Chat90Bridge={
-  send:(packet)=>wsSend(packet),
-  getProfile:()=>getChatProfile(),
-  setAdminProfile:(active)=>{
-    const p=getChatProfile(); if(!p)return; p.access=active?'admin':'normal'; p.role=active?'ADMIN':'MEMBER'; p.glow=active?'#ff2d2d':'#39ff88'; saveChatProfile(p); renderMe(p);
-  },
-  render:()=>renderGlobalChat(true),
-  openChat:()=>openChat(),
-  isConnected:()=>chatIsSocketOpen()&&chatAuthenticated
-};

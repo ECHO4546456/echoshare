@@ -61,3 +61,15 @@
 @import url("message%20effects/halloween-static/effect.css");
 @import url("message%20effects/halloween-reaper/effect.css");
 @import url("message%20effects/halloween-harvest/effect.css");
+
+/* CHAT_90 NEW EFFECT PACK */
+.chat-message.prism{background:linear-gradient(120deg,rgba(255,70,150,.12),rgba(80,190,255,.12),rgba(170,90,255,.13),rgba(80,255,190,.09));background-size:300% 300%;animation:chatPrism 5s ease infinite;border-color:rgba(150,210,255,.38)!important;box-shadow:0 0 28px rgba(130,120,255,.18)}
+.chat-message.prism .chat-message-name{background:linear-gradient(90deg,#ff72b6,#7ee8ff,#c693ff,#75ffc8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.chat-message.singularity{background:radial-gradient(circle at 50% 50%,rgba(150,70,255,.2),rgba(10,5,25,.8) 55%,rgba(0,0,0,.88));box-shadow:inset 0 0 40px rgba(130,60,255,.2),0 0 32px rgba(120,60,255,.2);animation:chatSingularity 2.7s ease-in-out infinite}
+.chat-message.hologram{background:linear-gradient(180deg,rgba(50,220,255,.08),rgba(170,80,255,.07));border-color:rgba(80,220,255,.32)!important;box-shadow:0 0 24px rgba(80,210,255,.14);animation:chatHolo 2.5s ease-in-out infinite}
+.chat-message.hologram::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 4px,rgba(110,230,255,.035) 5px);mix-blend-mode:screen}
+.chat-message.admin-core{border-color:rgba(255,45,65,.4)!important;box-shadow:0 0 34px rgba(255,20,50,.18),inset 0 0 32px rgba(255,20,50,.06);animation:adminCorePulse 2s ease-in-out infinite}
+@keyframes chatPrism{0%,100%{background-position:0% 50%;filter:hue-rotate(0deg)}50%{background-position:100% 50%;filter:hue-rotate(18deg)}}
+@keyframes chatSingularity{0%,100%{transform:none;box-shadow:inset 0 0 30px rgba(130,60,255,.14),0 0 22px rgba(120,60,255,.15)}50%{transform:translateY(-1px);box-shadow:inset 0 0 55px rgba(150,70,255,.23),0 0 42px rgba(120,60,255,.27)}}
+@keyframes chatHolo{0%,100%{opacity:.93}50%{opacity:1;filter:brightness(1.18) saturate(1.2)}}
+@keyframes adminCorePulse{0%,100%{box-shadow:0 0 22px rgba(255,20,50,.12),inset 0 0 22px rgba(255,20,50,.04)}50%{box-shadow:0 0 42px rgba(255,20,50,.25),inset 0 0 36px rgba(255,20,50,.08)}}
