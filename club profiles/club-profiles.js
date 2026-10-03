@@ -35,7 +35,7 @@ const ECHO_CLUBS = {
         glow: "#ff4039"
     },
     "Harnsoi_Kinzo": {
-        name: "Harnsoi Kinzo",
+        name: "Harnsoi_Kinzo",
         id: "CLUB-Harnsoi_Kinzo-001",
         image: "pngs/markspfp2.gif",
         background: "pngs/markpfp.gif",
