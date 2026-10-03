@@ -26,13 +26,29 @@ const ECHO_CLUBS = {
         background: "pngs/tokyo-ghoul-rize.gif",
         music: "sounds/Vipermusic.mp3",
         followers: "1M",
+        supportsImage: "wowwiieee.webp",
         supports: "1.9B",
         badge: "pngs/SSML.webp",
         tags: ["P,N", "Dream core"],
         bio: "I want to ruin you so completely that every other touch you ever feel for the rest of your life will taste like a pale ghost of me.",
         status: "CLUB",
         glow: "#ff4039"
-    }
+    },
+    "Harnsoi_Kinzo": {
+        name: "Harnsoi Kinzo",
+        id: "CLUB-Harnsoi_Kinzo-001",
+        image: "pngs/markspfp2.gif",
+        background: "pngs/markpfp.gif",
+        music: "sounds/I ᐸ3 Wealth.mp3",
+        followers: "None",
+        supportsImage: "gifs_emojis/cri.webp",
+        supports: "None",
+        badge: "pngs/SSML.webp",
+        tags: ["#Hexxercising", "#Doublehexxed", "#Ascended", "#Occultism","#Cultism" ],
+        bio: "† ₮ⱧɆ ⱧłɆⱤ₳Ɽ₵ⱧɎ ł₴ ₳ ₴₳₵Ɽł₣ł₵Ɇ. † Tyrants bleed. Kings burn. Queens rot. Opposers face total erasure. We invoke the end of the crown. ⛧ 𝖓𝖔 𝖒𝖊𝖗𝖈𝖞 𝖋𝖔𝖗 𝖙𝖍𝖊 𝖍𝖎𝖌𝖍-𝖇𝖔𝖗𝖓 ⛧",
+        status: "Cult",
+        glow: "#ff4039"
+    },
 };
 
 const ECHO_CLUB_ALIASES = {};
