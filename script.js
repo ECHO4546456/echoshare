@@ -5,6 +5,12 @@ const searchMessage = document.getElementById("searchMessage");
 
 const homePage = document.getElementById("homePage");
 const profilePage = document.getElementById("profilePage");
+const clubPage = document.getElementById("clubPage");
+const clubBackButton = document.getElementById("clubBackButton");
+const clubTransition = document.getElementById("clubTransition");
+const clubTransitionName = document.getElementById("clubTransitionName");
+let clubMusic = null;
+let clubTransitionTimer = null;
 
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingBar = document.getElementById("loadingBar");
@@ -118,8 +124,120 @@ function findProfile(query) {
     );
 }
 
+function normalizeClubSearch(value) {
+    return String(value || "")
+        .trim()
+        .replace(/^club\s*[:\/]?\s*/i, "")
+        .toLowerCase()
+        .replace(/[_\s]+/g, "-")
+        .replace(/-+/g, "-");
+}
+
+function findClub(query) {
+    if (typeof ECHO_CLUBS === "undefined") return null;
+    const key = normalizeClubSearch(query);
+    const alias = typeof ECHO_CLUB_ALIASES !== "undefined" ? ECHO_CLUB_ALIASES[key] : null;
+    const target = alias || key;
+    const entries = Object.entries(ECHO_CLUBS);
+    const direct = entries.find(([id, club]) => {
+        const names = [id, club.name, club.id].map(normalizeClubSearch);
+        return names.includes(target);
+    });
+    return direct ? direct[1] : null;
+}
+
+function stopClubMusic() {
+    if (!clubMusic) return;
+    try { clubMusic.pause(); clubMusic.currentTime = 0; } catch (_) {}
+    clubMusic = null;
+}
+
+function closeClubPage() {
+    clearTimeout(clubTransitionTimer);
+    stopClubMusic();
+    if (backgroundNoise && backgroundNoise.volume > 0) backgroundNoise.play().catch(() => {});
+    if (clubPage) clubPage.hidden = true;
+    if (homePage) homePage.hidden = false;
+    window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function playClubMusic(club) {
+    stopClubMusic();
+    if (!club?.music) return;
+    clubMusic = new Audio(club.music);
+    clubMusic.preload = "auto";
+    clubMusic.loop = true;
+    clubMusic.volume = 0.62;
+    const promise = clubMusic.play();
+    if (promise?.catch) {
+        promise.catch(() => {
+            const unlock = () => {
+                clubMusic?.play().catch(() => {});
+                document.removeEventListener("pointerdown", unlock);
+                document.removeEventListener("keydown", unlock);
+            };
+            document.addEventListener("pointerdown", unlock, { once: true });
+            document.addEventListener("keydown", unlock, { once: true });
+        });
+    }
+}
+
+function openClub(club) {
+    if (!club || !clubPage) return;
+    const glow = club.glow || "#39ffb0";
+    const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value ?? ""; };
+    const image = document.getElementById("clubImage");
+    const badge = document.getElementById("clubBadge");
+    const bg = document.getElementById("clubBackground");
+    const hero = document.getElementById("clubHero");
+    if (hero) hero.style.setProperty("--club-glow", glow);
+    if (image) { image.src = club.image || "pngs/Echo.webp"; image.alt = club.name || "Club"; }
+    if (bg) bg.style.backgroundImage = `url("${String(club.background || "pngs/Background image.jpg").replace(/\"/g, "")}")`;
+    if (badge) {
+        const badgeUrl = String(club.badge || "").trim();
+        badge.hidden = !badgeUrl;
+        badge.src = badgeUrl || "";
+        badge.alt = badgeUrl ? `${club.name || "Club"} badge` : "";
+    }
+    set("clubName", club.name || "UNKNOWN CLUB");
+    set("clubPath", String(club.name || "UNKNOWN").toUpperCase());
+    set("clubId", club.id || "CLUB-UNKNOWN");
+    set("clubFollowers", club.followers || "0");
+    set("clubSupports", club.supports || "0");
+    set("clubStatus", club.status || "ACTIVE");
+    set("clubBio", club.bio || "No club bio has been added.");
+    set("clubMusicStatus", club.music ? "CUSTOM CLUB SIGNAL // READY" : "NO CLUB MUSIC ASSIGNED");
+    const tags = document.getElementById("clubTags");
+    if (tags) tags.innerHTML = (Array.isArray(club.tags) ? club.tags : []).map(tag => `<span>${escapeText(tag)}</span>`).join("") || `<span>NO TAGS</span>`;
+
+    homePage.hidden = true;
+    profilePage.hidden = true;
+    clubPage.hidden = false;
+    if (backgroundNoise) backgroundNoise.pause();
+    window.scrollTo({ top: 0, behavior: "instant" });
+    playClubMusic(club);
+}
+
+function startClubSearch(query, club) {
+    clearInterval(loadingTimer);
+    clearTimeout(clubTransitionTimer);
+    searchMessage.textContent = "";
+    if (!clubTransition) return openClub(club);
+    clubTransition.hidden = false;
+    clubTransition.setAttribute("aria-hidden", "false");
+    clubTransitionName.textContent = `ACCESSING ${(club.name || query).toUpperCase()}`;
+    document.body.classList.add("club-searching");
+    clubTransitionTimer = setTimeout(() => {
+        openClub(club);
+        clubTransition.hidden = true;
+        clubTransition.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("club-searching");
+    }, 1550);
+}
+
 function startSearch(query) {
-    const normalized = query.trim().toLowerCase();
+    const raw = String(query || "").trim();
+    const normalized = raw.toLowerCase();
     searchMessage.textContent = "";
     playLoadingSound();
 
@@ -128,11 +246,21 @@ function startSearch(query) {
         return;
     }
 
-    const profile = findProfile(query);
+    if (/^club(?:\s|\/|:)/i.test(raw)) {
+        const club = findClub(raw);
+        if (!club) {
+            searchMessage.textContent = `No club found for "${raw.replace(/^club(?:\s|\/|:)/i, "").trim()}". Check the club name and try again.`;
+            return;
+        }
+        startClubSearch(raw, club);
+        return;
+    }
+
+    const profile = findProfile(raw);
 
     if (!profile) {
         searchMessage.textContent =
-            `No record found for "${query.trim()}". Check the name and try again.`;
+            `No record found for "${raw}". Check the name and try again.`;
         return;
     }
 
@@ -308,11 +436,16 @@ backButton.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
+clubBackButton?.addEventListener("click", () => {
+    closeClubPage();
+    searchInput.focus();
+});
+
 /* Allow ESC to return from the profile page. */
 document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && !profilePage.hidden) {
-        backButton.click();
-    }
+    if (event.key !== "Escape") return;
+    if (clubPage && !clubPage.hidden) { closeClubPage(); searchInput.focus(); return; }
+    if (!profilePage.hidden) backButton.click();
 });
 
 
@@ -1276,9 +1409,12 @@ showViewedProfile = function(profile){
       const raw=entry.replace(/\\/g,'/');
       const parts=raw.split('/');
       const file=parts.pop()||'gif';
-      return {name:decodeURIComponent(file),url:parts.concat(encodeURIComponent(file)).join('/')};
+      return {name:decodeURIComponent(file),url:'/api/gif/'+encodeURIComponent(decodeURIComponent(file))};
     }
-    if(entry&&entry.url)return {name:entry.name||entry.url.split('/').pop(),url:entry.url};
+    if(entry&&entry.url){
+      const name=entry.name||decodeURIComponent(String(entry.url).split('/').pop()||'gif');
+      return {name,url:'/api/gif/'+encodeURIComponent(name)};
+    }
     return null;
   };
 
@@ -1300,7 +1436,7 @@ showViewedProfile = function(profile){
     const list=files.filter(item=>!n||item.name.toLowerCase().includes(n));
     grid.innerHTML=list.map(item=>`
       <button class="gif-tile" type="button" data-gif="${escapeText(item.url)}" title="${escapeText(item.name)}">
-        <img src="${escapeText(item.url)}" alt="${escapeText(item.name)}" loading="lazy" decoding="async"
+        <img src="${escapeText(item.url)}" alt="${escapeText(item.name)}" loading="eager" decoding="async"
              onerror="this.closest('.gif-tile')?.classList.add('gif-missing')">
         <span>${escapeText(item.name)}</span>
       </button>`).join('')||'<div class="admin-empty">NO GIFS FOUND</div>';
@@ -1333,19 +1469,22 @@ function playAnnoyAllMedia(packet){
 
 /* ===========================
    CHAT_90 ADMIN HOTKEY
-   Ctrl + I opens the hidden admin panel.
+   Ctrl + I opens the admin PIN from inside CHAT_90.
    =========================== */
 document.addEventListener("keydown", (event) => {
-  if (event.ctrlKey && event.key.toLowerCase() === "i") {
-    event.preventDefault();
-    if (window.EchoAdminPanel?.open) {
-      window.EchoAdminPanel.open();
-    } else {
-      const panel = document.getElementById("adminPanel");
-      if (panel) panel.hidden = false;
-    }
+  if (!event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
+  if (String(event.key).toLowerCase() !== "i") return;
+  const chatOpen = chatPage && !chatPage.hidden;
+  if (!chatOpen) return;
+  event.preventDefault();
+  event.stopPropagation();
+  if (window.EchoAdminPanel?.open) {
+    window.EchoAdminPanel.open();
+  } else {
+    const pin = document.getElementById("adminPinModal");
+    if (pin) { pin.hidden = false; document.getElementById("adminPinInput")?.focus(); }
   }
-});
+}, true);
 
 (function initAdminBridge(){
   window.EchoAdminAPI={

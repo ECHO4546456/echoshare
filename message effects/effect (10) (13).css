@@ -1,0 +1,15 @@
+/* Scarlet Void — CHAT_90 modular effect */
+.chat-message.scarlet-void{
+  --fx-color:#ff355e;
+  position:relative;
+  border-color:rgba(255,53,94,.30);
+  box-shadow:0 0 18px rgba(255,53,94,.12), inset 0 0 24px rgba(255,53,94,.035);
+}
+.chat-message.scarlet-void .chat-message-name{text-shadow:0 0 8px #ff355e,0 0 18px rgba(255,53,94,.55);}
+.chat-message.scarlet-void .chat-message-body{text-shadow:0 0 8px rgba(255,53,94,.28);}
+@keyframes fxMod_scarlet_void{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.scarlet-void{animation:none!important;filter:none!important;}
+.chat-message.scarlet-void{animation:fxMod_scarlet_void 2.8s ease-in-out infinite;}

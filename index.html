@@ -113,6 +113,13 @@
         </section>
     </main>
 
+    <!-- Club transition / custom search audio -->
+    <div id="clubTransition" class="club-transition" hidden aria-hidden="true">
+        <div class="club-transition-ring"></div>
+        <div class="club-transition-label">ECHO//SHARE // CLUB SIGNAL</div>
+        <div id="clubTransitionName" class="club-transition-name">ACCESSING CLUB</div>
+    </div>
+
     <!-- Loading screen -->
     <div id="loadingScreen" class="loading-screen" aria-hidden="true">
         <div class="loader-card">
@@ -125,6 +132,52 @@
             <div id="loadingText" class="loader-text">Searching archive...</div>
         </div>
     </div>
+
+    <!-- Club page -->
+    <main id="clubPage" class="club-page" hidden>
+        <div class="club-topbar">
+            <button id="clubBackButton" class="back-button" type="button">← BACK TO ARCHIVE</button>
+            <span class="club-path">ECHO//SHARE / CLUB / <b id="clubPath">UNKNOWN</b></span>
+        </div>
+
+        <section id="clubHero" class="club-hero">
+            <div id="clubBackground" class="club-hero-background" aria-hidden="true"></div>
+            <div class="club-hero-shade" aria-hidden="true"></div>
+            <div class="club-hero-content">
+                <div class="club-avatar-frame">
+                    <img id="clubImage" src="" alt="">
+                    <img id="clubBadge" class="club-badge" src="" alt="" hidden>
+                </div>
+                <div class="club-heading">
+                    <span class="club-kicker">VERIFIED CLUB RECORD</span>
+                    <h1 id="clubName">CLUB</h1>
+                    <div class="club-id-line">PROFILE ID // <b id="clubId">CLUB-UNKNOWN</b></div>
+                    <div id="clubStatus" class="club-status">ACTIVE</div>
+                </div>
+            </div>
+            <div class="club-stats">
+                <div class="club-stat"><strong id="clubFollowers">0</strong><span>FOLLOWERS</span></div>
+                <div class="club-stat"><strong id="clubSupports">0</strong><span>SUPPORTS</span></div>
+            </div>
+        </section>
+
+        <section class="club-layout">
+            <article class="club-main-card">
+                <div class="club-section-label">ABOUT THE CLUB</div>
+                <p id="clubBio" class="club-bio"></p>
+                <div class="club-section-label">TAGS</div>
+                <div id="clubTags" class="club-tags"></div>
+            </article>
+            <aside class="club-side-card">
+                <div class="club-side-glow"></div>
+                <span class="club-side-kicker">ECHO//SHARE</span>
+                <h2>CLUB SECTION</h2>
+                <p>You're looking at the club section.</p>
+                <div class="club-side-line"></div>
+                <span id="clubMusicStatus">CUSTOM CLUB SIGNAL</span>
+            </aside>
+        </section>
+    </main>
 
     <!-- Profile/wiki page -->
     <main id="profilePage" class="profile-page" hidden>
@@ -331,7 +384,7 @@
                     <div id="adminSuggestions" class="admin-suggestions" hidden></div>
                     <div id="adminOutput" class="admin-output"></div>
                     <div class="admin-command-row"><span class="admin-prompt">›</span><input id="adminCommandInput" autocomplete="off" spellcheck="false" placeholder="Type /help, /users, /ban, /effect..."/><button id="adminCommandSend" type="button">RUN</button></div>
-                    <div class="admin-command-hint">TAB / ↑ / ↓ command history · click a username to target them · Ctrl+P toggles this console</div>
+                    <div class="admin-command-hint">TAB / ↑ / ↓ command history · click a username to target them · Ctrl+I opens this console</div>
                     <div class="admin-media-row"><button id="adminAnnoyButton" type="button">/ANNOY ALL</button><span id="adminMediaName">No media loaded</span><input id="adminAnnoyFile" type="file" accept="audio/*,video/*" hidden></div>
                 </main>
             </div>
@@ -389,6 +442,7 @@
     <audio id="backgroundNoise" src="sounds/background-noise.mp3.mp3" loop preload="auto"></audio>
 
     <script src="profiles.js"></script>
+    <script src="club profiles/club-profiles.js"></script>
     <script src="gif-library.js"></script>
     <script src="admin panel/admin-panel.js"></script>
     <script src="script.js"></script>

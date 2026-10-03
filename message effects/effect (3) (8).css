@@ -1,0 +1,14 @@
+/* Red Aurora — CHAT_90 modular effect */
+.chat-message.red-aurora{
+  --fx-color:#b73cff;
+  position:relative;
+  border-color:rgba(183,60,255,.30);
+  box-shadow:0 0 18px rgba(183,60,255,.12), inset 0 0 24px rgba(183,60,255,.035);
+}
+.chat-message.red-aurora .chat-message-name{text-shadow:0 0 8px #b73cff,0 0 18px rgba(183,60,255,.55);}
+.chat-message.red-aurora .chat-message-body{text-shadow:0 0 8px rgba(183,60,255,.28);}
+@keyframes fxMod_red_aurora{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.red-aurora{animation:none!important;filter:none!important;}

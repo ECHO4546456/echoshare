@@ -75,6 +75,22 @@ const server = http.createServer((req,res)=>{
     res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':'*'});
     return res.end(JSON.stringify(files.map(name=>({name:name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' '),url:'/gifs_emojis/gifs_emojis/'+encodeURIComponent(name)}))));
   }
+  if (requestPath.startsWith('/api/gif/')) {
+    const requested = requestPath.slice('/api/gif/'.length);
+    const dir = path.join(ROOT, 'gifs_emojis', 'gifs_emojis');
+    const safeName = path.basename(requested);
+    const file = path.join(dir, safeName);
+    if (!safeName || !/\.(gif|webp|png|jpe?g)$/i.test(safeName) || !file.startsWith(dir + path.sep)) {
+      return res.writeHead(404).end('Not found');
+    }
+    return fs.readFile(file, (err, data) => {
+      if (err) return res.writeHead(404).end('Not found');
+      const ext = path.extname(file).toLowerCase();
+      const types = {'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif'};
+      res.writeHead(200, {'Content-Type': types[ext] || 'application/octet-stream', 'Cache-Control':'public, max-age=3600'});
+      res.end(data);
+    });
+  }
   let u = requestPath; if (u === '/') u='/index.html';
   const file = path.normalize(path.join(ROOT,u));
   if (!file.startsWith(ROOT)) return res.writeHead(403).end();

@@ -29,7 +29,7 @@ Upload/replace the project files in the same GitHub repository and Render servic
 
 ## CHAT_90 current build
 - Member password: `56789`
-- Admin console: press `Ctrl+P` inside the site, then enter PIN `7879`.
+- Admin console: press `Ctrl+I` inside the site, then enter PIN `7879`.
 - GIF vault reads the files listed in `gif-library.js` from `gifs_emojis/gifs_emojis/`.
 - Image/video upload is the `＋` button beside GIF.
 - Admin tools live in `admin panel/`.

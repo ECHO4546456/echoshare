@@ -1,0 +1,15 @@
+/* Soul Chain — CHAT_90 modular effect */
+.chat-message.soul-chain{
+  --fx-color:#ff3030;
+  position:relative;
+  border-color:rgba(255,48,48,.30);
+  box-shadow:0 0 18px rgba(255,48,48,.12), inset 0 0 24px rgba(255,48,48,.035);
+}
+.chat-message.soul-chain .chat-message-name{text-shadow:0 0 8px #ff3030,0 0 18px rgba(255,48,48,.55);}
+.chat-message.soul-chain .chat-message-body{text-shadow:0 0 8px rgba(255,48,48,.28);}
+@keyframes fxMod_soul_chain{
+  0%,100%{filter:brightness(1);}
+  50%{filter:brightness(1.08);}
+}
+.settings-no-vfx .chat-message.soul-chain{animation:none!important;filter:none!important;}
+.chat-message.soul-chain{animation:fxMod_soul_chain 2.8s ease-in-out infinite;}

@@ -50,5 +50,5 @@
   input?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendCommand(input.value.trim());input.value='';suggestions.hidden=true;}else if(e.key==='ArrowUp'){e.preventDefault();if(history.length){historyIndex=Math.max(0,historyIndex-1);input.value=history[historyIndex]||'';}}else if(e.key==='ArrowDown'){e.preventDefault();historyIndex=Math.min(history.length,historyIndex+1);input.value=history[historyIndex]||'';}else if(e.key==='Tab'){e.preventDefault();const first=suggestions?.querySelector('[data-suggest]');if(first){input.value=first.dataset.suggest;suggestions.hidden=true;}}});
   $('adminAnnoyButton')?.addEventListener('click',()=>mediaInput?.click());
   mediaInput?.addEventListener('change',()=>{const f=mediaInput.files?.[0];if(!f)return;mediaName.textContent=f.name;const reader=new FileReader();reader.onload=()=>{const data=reader.result;const type=f.type.startsWith('video/')?'video':'audio';if(!confirm(`Are you sure you want to activate this media for everyone?\n\n${f.name}`))return;window.EchoAdminAPI?.annoyAll({data,type,name:f.name});};reader.readAsDataURL(f);mediaInput.value='';});
-  document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key.toLowerCase()==='p'){e.preventDefault();if(panel&&!panel.hidden){hidePanel();return;}showPin();}});
+
 })();
