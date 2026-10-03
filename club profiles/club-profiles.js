@@ -47,6 +47,20 @@ const ECHO_CLUBS = {
         status: "Cult",
         glow: "#ff4039"
     },
+    "TheHonorOne": {
+        name: "TheHonorOne",
+        id: "CLUB-TheHonorOne-001",
+        image: "pngs/for-honor-knight.gif",
+        background: "pngs/15466.gif",
+        music: "sounds/Oneshot (Hardstyle).mp3",
+        followers: "889K",
+        supports: "8,9T",
+        badge: "gifs_emojis/yousuredog.webp",
+        tags: ["Knights",],
+        bio: "I honor the queen with bloody hands and a sword. For there i shall take my life if it means to serve her.",
+        status: "TheHonor_Family",
+        glow: "#000000"
+    }
 };
 
 const ECHO_CLUB_ALIASES = {};
