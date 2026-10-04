@@ -39,7 +39,9 @@ const ECHO_PROFILES = {
                     "Club/The_Hons_Family",
                     'Club/HazelsHoneyroom_777',
                     'Club/TheHonorOne',
-                    'Club/V*PER'
+                    'Club/V*PER',
+                    'Club/𝙺𝚗𝚘𝚝 & 𝙷𝚘𝚗𝚎𝚢',
+                    'Club/Harnsoi_Kinzo'
                     
                 ]
             },

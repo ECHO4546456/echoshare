@@ -75,7 +75,7 @@ const ECHO_CLUBS = {
         status: 'Sexy',
         glow: "#f73790"
     },
-    "The_Hons_Family": {
+   "The_Hons_Family": {
         name: "The_Hons_Family",
         id: "CLUB-HonsFamily-001",
         image: "pngs/content.webp",
@@ -88,6 +88,20 @@ const ECHO_CLUBS = {
         bio: "The Godfamily",
         status: "Cult",
         glow: "#c50000"
+    },
+    "𝙺𝚗𝚘𝚝 & 𝙷𝚘𝚗𝚎𝚢": {
+        name: "𝙺𝚗𝚘𝚝 & 𝙷𝚘𝚗𝚎𝚢",
+        id: "CLUB-𝙺𝚗𝚘𝚝 & 𝙷𝚘𝚗𝚎𝚢-001",
+        image: "pngs/no.jpg",
+        background: "pngs/More.gif",
+        music: "pngs/ssstik.io_1791133782403",
+        followers: "920,456k",
+        supports: "Largest Family.",
+        badge: "pngs/picgifs-stars-1611814 (1).gif",
+        tags: ["bearagain679","faithsnow.","flexhexxxxx","sigmasigmaboy0451_37846","n_79606","sweetheart_54283","plushiepounder.","malik047595","macboockclubs", "loui08372","hearv_10026","ashentades","domain0425_01367","uturn0192","raven048574","possi_aesthetic","daniela09714","vovla_","v30209","tozi0876"],
+        bio: "The Deeper the love the better we are",
+        status: "Deeper levels club",
+        glow: "#050000"
     }
 };
 
