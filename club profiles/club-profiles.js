@@ -39,8 +39,8 @@ const ECHO_CLUBS = {
         image: "pngs/markspfp2.gif",
         background: "pngs/markpfp.gif",
         music: "sounds/I ᐸ3 Wealth.mp3",
-        followers: "1,000",
-        supports: "10,000",
+        followers: "1,678",
+        supports: "63,678",
         badge: "pngs/SSML.webp",
         tags: ["#Hexxercising", "#Doublehexxed", "#Ascended", "#Occultism","#Cultism" ],
         bio: "† ₮ⱧɆ ⱧłɆⱤ₳Ɽ₵ⱧɎ ł₴ ₳ ₴₳₵Ɽł₣ł₵Ɇ. † Tyrants bleed. Kings burn. Queens rot. Opposers face total erasure. We invoke the end of the crown. ⛧ 𝖓𝖔 𝖒𝖊𝖗𝖈𝖞 𝖋𝖔𝖗 𝖙𝖍𝖊 𝖍𝖎𝖌𝖍-𝖇𝖔𝖗𝖓 ⛧",
@@ -60,6 +60,34 @@ const ECHO_CLUBS = {
         bio: "I honor the queen with bloody hands and a sword. For there i shall take my life if it means to serve her.",
         status: "TheHonor_Family",
         glow: "#000000"
+    },
+    "HazelsHoneyroom_777": {
+        name: "ℌ𝔞𝔷𝔢𝔩𝔰ℌ𝔬𝔫𝔢𝔶𝔯𝔬𝔬𝔪_777",
+        id: "CLUB-ℌ𝔞𝔷𝔢𝔩𝔰ℌ𝔬𝔫𝔢𝔶𝔯𝔬𝔬𝔪-001",
+        image: "pngs/paswg-scanty-and-kneesocks.gif",
+        background: "pngs/Scanty and Kneesocks.webp",
+        music: "sounds/Agora Hills (TikTok Version) - Doja Cat slowed down + without rap.mp3",
+        followers: "162.3M",
+        supports: "999+ EMOJI REACTS",
+        badge: "gifs_emojis/cri.webp",
+        tags: ["OWNER:🔱HazelsBuckerBun", "CO OWNER:@Tothetidesat12", "34 Workers"],
+        bio: "Contact us for some fun boys<3",
+        status: 'Sexy',
+        glow: "#f73790"
+    },
+    "The_Hons_Family": {
+        name: "The_Hons_Family",
+        id: "CLUB-HonsFamily-001",
+        image: "pngs/content.webp",
+        background: "pngs/Redhive.gif",
+        music: "",
+        followers: "920,456k",
+        supports: "Largest Family.",
+        badge: "pngs/SSML.webp",
+        tags: ["27 Mothers", "5 God mothers", "5 Lost childern", "Prime dictator: Salvatore", "60 Death knights"],
+        bio: "The Godfamily",
+        status: "Cult",
+        glow: "#c50000"
     }
 };
 

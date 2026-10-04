@@ -34,9 +34,12 @@ const ECHO_PROFILES = {
         */
         article: [
             {
-                heading: "Overview",
+                heading: "Clubs",
                 paragraphs: [
-                    "There's nothing to search up at the moment"
+                    "Club/The_Hons_Family",
+                    'Club/HazelsHoneyroom_777',
+                    'Club/TheHonorOne',
+                    'Club/V*PER'
                     
                 ]
             },
