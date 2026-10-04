@@ -41,7 +41,7 @@ const ECHO_CLUBS = {
         music: "sounds/I ᐸ3 Wealth.mp3",
         followers: "1,000",
         supports: "10,000",
-        badge: "pngs/No copy.gif",
+        badge: "pngs/Woahhh.webp",
         tags: ["#Hexxercising", "#Doublehexxed", "#Ascended", "#Occultism","#Cultism" ],
         bio: "† ₮ⱧɆ ⱧłɆⱤ₳Ɽ₵ⱧɎ ł₴ ₳ ₴₳₵Ɽł₣ł₵Ɇ. † Tyrants bleed. Kings burn. Queens rot. Opposers face total erasure. We invoke the end of the crown. ⛧ 𝖓𝖔 𝖒𝖊𝖗𝖈𝖞 𝖋𝖔𝖗 𝖙𝖍𝖊 𝖍𝖎𝖌𝖍-𝖇𝖔𝖗𝖓 ⛧",
         status: "Cult",
