@@ -41,7 +41,8 @@ const ECHO_PROFILES = {
                     'Club/TheHonorOne',
                     'Club/V*PER',
                     'Club/𝙺𝚗𝚘𝚝 & 𝙷𝚘𝚗𝚎𝚢',
-                    'Club/Harnsoi_Kinzo'
+                    'Club/Harnsoi_Kinzo',
+                    'Club/Sannin no Kyōkyō'
                     
                 ]
             },
