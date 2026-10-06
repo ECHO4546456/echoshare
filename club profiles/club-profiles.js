@@ -76,6 +76,7 @@ const ECHO_CLUBS = {
         glow: "#f73790"
     },
    "The_Hons_Family": {
+
         name: "The_Hons_Family",
         id: "CLUB-HonsFamily-001",
         image: "pngs/content.webp",
@@ -102,6 +103,21 @@ const ECHO_CLUBS = {
         bio: "The Deeper the love the better we are",
         status: "Deeper levels club",
         glow: "#050000"
+    },
+
+      "Sannin no Kyōkyō": {
+        name: "Sannin Family",
+        id: "CLUB-Sannin-001",
+        image: "pngs/Kurotsume, The First Face.png",
+        background: "theadmins/haunted-house-with-spooky-aesthetic-cinematic-style_23-2151663817.avif",
+        music: "sounds/Oneshot (Hardstyle).mp3",
+        followers: "3K",
+        supports: "8,9B",
+        badge: "theadmins/Alert.gif",
+        tags: ["1. ADMIN — Kurotsume, The First Face", "2. CO-ADMIN — Mokuren, The Empty Smile", "3. CO-ADMIN — Shigure, The Weeping Horn"],
+        bio: "[This Family should be taken with caution contact for support of this club is a issue.]",
+        status: "Cult",
+        glow: "#000000"
     }
 };
 
