@@ -108,9 +108,9 @@ const ECHO_CLUBS = {
       "Sannin no Kyōkyō": {
         name: "Sannin Family",
         id: "CLUB-Sannin-001",
-        image: "pngs/Kurotsume, The First Face.png",
+        image: "theadmins/Kurotsume, The First Face.png",
         background: "theadmins/haunted-house-with-spooky-aesthetic-cinematic-style_23-2151663817.avif",
-        music: "sounds/Oneshot (Hardstyle).mp3",
+        music: "",
         followers: "3K",
         supports: "8,9B",
         badge: "theadmins/Alert.gif",
